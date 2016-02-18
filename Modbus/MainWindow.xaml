@@ -1,0 +1,159 @@
+﻿<Window x:Class="Modbus.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Modbus"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
+        mc:Ignorable="d"
+        Title="Chip45boot2Program" Height="473.224" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <xctk:BusyIndicator x:Name="BiMain" BusyContent="{Binding}">
+        <xctk:BusyIndicator.BusyContentTemplate>
+            <DataTemplate DataType="local:MainWindow">
+                <StackPanel>
+                    <Label Content="{Binding BusyText}"
+                                HorizontalAlignment="Center" />
+                    <ProgressBar Value="{Binding Value}" Width="200"
+                                  Maximum="{Binding Maximum}"
+                                  Height="15" />
+                    <Button Visibility="{Binding CancelVisible}" Width="100" Margin="5" Click="BCancel">Cancel</Button>
+                </StackPanel>
+            </DataTemplate>
+        </xctk:BusyIndicator.BusyContentTemplate>
+
+        <!-- Remove unnecessary default ProgressBar -->
+        <xctk:BusyIndicator.ProgressBarStyle>
+            <Style TargetType="ProgressBar">
+                <Setter Property="Visibility"
+                          Value="Collapsed" />
+            </Style>
+        </xctk:BusyIndicator.ProgressBarStyle>
+
+        <Grid>
+            <Button x:Name="button" Content="Начать" HorizontalAlignment="Left" Height="27" Margin="61,149,0,0" VerticalAlignment="Top" Width="231" Click="button_Click"/>
+            <CheckBox x:Name="CbLight" Content="Свет" HorizontalAlignment="Left" Margin="10,162,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="TbSend" HorizontalAlignment="Left" Height="23" Margin="10,182,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="281"/>
+            <Button x:Name="button1" Content="Послать" HorizontalAlignment="Left" Height="24" Margin="41,211,0,0" VerticalAlignment="Top" Width="211" Click="button1_Click"/>
+            <TextBox x:Name="TbResponse" HorizontalAlignment="Left" Height="171" Margin="10,250,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="281"/>
+            <Button x:Name="BConnect" Content="Connect" HorizontalAlignment="Left" Height="26" Margin="356,42,0,0" VerticalAlignment="Top" Width="138" Click="BConnectClick">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Connected}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <CheckBox x:Name="CbConnected" IsChecked="{Binding Connected}" Content="Bootloader connected" IsEnabled="False" HorizontalAlignment="Left" Margin="356,17,0,0" VerticalAlignment="Top"/>
+            <Button x:Name="BDisconnect" Content="Disconnect" IsEnabled="{Binding Connected}" HorizontalAlignment="Left" Margin="519,42,0,0" VerticalAlignment="Top" Width="153" Height="26" Click="BDisconnect_Click"/>
+            <ListBox x:Name="LbLog" HorizontalAlignment="Left" Height="166" Margin="356,213,0,0" VerticalAlignment="Top" Width="487"/>
+            <rdControls:FilePicker x:Name="FpFlash" HorizontalAlignment="Left" Height="23" Margin="428,154,0,0" SettingKey="Prog" VerticalAlignment="Top" Width="351" Filter="HEX|*.hex" FileSelected="FpFlash_FileSelected" />
+            <Label x:Name="label1" Content="Прошивка" HorizontalAlignment="Left" Margin="356,152,0,0" VerticalAlignment="Top"/>
+            <Button x:Name="BProgramFlash" Content="Program Flash" HorizontalAlignment="Left" Height="23" Margin="356,185,0,0" VerticalAlignment="Top" Width="138" Click="BProgramFlashClick" IsEnabled="False"/>
+            <Button x:Name="BHexFileTest" Content="Hex file test" HorizontalAlignment="Left" Height="26" Margin="519,182,0,0" VerticalAlignment="Top" Width="168" Click="BHexFileTest_Click"/>
+            <GroupBox HorizontalAlignment="Left" Height="76" Margin="304,71,0,0" VerticalAlignment="Top" Width="460">
+                <GroupBox.Header>
+                    <CheckBox x:Name="CbSendPreString">Send Pre-String Before Connect</CheckBox>
+                </GroupBox.Header>
+                <Grid IsEnabled="{Binding IsChecked, ElementName=CbSendPreString}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label x:Name="label" Content="Pre-String" HorizontalAlignment="Left" Margin="0" />
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="TbPreString"  Height="23" Margin="0" TextWrapping="Wrap" Text="FA"/>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                        <Label Content="Pre-String Timeout" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
+                        <xctk:IntegerUpDown x:Name="IudPreStringTimeoutAfter"   Margin="0" VerticalAlignment="Center"  Width="59" Maximum="5000" Minimum="0" Increment="100" DefaultValue="1000" Text="1000"/>
+                        <Label Content="ms" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
+                        <RadioButton x:Name="RbPreStringAscii" GroupName="PrestringType" IsChecked="True" Content="Ascii" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        <RadioButton x:Name="RbPreStringHex" GroupName="PrestringType" Content="Hex" Margin="10,0,0,0" VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Grid>
+            </GroupBox>
+            <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="133" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Click="TogglePortClick">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Padding" Value="0"></Setter>
+                                    <!--<Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <ContentPresenter Content="{Binding Content}"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>-->
+                                </Style>
+                            </Button.Style>
+                            <Rectangle Width="16" Height="16" Stroke="Black">
+                                <Rectangle.Style>
+                                    <Style TargetType="Rectangle">
+                                        <Setter Property="Fill" Value="#FFF4F4F5"></Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PortOpened}" Value="True">
+                                                <Setter Property="Fill" Value="LimeGreen"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+
+                            </Rectangle>
+
+                        </Button>
+                        <TextBlock Margin="5,0,0,0">Connection port</TextBlock>
+                    </StackPanel>
+                </GroupBox.Header>
+                <GroupBox.Style>
+                    <Style TargetType="GroupBox">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Connected}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </GroupBox.Style>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="24"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Select COM port" />
+                    <ListBox Grid.Row="1" Grid.Column="0" Margin="5" x:Name="LbPorts" SelectionChanged="SelectPort" />
+                    <Label Grid.Row="0" Grid.Column="1" Content="Baudrate" />
+                    <ListBox Grid.Row="1" Grid.Column="1" x:Name="LbBaudRates" SelectionChanged="SelectBaudrate" Margin="5" />
+
+
+                </Grid>
+            </GroupBox>
+            <Rectangle HorizontalAlignment="Left" Height="27" Margin="528,10,0,0" Stroke="Black" VerticalAlignment="Top" Width="52">
+                <Rectangle.Style>
+                    <Style TargetType="Rectangle">
+                        <Setter Property="Fill" Value="#FFF4F4F5"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Connected}" Value="True">
+                                <Setter Property="Fill" Value="LimeGreen"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
+        </Grid>
+    </xctk:BusyIndicator>
+</Window>
