@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Modbus.Device;
 
@@ -65,10 +66,16 @@ namespace Modbus
             _comPortTimer.Start();
 
 
-            CbSendPreString.IsChecked = Properties.Settings.Default.SendPreString;
+            CbSendPreString.IsChecked = Properties.Settings.Default.IsSendPreString;
             TbPreString.Text = Properties.Settings.Default.PreString;
-            RbPreStringHex.IsChecked = Properties.Settings.Default.PreStringHex;
-            IudPreStringTimeoutAfter.Value = Properties.Settings.Default.PreStringTimeoutAfter;
+            RbPreStringHex.IsChecked = Properties.Settings.Default.IsPreStringHex;
+            IudPreStringTimeoutAfter.Value = Properties.Settings.Default.PreStringTimeoutAfterMs;
+
+            IudEepromBytesToRead.Value = Properties.Settings.Default.EepromReadBytes;
+            CbEepromWriteDelay.IsChecked = Properties.Settings.Default.IsEepromWriteDelay;
+            IudEepromWriteDelay.Value = Properties.Settings.Default.EepromWriteDelayMs;
+
+            RbTerminalSendHex.IsChecked = Properties.Settings.Default.IsTerminalSendHex;
 
             _readRs485Timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 1) };
             _readRs485Timer.Tick += (sender, args) =>
@@ -154,8 +161,11 @@ namespace Modbus
             return arr;
         }
 
-        private void button1_Click(object sender, RoutedEventArgs e)
+        private void BTerminalSendClick(object sender, RoutedEventArgs e)
         {
+            Properties.Settings.Default.IsTerminalSendHex = RbTerminalSendHex.IsChecked == true;
+            Properties.Settings.Default.Save();
+
             var sendText = TbSend.Text;
             if (string.IsNullOrEmpty(sendText))
                 return;
@@ -223,12 +233,12 @@ namespace Modbus
         {
             // Сохраняем значения PreString
             if (CbSendPreString.IsChecked != null)
-                Properties.Settings.Default.SendPreString = CbSendPreString.IsChecked.Value;
+                Properties.Settings.Default.IsSendPreString = CbSendPreString.IsChecked.Value;
             Properties.Settings.Default.PreString = TbPreString.Text;
             if (RbPreStringHex.IsChecked != null)
-                Properties.Settings.Default.PreStringHex = RbPreStringHex.IsChecked.Value;
+                Properties.Settings.Default.IsPreStringHex = RbPreStringHex.IsChecked.Value;
             if (IudPreStringTimeoutAfter.Value != null)
-                Properties.Settings.Default.PreStringTimeoutAfter = IudPreStringTimeoutAfter.Value.Value;
+                Properties.Settings.Default.PreStringTimeoutAfterMs = IudPreStringTimeoutAfter.Value.Value;
             Properties.Settings.Default.Save();
 
             CreatePort();
@@ -269,17 +279,17 @@ namespace Modbus
                 PreStringTimeoutAfterMs = IudPreStringTimeoutAfter.Value ?? 1000
             };
 
-            RunWorker(_chip45.ConnectBootloader, true, arg, complete:(o, args) =>
-            {
-                Connected = _chip45.Connected;
-            });
+            RunWorker(_chip45.ConnectBootloader, true, arg, complete: (o, args) =>
+             {
+                 Connected = _chip45.Connected;
+             });
         }
 
         private void RunWorker(DoWorkEventHandler runCommand, bool canCancel = false, object arg = null, RunWorkerCompletedEventHandler complete = null)
         {
 
             BiMain.IsBusy = true;
-            
+
             _backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true };
             if (canCancel)
             {
@@ -290,7 +300,6 @@ namespace Modbus
 
             _backgroundWorker.RunWorkerCompleted += (o, args) =>
             {
-                CbConnected.IsChecked = (bool?)args.Result;
                 BiMain.IsBusy = false;
             };
             if (complete != null)
@@ -302,7 +311,7 @@ namespace Modbus
             _backgroundWorker.ProgressChanged += (sender, args) =>
             {
                 Value = args.ProgressPercentage;
-                if(args.UserState != null)
+                if (args.UserState != null)
                     BusyText = args.UserState as string;
             };
             _backgroundWorker.DoWork += runCommand;
@@ -317,7 +326,7 @@ namespace Modbus
 
         private void Disconnect()
         {
-            RunWorker(_chip45.DisconnectBootloader, arg: null, complete: (o, args) => { Connected = _chip45.Connected; });
+            RunWorker(_chip45.DisconnectBootloader, arg: null, complete: (o, args) => { Connected = _chip45.Connected; ClosePort(); });
         }
 
         public bool Connected
@@ -326,19 +335,19 @@ namespace Modbus
             set
             {
                 _connected = value;
-//                CbConnected.IsChecked = _connected;
+                //                CbConnected.IsChecked = _connected;
                 if (_connected)
                 {
-//                    BConnect.IsEnabled = false;
-//                    BDisconnect.IsEnabled = true;
-                    if(!string.IsNullOrWhiteSpace(FpFlash.FileName))
+                    //                    BConnect.IsEnabled = false;
+                    //                    BDisconnect.IsEnabled = true;
+                    if (!string.IsNullOrWhiteSpace(FpFlash.FileName))
                         BProgramFlash.IsEnabled = true;
                 }
                 else
                 {
-//                    BDisconnect.IsEnabled = false;
+                    //                    BDisconnect.IsEnabled = false;
                     BProgramFlash.IsEnabled = false;
-//                    BConnect.IsEnabled = true;
+                    //                    BConnect.IsEnabled = true;
                 }
                 OnPropertyChanged("Connected");
             }
@@ -355,7 +364,7 @@ namespace Modbus
                 return;
             }
             var filePath = FpFlash.FileName.Trim();
-            if(!File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
                 MessageBox.Show("Файл с прошивкой не найден");
                 return;
@@ -368,7 +377,7 @@ namespace Modbus
                 ProgramFile = filePath
             };
 
-            RunWorker(_chip45.Program, arg:arg);
+            RunWorker(_chip45.Program, arg: arg);
 
         }
 
@@ -489,7 +498,7 @@ namespace Modbus
 
         private void SelectPort(object sender, SelectionChangedEventArgs e)
         {
-            var lb = (ListBox) sender;
+            var lb = (ListBox)sender;
 
             var selectedPort = lb.SelectedItem as string;
             if (selectedPort == null)
@@ -506,7 +515,7 @@ namespace Modbus
             if (lb.SelectedItem == null)
                 return;
 
-            Properties.Settings.Default.SelectedBaudrate = (int) lb.SelectedItem;
+            Properties.Settings.Default.SelectedBaudrate = (int)lb.SelectedItem;
             Properties.Settings.Default.Save();
         }
 
@@ -516,19 +525,101 @@ namespace Modbus
             {
                 if (Connected)
                 {
-                    if(MessageBox.Show("Disconnect from bootloader?", "Connected to bootloader", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    if (MessageBox.Show("Disconnect from bootloader?", "Connected to bootloader", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                         Disconnect();
                     else
                     {
                         Connected = false;
+                        ClosePort();
                     }
                 }
-                _port.Close();
+                else
+                {
+                    ClosePort();
+                }
             }
             else
             {
                 CreatePort();
             }
+        }
+
+        private void ClosePort()
+        {
+            if (_port != null && _port.IsOpen)
+            {
+                _port.Close();
+                OnPropertyChanged("PortOpened");
+            }
+        }
+
+        private void FpFlashEepromSelected(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void BProgramEepromClick(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(FpEeprom.FileName))
+            {
+                MessageBox.Show("Please choose Eeprom file");
+                return;
+            }
+            var filePath = FpEeprom.FileName.Trim();
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("Eeprom file not found!");
+                return;
+            }
+
+            Properties.Settings.Default.IsEepromWriteDelay = CbEepromWriteDelay.IsChecked == true;
+            if (IudEepromWriteDelay.Value != null)
+                Properties.Settings.Default.EepromWriteDelayMs = IudEepromWriteDelay.Value.Value;
+            Properties.Settings.Default.Save();
+
+            var arg = new Chip45.ProgramOptions
+            {
+                ProgramType = Chip45.ProgramTypes.Eeprom,
+                ProgramFile = filePath
+            };
+            if (CbEepromWriteDelay.IsChecked == true && IudEepromWriteDelay.Value != null)
+                arg.EepromWriteDelay = IudEepromWriteDelay.Value.Value;
+            
+            RunWorker(_chip45.Program, arg: arg);
+        }
+
+        private void BReadEepromClick(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog
+            {
+                Filter = "Eeprom|*.eep;*.hex",
+                Title = "Choose filename to save Eeprom",
+                DefaultExt = ".eep"
+            };
+            if (sfd.ShowDialog() != true)
+                return;
+
+            Properties.Settings.Default.EepromReadBytes = IudEepromBytesToRead.Value ?? 512;
+            Properties.Settings.Default.Save();
+
+            var arg = new Chip45.ReadEepromOptions
+            {
+                EepromSaveFileName = sfd.FileName,
+                BytesToRead = IudEepromBytesToRead.Value ?? 512
+            };
+
+            RunWorker(_chip45.ReadEeprom, true, arg, complete: (o, args) =>
+            {
+                if (args.Result != null && (bool)args.Result)
+                {
+                    MessageBox.Show("Read Eeprom completed");
+                }
+                else
+                {
+                    MessageBox.Show("Error reading Eeprom");
+                }
+            });
+
         }
     }
 }

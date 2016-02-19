@@ -50,12 +50,12 @@ namespace Modbus.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SendPreString {
+        public bool IsSendPreString {
             get {
-                return ((bool)(this["SendPreString"]));
+                return ((bool)(this["IsSendPreString"]));
             }
             set {
-                this["SendPreString"] = value;
+                this["IsSendPreString"] = value;
             }
         }
         
@@ -74,24 +74,72 @@ namespace Modbus.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool PreStringHex {
+        public bool IsPreStringHex {
             get {
-                return ((bool)(this["PreStringHex"]));
+                return ((bool)(this["IsPreStringHex"]));
             }
             set {
-                this["PreStringHex"] = value;
+                this["IsPreStringHex"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1000")]
-        public int PreStringTimeoutAfter {
+        public int PreStringTimeoutAfterMs {
             get {
-                return ((int)(this["PreStringTimeoutAfter"]));
+                return ((int)(this["PreStringTimeoutAfterMs"]));
             }
             set {
-                this["PreStringTimeoutAfter"] = value;
+                this["PreStringTimeoutAfterMs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("512")]
+        public int EepromReadBytes {
+            get {
+                return ((int)(this["EepromReadBytes"]));
+            }
+            set {
+                this["EepromReadBytes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsEepromWriteDelay {
+            get {
+                return ((bool)(this["IsEepromWriteDelay"]));
+            }
+            set {
+                this["IsEepromWriteDelay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int EepromWriteDelayMs {
+            get {
+                return ((int)(this["EepromWriteDelayMs"]));
+            }
+            set {
+                this["EepromWriteDelayMs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsTerminalSendHex {
+            get {
+                return ((bool)(this["IsTerminalSendHex"]));
+            }
+            set {
+                this["IsTerminalSendHex"] = value;
             }
         }
     }

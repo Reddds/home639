@@ -13,13 +13,19 @@ namespace Modbus
         {
             public ProgramTypes ProgramType { get; set; }
             public string ProgramFile { get; set; }
-            public int Delay { get; set; }
+            public int EepromWriteDelay { get; set; }
         }
 
         public class ConnectOptions
         {
             public byte[] BytesBeforeConnect { get; set; }
             public int PreStringTimeoutAfterMs { get; set; }
+        }
+
+        public class ReadEepromOptions
+        {
+            public string EepromSaveFileName { get; set; } 
+            public int BytesToRead { get; set; }
         }
 
         private readonly SerialPort _port;
@@ -181,6 +187,44 @@ namespace Modbus
             Connected = false;
         }
 
+        public void ReadEeprom(object sender, DoWorkEventArgs e)
+        {
+            var worker = (BackgroundWorker)sender;
+            var opts = (ReadEepromOptions) e.Argument;
+            var hexFile = new HexFile(_log, true);
+
+            var readStr = new StringBuilder();
+            for (var i = 0; i < opts.BytesToRead; ++i)
+            {
+                if(i % 16 == 0)
+                    worker.ReportProgress((int) (i * 100d / opts.BytesToRead), "Reading Eeprom...");
+                string cmd = $"er{i:X4}";
+                _port.Write(cmd);
+                _port.Write("\n");
+                var reply = _port.ReadUntil('\r', 10);
+                reply = reply.Replace(SerialPortExtension.XOFF.ToString(), "").Trim();
+                var expected = cmd + "+";
+                if (!reply.StartsWith(expected))
+                {
+                    _log("Error: Bootloader did not respond to 'er' command");
+                    if (_verbose)
+                        _log("Reply: " + FormatControlChars(reply));
+                    e.Result = false;
+                    return;
+                }
+                reply = _port.ReadUntil('\r', 10);
+                reply = reply.Trim();
+                if (_verbose)
+                    readStr.Append(reply + " ");
+                hexFile.Add(Convert.ToByte(reply, 16));
+                _port.ReadUntil(SerialPortExtension.XON, 10);
+            }
+            if (_verbose)
+                _log(readStr.ToString());
+            HexUtils.WriteHexfile(opts.EepromSaveFileName, hexFile);
+            e.Result = true;
+            return;
+        }
 
         public void Program(object sender, DoWorkEventArgs e)
         {
@@ -195,11 +239,12 @@ namespace Modbus
                     return;
                 }
 
-            var eepromWriteDelay = 0;
+            var writeDelay = 0;
             if (opts.ProgramType == ProgramTypes.Eeprom)  // check hexfiles prior to doing COM stuff
             {
-//                if (opt.isSet("-ed"))
-//                    opt.get("-ed")->getInt(eepromWriteDelay);
+                //                if (opt.isSet("-ed"))
+                //                    opt.get("-ed")->getInt(eepromWriteDelay);
+                writeDelay = opts.EepromWriteDelay;
             }
 
             //            string eepromReadFilename;
@@ -239,8 +284,8 @@ namespace Modbus
                     e.Result = false;
                     return;
                 }
-                if (opts.Delay > 0)
-                    Thread.Sleep(opts.Delay);
+                if (writeDelay > 0)
+                    Thread.Sleep(writeDelay);
             }
 
             var received = _port.ReadExisting();
