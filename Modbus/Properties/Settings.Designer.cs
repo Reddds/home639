@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Modbus.Properties {
+namespace Chip45Programmer.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -140,6 +140,18 @@ namespace Modbus.Properties {
             }
             set {
                 this["IsTerminalSendHex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsTerminalSendEndLine {
+            get {
+                return ((bool)(this["IsTerminalSendEndLine"]));
+            }
+            set {
+                this["IsTerminalSendEndLine"] = value;
             }
         }
     }

@@ -3,7 +3,7 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 
-namespace Modbus
+namespace Chip45Programmer
 {
     public static class SerialPortExtension
     {

@@ -2,28 +2,24 @@
 using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Taskbar;
-using Modbus.Device;
 
-namespace Modbus
+namespace Chip45Programmer
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private readonly DispatcherTimer _readRs485Timer;
-        private readonly DispatcherTimer _comPortTimer;
         private SerialPort _port;
-        private ModbusSerialMaster _modbus;
         private Chip45 _chip45;
         BackgroundWorker _backgroundWorker;
 
@@ -58,12 +54,12 @@ namespace Modbus
 
             FillPorts();
 
-            _comPortTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 1) };
-            _comPortTimer.Tick += (sender, args) =>
+            var comPortTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 5) };
+            comPortTimer.Tick += (sender, args) =>
             {
                 FillPorts();
             };
-            _comPortTimer.Start();
+            comPortTimer.Start();
 
 
             CbSendPreString.IsChecked = Properties.Settings.Default.IsSendPreString;
@@ -76,32 +72,20 @@ namespace Modbus
             IudEepromWriteDelay.Value = Properties.Settings.Default.EepromWriteDelayMs;
 
             RbTerminalSendHex.IsChecked = Properties.Settings.Default.IsTerminalSendHex;
+            CbTerminalSendEndLine.IsChecked = Properties.Settings.Default.IsTerminalSendEndLine;
 
-            _readRs485Timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 1) };
-            _readRs485Timer.Tick += (sender, args) =>
-            {
-                var lightState = _modbus.ReadInputs(1, 3, 1)[0];
-                CbLight.IsChecked = lightState;
-                if (lightState)
-                {
-                    Background = Brushes.Crimson;
-                    // This will highlight the icon in red
-                    TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Error);
-                    // to highlight the entire icon
-                    TaskbarManager.Instance.SetProgressValue(100, 100);
-                }
-                else
-                {
-                    Background = Brushes.White;
-                    // This will highlight the icon in red
-                    TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress);
-                    // to highlight the entire icon
-                    //TaskbarManager.Instance.SetProgressValue(100, 100);
-                }
 
-                //MessageBox.Show(lightState.ToString());
 
-            };
+            /*
+                        var svAutomation = (ListBoxAutomationPeer)UIElementAutomationPeer.CreatePeerForElement(LbLog);
+
+                        var scrollInterface = (IScrollProvider)svAutomation.GetPattern(PatternInterface.Scroll);
+                        const ScrollAmount scrollVertical = ScrollAmount.LargeIncrement;
+                        const ScrollAmount scrollHorizontal = ScrollAmount.NoAmount;
+                        //If the vertical scroller is not available, the operation cannot be performed, which will raise an exception. 
+                        if (scrollInterface != null && scrollInterface.VerticallyScrollable)
+                            scrollInterface.Scroll(scrollHorizontal, scrollVertical);
+            */
         }
 
         private void FillPorts()
@@ -112,21 +96,9 @@ namespace Modbus
                 LbPorts.SelectedItem = Properties.Settings.Default.SelectedCom;
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
-        {
-            CreatePort();
-
-            _port.Open();
-
-
-            _modbus = ModbusSerialMaster.CreateRtu(_port);
-            _readRs485Timer.Start();
-        }
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            if (_readRs485Timer.IsEnabled)
-                _readRs485Timer.Stop();
             if (_port != null && _port.IsOpen)
                 _port.Close();
         }
@@ -164,23 +136,51 @@ namespace Modbus
         private void BTerminalSendClick(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.IsTerminalSendHex = RbTerminalSendHex.IsChecked == true;
+            Properties.Settings.Default.IsTerminalSendEndLine = CbTerminalSendEndLine.IsChecked == true;
             Properties.Settings.Default.Save();
 
             var sendText = TbSend.Text;
             if (string.IsNullOrEmpty(sendText))
                 return;
 
-            var arr = HexStringToBytes(sendText);
+
+            byte[] arr = null;
+            var preStringSrc = TbSend.Text.Trim();
+            if (!string.IsNullOrEmpty(preStringSrc))
+            {
+                if (RbTerminalSendHex.IsChecked == true)
+                {
+                    if (Properties.Settings.Default.IsTerminalSendEndLine)
+                        preStringSrc += "0A";
+                    arr = HexStringToBytes(preStringSrc);
+                }
+                else
+                {
+                    if (Properties.Settings.Default.IsTerminalSendEndLine)
+                        preStringSrc += "\n";
+                    arr = Encoding.ASCII.GetBytes(preStringSrc.ToCharArray());
+                }
+            }
+
             if (arr == null)
                 return;
 
-            if (_port == null)
-            {
-                CreatePort();
+            if (!CreatePort())
+                return;
 
-                _port.DataReceived += (o, args) =>
+            _port.DataReceived += OnPortOnDataReceived;
+            _port.Write(arr, 0, arr.Length);
+        }
+
+        private void OnPortOnDataReceived(object o, SerialDataReceivedEventArgs args)
+        {
+            var sp = (SerialPort)o;
+            // Wait all symbols
+            Thread.Sleep(200);
+            if (_port.IsOpen)
+            {
+                if (Properties.Settings.Default.IsTerminalSendHex)
                 {
-                    var sp = (SerialPort)o;
                     var outArr = new byte[sp.BytesToRead];
                     sp.Read(outArr, 0, outArr.Length);
                     var outStr = string.Empty;
@@ -188,21 +188,24 @@ namespace Modbus
                     {
                         outStr += b.ToString("X2") + " ";
                     }
-                    Application.Current.Dispatcher.BeginInvoke(
-                      DispatcherPriority.Background,
-                      new Action(() => TbResponse.Text += outStr + Environment.NewLine));
-
-                };
+                    WriteLog(outStr);
+                }
+                else
+                {
+                    var received = sp.ReadExisting();
+                    var outStr = Chip45.FormatControlChars(received);
+                    WriteLog(outStr);
+                }
             }
-            _port.Write(arr, 0, arr.Length);
         }
 
-        private void CreatePort()
+
+        private bool CreatePort()
         {
             if (string.IsNullOrEmpty(Properties.Settings.Default.SelectedCom))
             {
                 MessageBox.Show("Выберите порт");
-                return;
+                return false;
             }
             if (_port == null)
             {
@@ -214,18 +217,36 @@ namespace Modbus
                     StopBits = StopBits.One,
                 };
             }
+            else
+            {
+                _port.DataReceived -= OnPortOnDataReceived;
+            }
             if (!_port.IsOpen)
             {
-                _port.Open();
+                try
+                {
+                    _port.Open();
+                }
+                catch (Exception ee)
+                {
+                    MessageBox.Show(ee.ToString());
+                    return false;
+                }
                 OnPropertyChanged("PortOpened");
             }
+            return true;
         }
 
         private void WriteLog(string msg)
         {
             Application.Current.Dispatcher.BeginInvoke(
               DispatcherPriority.Background,
-              new Action(() => LbLog.Items.Add(msg)));
+              new Action(() =>
+              {
+                  LbLog.Items.Add(msg);
+                  LbLog.SelectedIndex = LbLog.Items.Count - 1;
+                  LbLog.ScrollIntoView(LbLog.SelectedItem);
+              }));
 
         }
 
@@ -241,7 +262,8 @@ namespace Modbus
                 Properties.Settings.Default.PreStringTimeoutAfterMs = IudPreStringTimeoutAfter.Value.Value;
             Properties.Settings.Default.Save();
 
-            CreatePort();
+            if (!CreatePort())
+                return;
 
             /*            _port.DataReceived += (o, args) =>
                         {
@@ -584,7 +606,7 @@ namespace Modbus
             };
             if (CbEepromWriteDelay.IsChecked == true && IudEepromWriteDelay.Value != null)
                 arg.EepromWriteDelay = IudEepromWriteDelay.Value.Value;
-            
+
             RunWorker(_chip45.Program, arg: arg);
         }
 

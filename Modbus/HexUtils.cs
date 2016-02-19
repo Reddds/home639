@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Modbus
+namespace Chip45Programmer
 {
     static class HexUtils
     {

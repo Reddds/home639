@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Modbus
+namespace Chip45Programmer
 {
     static class HexFileTester
     {

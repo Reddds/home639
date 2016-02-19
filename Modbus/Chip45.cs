@@ -4,7 +4,7 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 
-namespace Modbus
+namespace Chip45Programmer
 {
     class Chip45
     {
@@ -178,12 +178,15 @@ namespace Modbus
         public void DisconnectBootloader(object sender, DoWorkEventArgs e)
         {
             var worker = (BackgroundWorker) sender;
-            worker.ReportProgress(0, "Connecting...");
+            worker.ReportProgress(0, "Disconnecting...");
             _port.Write("g\n");
             Thread.Sleep(100);
             var resp = _port.ReadUntil(SerialPortExtension.XON, 3);
             _port.ReadExisting();
-            e.Result = resp.Contains("g+");
+            var success = resp.Contains("g+");
+            e.Result = success;
+            if (success)
+                _log("Bootloar disconnected");
             Connected = false;
         }
 

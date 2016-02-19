@@ -1,13 +1,13 @@
-﻿<Window x:Class="Modbus.MainWindow"
+﻿<Window x:Class="Chip45Programmer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Modbus"
+        xmlns:local="clr-namespace:Chip45Programmer"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
         mc:Ignorable="d"
-        Title="Chip45boot2Program" Height="473.224" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
+        Title="Chip45boot2Program" Height="387.254" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <xctk:BusyIndicator x:Name="BiMain" BusyContent="{Binding}">
         <xctk:BusyIndicator.BusyContentTemplate>
@@ -32,8 +32,6 @@
         </xctk:BusyIndicator.ProgressBarStyle>
 
         <Grid>
-            <Button x:Name="button" Content="Начать" HorizontalAlignment="Left" Height="27" Margin="61,149,0,0" VerticalAlignment="Top" Width="231" Click="button_Click"/>
-            <CheckBox x:Name="CbLight" Content="Свет" HorizontalAlignment="Left" Margin="10,162,0,0" VerticalAlignment="Top"/>
             <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="133" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal">
@@ -94,7 +92,7 @@
 
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Mini Terminal" IsEnabled="{Binding PortOpened}" HorizontalAlignment="Left" Height="213" Margin="10,194,0,0" VerticalAlignment="Top" Width="299">
+            <GroupBox Header="Mini Terminal" IsEnabled="{Binding PortOpened}" HorizontalAlignment="Left" Height="198" Margin="10,148,0,0" VerticalAlignment="Top" Width="312">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -103,10 +101,10 @@
                     </Grid.RowDefinitions>
                     <TextBox x:Name="TbSend"  Margin="5" />
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <Button Content="Send" Width="100" Margin="5" Click="BTerminalSendClick"/>
+                        <Button Content="Send" Width="80" Margin="5" Click="BTerminalSendClick"/>
                         <RadioButton x:Name="RbTerminalSendAscii" GroupName="TerminalSendType" IsChecked="True" Content="Ascii" Margin="10,0,0,0" VerticalAlignment="Center"/>
                         <RadioButton x:Name="RbTerminalSendHex" GroupName="TerminalSendType" Content="Hex" Margin="10,0,0,0" VerticalAlignment="Center"/>
-
+                        <CheckBox x:Name="CbTerminalSendEndLine" VerticalAlignment="Center">Send \n at end</CheckBox>
                     </StackPanel>
                     <ListBox Grid.Row="2" x:Name="LbLog"  Margin="5" />
                 </Grid>
