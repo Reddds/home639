@@ -7,8 +7,8 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
         mc:Ignorable="d"
-        Title="Chip45boot2Program" Height="387.254" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        Title="Chip45boot2Program" Height="423.075" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}" Icon="chip.ico">
     <xctk:BusyIndicator x:Name="BiMain" BusyContent="{Binding}">
         <xctk:BusyIndicator.BusyContentTemplate>
             <DataTemplate DataType="local:MainWindow">
@@ -32,7 +32,7 @@
         </xctk:BusyIndicator.ProgressBarStyle>
 
         <Grid>
-            <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="133" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
+            <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="104" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal">
                         <Button Click="TogglePortClick">
@@ -92,7 +92,7 @@
 
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Mini Terminal" IsEnabled="{Binding PortOpened}" HorizontalAlignment="Left" Height="198" Margin="10,148,0,0" VerticalAlignment="Top" Width="312">
+            <GroupBox Header="Mini Terminal" IsEnabled="{Binding PortOpened}" HorizontalAlignment="Left" Height="198" Margin="10,119,0,0" VerticalAlignment="Top" Width="312">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -215,6 +215,11 @@
                     </GroupBox>
 
                 </StackPanel>
+            </GroupBox>
+            <GroupBox x:Name="groupBox" Header="Utils" HorizontalAlignment="Left" Height="63" Margin="10,322,0,0" VerticalAlignment="Top" Width="312">
+                <Grid>
+                    <Button Width="250" Height="23" Click="Button_Click">Convert from binary file to Intel Hex</Button>
+                </Grid>
             </GroupBox>
         </Grid>
     </xctk:BusyIndicator>

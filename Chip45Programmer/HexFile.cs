@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Chip45Programmer
@@ -13,15 +14,25 @@ namespace Chip45Programmer
         const uint MAX_FLASH_BYTES = 262144;
 
         public string ErrorString { get; private set; }
-        
 
+        public HexFile()
+        {
+            Reset();
+        }
 
         public HexFile(Action<string> log, bool verbose)
+            :this()
         {
             _log = log;
             _verbose = verbose;
-            Reset();
+            
         }
+
+        private void WriteLog(string msg)
+        {
+            _log?.Invoke(msg);
+        }
+
 
         public bool Load(string fileName)
         {
@@ -69,7 +80,7 @@ namespace Chip45Programmer
                         checkSum += extendedSegmentAddressLow;  // chechsum...
                         if (_verbose)
                         {
-                            _log("Got extended adress record");
+                            WriteLog("Got extended adress record");
                         }
                         break;
 
@@ -77,8 +88,8 @@ namespace Chip45Programmer
                         // end of file record
                         if (_verbose)
                         {
-                            _log("Loaded hex file");
-                            _log("Read " + Count + " bytes");
+                            WriteLog("Loaded hex file");
+                            WriteLog("Read " + Count + " bytes");
                         }
                         break;
 
@@ -152,6 +163,17 @@ namespace Chip45Programmer
         {
             var b = Encoding.ASCII.GetBytes(new[] { c })[0];
             Add(b);
+        }
+
+        public new void AddRange(IEnumerable<byte> collection)
+        {
+            var collectionCount = collection.Count();
+            if (Count + collectionCount > MAX_FLASH_BYTES)
+            {
+                ErrorString = $@"Overflow (address {Count + collectionCount})";
+                return;
+            }
+            base.AddRange(collection);
         }
 
         public bool Equal(HexFile other)

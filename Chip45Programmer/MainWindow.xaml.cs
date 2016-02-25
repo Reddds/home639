@@ -577,7 +577,10 @@ namespace Chip45Programmer
 
         private void FpFlashEepromSelected(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (!string.IsNullOrWhiteSpace(FpEeprom.FileName))
+                BProgramEeprom.IsEnabled = true;
+            else
+                BProgramEeprom.IsEnabled = false;
         }
 
         private void BProgramEepromClick(object sender, RoutedEventArgs e)
@@ -642,6 +645,30 @@ namespace Chip45Programmer
                 }
             });
 
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() != true)
+                return;
+
+            var sfd = new SaveFileDialog
+            {
+                Filter = "Hex|*.hex;*.eep",
+                DefaultExt = ".hex"
+            };
+            if(sfd.ShowDialog() != true)
+                return;
+
+            var hexFile = new HexFile(WriteLog, true);
+            hexFile.AddRange(File.ReadAllBytes(ofd.FileName));
+            if (!string.IsNullOrEmpty(hexFile.ErrorString))
+            {
+                MessageBox.Show(hexFile.ErrorString);
+                return;
+            }
+            HexUtils.WriteHexfile(sfd.FileName, hexFile);
         }
     }
 }

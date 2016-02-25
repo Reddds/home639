@@ -268,8 +268,10 @@ namespace Chip45Programmer
                 return;
             }
 
+            var kind = opts.ProgramType == ProgramTypes.Flash ? "flash" : "EEPROM";
+
             // Send to bootloader
-            var msg = "Programming " + (opts.ProgramType == ProgramTypes.Flash ? "flash" : "EEPROM") + " memory...";
+            var msg = "Programming " + kind + " memory...";
             if (_verbose)
                 _log(msg);
             worker.ReportProgress(0, msg);
@@ -280,7 +282,7 @@ namespace Chip45Programmer
             foreach (var line in hexFileLines)
             {
                 ++lineNr;
-                worker.ReportProgress((int) (lineNr * 100d / hexFileLines.Length), $@"{lineNr} / {hexFileLines.Length} lines");
+                worker.ReportProgress((int) (lineNr * 100d / hexFileLines.Length), "Programming " + kind + $@" {lineNr} / {hexFileLines.Length} lines");
                 if (!_port.DownloadLine(line))
                 {
                     _log("Error: Failed to download line " + lineNr);
