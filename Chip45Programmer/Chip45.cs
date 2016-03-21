@@ -1,4 +1,39 @@
-﻿using System;
+﻿/*
+Modify Arduino files:
+
+programmers.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+chip45RS485.name=Chip45 via RS485
+chip45RS485.communication=serial
+chip45RS485.speed=9600
+chip45RS485.program.tool=chip45
+chip45RS485.program.speed=9600
+chip45RS485.program.extra_params=-c "\fb" -a 1000
+
+platform.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tools.chip45.path=<Workdir!!!!!!!>
+tools.chip45.cmd.path={path}/Chip45Programmer.exe
+#tools.chip45.config.path={path}/etc/avrdude.conf
+
+tools.chip45.upload.params.verbose=-v
+tools.chip45.upload.params.quiet=-q
+tools.chip45.upload.pattern="{cmd.path}" -p {serial.port} {upload.verbose} {program.extra_params} -r -b {upload.speed} -f "{build.path}/{build.project_name}.hex"
+
+tools.chip45.program.params.verbose=-v
+tools.chip45.program.params.quiet=-q
+tools.chip45.program.pattern="{cmd.path}" -p {serial.port} {program.verbose} {program.extra_params} -r -b {program.speed} -f "{build.path}/{build.project_name}.hex"
+
+tools.chip45.erase.params.verbose=-v
+tools.chip45.erase.params.quiet=-q -q
+#tools.chip45.erase.pattern="{cmd.path}" "-C{config.path}" {erase.verbose} -p{build.mcu} -c{protocol} {program.extra_params} -e -Ulock:w:{bootloader.unlock_bits}:m -Uefuse:w:{bootloader.extended_fuses}:m -Uhfuse:w:{bootloader.high_fuses}:m -Ulfuse:w:{bootloader.low_fuses}:m
+
+tools.chip45.bootloader.params.verbose=-v
+tools.chip45.bootloader.params.quiet=-q -q
+#tools.chip45.bootloader.pattern="{cmd.path}" "-C{config.path}" {bootloader.verbose} -p{build.mcu} -c{protocol} {program.extra_params} "-Uflash:w:{runtime.platform.path}/bootloaders/{bootloader.file}:i" -Ulock:w:{bootloader.lock_bits}:m
+
+*/
+using System;
 using System.ComponentModel;
 using System.IO.Ports;
 using System.Text;
@@ -43,7 +78,37 @@ namespace Chip45Programmer
             _log = log;
         }
 
-       
+/*        /// <summary>
+        /// Если методы запускаются в одном потоке без BackgroundWorker,
+        /// то выводим прогресс в консоль
+        /// </summary>
+        /// <param name="worker"></param>
+        /// <param name="percent"></param>
+        /// <param name="msg"></param>
+        private void ConsoleProgress(BackgroundWorker worker, int percent, string msg = null)
+        {
+            if (worker != null && worker.WorkerReportsProgress)
+            {
+                worker.ReportProgress(percent, msg);
+                return;
+            }
+            Console.Write(".");
+/*
+            Console.Write("\r                                                                          ");
+            Console.Write("\r[");
+            var i = 0;
+            for (; i < percent; i += 5)
+            {
+                Console.Write("#");
+            }
+            for (; i < 100; i += 5)
+            {
+                Console.Write(".");
+            }
+            Console.Write($"] {msg}");
+#1#
+
+        }*/
 
         /// <summary>
         /// Получаем количество миллисекунд, прошедших с определённого времени
@@ -57,13 +122,17 @@ namespace Chip45Programmer
 
         public void ConnectBootloader(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker) sender;
+            var worker = sender as BackgroundWorker;
+ 
             var opts = (ConnectOptions) e.Argument;
 
 
             if (opts.BytesBeforeConnect != null)
             {
-                worker.ReportProgress(0, "Send prestring...");
+                if(worker != null)
+                    worker.ReportProgress(0, "Send prestring...");
+                else
+                    _log("Send prestring...");
                 _port.Write(opts.BytesBeforeConnect, 0, opts.BytesBeforeConnect.Length);
                 if(opts.PreStringTimeoutAfterMs > 0)
                     Thread.Sleep(opts.PreStringTimeoutAfterMs);
@@ -71,7 +140,7 @@ namespace Chip45Programmer
 
             // How many ms to wait for bootloader prompt
             const int initialTimeOut = 30000; //60000;
-            var progressStep = 100d / (initialTimeOut/1000d);
+            const double progressStep = 100d / (initialTimeOut/1000d);
             
 //            QTime t;
 //            t.start();
@@ -86,9 +155,12 @@ namespace Chip45Programmer
             var startTime2 = DateTime.Now;
             var curProgress = 0d;
 
-            worker.ReportProgress(0, "Connecting...");
+            if (worker != null)
+                worker.ReportProgress(0, "Connecting...");
+            else
+                _log("Connecting...");
 
-            while (!worker.CancellationPending && !connected && (GetElapsedMs(startTime) < initialTimeOut))
+            while ((worker == null || !worker.CancellationPending) && !connected && (GetElapsedMs(startTime) < initialTimeOut))
             {
                 // "After a reset the bootloader waits for approximately 2 seconds to detect a
                 //  transmission at its RXD pin. If so, it will measure the timing of the rising
@@ -111,8 +183,11 @@ namespace Chip45Programmer
                 if (_verbose && (GetElapsedMs(startTime2) > 1000))
                 {
                     curProgress += progressStep;
-                    worker.ReportProgress((int) curProgress);
-                    Console.Write(".");// <<  << flush;
+
+                    if (worker != null)
+                        worker.ReportProgress((int) curProgress);
+                    else
+                        Console.Write(".");// <<  << flush;
                     startTime2 = DateTime.Now;
                 }
                 //avail = port->bytesAvailable();
@@ -177,8 +252,11 @@ namespace Chip45Programmer
 
         public void DisconnectBootloader(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker) sender;
-            worker.ReportProgress(0, "Disconnecting...");
+            var worker = sender as BackgroundWorker;
+            if (worker != null)
+                worker.ReportProgress(0, "Disconnecting...");
+            else
+                _log("Disconnecting...");
             _port.Write("g\n");
             Thread.Sleep(100);
             var resp = _port.ReadUntil(SerialPortExtension.XON, 3);
@@ -192,15 +270,30 @@ namespace Chip45Programmer
 
         public void ReadEeprom(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker)sender;
+            var worker = sender as BackgroundWorker;
             var opts = (ReadEepromOptions) e.Argument;
             var hexFile = new HexFile(_log, true);
 
             var readStr = new StringBuilder();
+            var consoleWriteCounter = 0;
             for (var i = 0; i < opts.BytesToRead; ++i)
             {
-                if(i % 16 == 0)
-                    worker.ReportProgress((int) (i * 100d / opts.BytesToRead), "Reading Eeprom...");
+                if (i%16 == 0)
+                {
+                    if (worker != null)
+                        worker.ReportProgress((int) (i*100d/opts.BytesToRead), "Reading Eeprom...");
+                    else
+                    {
+                        if (consoleWriteCounter == 80)
+                        {
+                            consoleWriteCounter = 0;
+                            Console.Write("\n");
+                        }
+                        Console.Write(".");
+                        consoleWriteCounter++;
+                    }
+                }
+
                 string cmd = $"er{i:X4}";
                 _port.Write(cmd);
                 _port.Write("\n");
@@ -231,7 +324,7 @@ namespace Chip45Programmer
 
         public void Program(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker)sender;
+            var worker = sender as BackgroundWorker;
             var opts = (ProgramOptions) e.Argument;
 
             var flashHexFile = new HexFile(_log, _verbose);
@@ -274,16 +367,35 @@ namespace Chip45Programmer
             var msg = "Programming " + kind + " memory...";
             if (_verbose)
                 _log(msg);
-            worker.ReportProgress(0, msg);
+            worker?.ReportProgress(0, msg);
 
             _port.ReadExisting();
             var hexFileLines = flashHexFile.GetHexFile();
             var lineNr = 0;
+            var consoleWriteCounter = 0;
+            var aHandredPercentWritedToLog = false;
+
             foreach (var line in hexFileLines)
             {
                 ++lineNr;
-                worker.ReportProgress((int) (lineNr * 100d / hexFileLines.Length), "Programming " + kind + $@" {lineNr} / {hexFileLines.Length} lines");
-                if (!_port.DownloadLine(line))
+                var percent = (int) (lineNr*100d/hexFileLines.Length);
+                
+                if (worker != null)
+                    worker.ReportProgress(percent, "Programming " + kind + $@" {lineNr} / {hexFileLines.Length} lines");
+                else
+                {
+                    if (consoleWriteCounter == 75)
+                    {
+                        consoleWriteCounter = 0;
+                        Console.Write($"{percent:####}%\n");
+                        if (percent == 100)
+                            aHandredPercentWritedToLog = true;
+                    }
+                    Console.Write(".");
+                    consoleWriteCounter++;
+                }
+                
+                if (!_port.DownloadLine(line, _log, _verbose))
                 {
                     _log("Error: Failed to download line " + lineNr);
                     e.Result = false;
@@ -292,7 +404,11 @@ namespace Chip45Programmer
                 if (writeDelay > 0)
                     Thread.Sleep(writeDelay);
             }
-
+            if (!aHandredPercentWritedToLog)
+            {
+                Console.Write("100%");
+            }
+            Console.Write("\n");
             var received = _port.ReadExisting();
 
             if (received.Contains("-"))
@@ -303,7 +419,7 @@ namespace Chip45Programmer
                 return;
             }
             if (_verbose)
-                _log("...done");
+                _log("Done");
             e.Result = true;
         }
 

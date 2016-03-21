@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="HomeModbus.Controls.ObjectButton"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+   <!-- IsChecked='{Binding RelativeSource={RelativeSource FindAncestor, 
+    AncestorType={x:Type ToggleButton} }, 
+    Path=IsChecked}'-->
+    <ToggleButton
+    IsChecked='{Binding IsChecked}'>
+        <Image
+        x:Name='ButtonImage'>
+            <Image.Style>
+                <Style
+                TargetType='{x:Type Image}'>
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition
+                                Binding='{Binding 
+                                RelativeSource={RelativeSource FindAncestor, 
+                                AncestorType={x:Type ToggleButton} }, 
+                                Path=IsChecked}'
+                                Value='True' />
+                                <Condition
+                                Binding='{Binding 
+                                RelativeSource={RelativeSource Self}, 
+                                Path=IsEnabled}'
+                                Value='True' />
+                            </MultiDataTrigger.Conditions>
+                            <Setter
+                            Property='Source'
+                            Value='{Binding 
+                            RelativeSource={RelativeSource FindAncestor, 
+                            AncestorType={x:Type UserControl} }, 
+                            Path=EnabledChecked}' />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition
+                                Binding='{Binding 
+                                RelativeSource={RelativeSource FindAncestor, 
+                                AncestorType={x:Type ToggleButton} }, 
+                                Path=IsChecked}'
+                                Value='False' />
+                                <Condition
+                                Binding='{Binding 
+                                RelativeSource={RelativeSource Self}, 
+                                Path=IsEnabled}'
+                                Value='True' />
+                            </MultiDataTrigger.Conditions>
+                            <Setter
+                            Property='Source'
+                            Value='{Binding 
+                            RelativeSource={RelativeSource FindAncestor, 
+                            AncestorType={x:Type UserControl} }, 
+                            Path=EnabledUnchecked}' />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition
+                                Binding='{Binding 
+                                RelativeSource={RelativeSource FindAncestor, 
+                                AncestorType={x:Type ToggleButton} }, 
+                                Path=IsChecked}'
+                                Value='False' />
+                                <Condition
+                                Binding='{Binding 
+                                RelativeSource={RelativeSource Self}, 
+                                Path=IsEnabled}'
+                                Value='False' />
+                            </MultiDataTrigger.Conditions>
+                            <Setter
+                            Property='Source'
+                            Value='{Binding 
+                            RelativeSource={RelativeSource FindAncestor, 
+                            AncestorType={x:Type UserControl} }, 
+                            Path=DisabledUnchecked}' />
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
+    </ToggleButton>
+</UserControl>

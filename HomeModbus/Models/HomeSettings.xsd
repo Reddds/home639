@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="HomeSettings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Rooms">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="Room">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element maxOccurs="unbounded" name="Controllers">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="Controller">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Parameters">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element maxOccurs="unbounded" name="Parameter">
+                                        <xs:complexType>
+                                          <xs:sequence minOccurs="0">
+                                            <xs:element name="Visibility">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element minOccurs="0" name="ShowBalloon">
+                                                    <xs:complexType mixed="true">
+                                                      <xs:sequence minOccurs="0">
+                                                        <xs:element name="OnClose">
+                                                          <xs:complexType>
+                                                            <xs:sequence>
+                                                              <xs:element name="ResetParameter" />
+                                                            </xs:sequence>
+                                                          </xs:complexType>
+                                                        </xs:element>
+                                                      </xs:sequence>
+                                                      <xs:attribute name="Type" type="BalloonTypes" use="required" />
+                                                      <xs:attribute name="Text" type="xs:string" use="optional" />
+                                                      <xs:attribute name="ShowWhileParameterSet" type="xs:string" use="optional" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                  <xs:element minOccurs="0" name="AnalogIndicator">
+                                                    <xs:complexType>
+                                                      <xs:sequence>
+                                                        <xs:element name="Scale">
+                                                          <xs:complexType>
+                                                            <xs:sequence>
+                                                              <xs:element minOccurs="0" name="Ranges">
+                                                                <xs:complexType>
+                                                                  <xs:sequence>
+                                                                    <xs:element maxOccurs="unbounded" name="Range">
+                                                                      <xs:complexType>
+                                                                        <xs:attribute name="StartValue" type="xs:double" use="required" />
+                                                                        <xs:attribute name="EndValue" type="xs:double" use="required" />
+                                                                      </xs:complexType>
+                                                                    </xs:element>
+                                                                  </xs:sequence>
+                                                                </xs:complexType>
+                                                              </xs:element>
+                                                            </xs:sequence>
+                                                            <xs:attribute name="Min" type="xs:int" use="required" />
+                                                            <xs:attribute name="Max" type="xs:int" use="required" />
+                                                            <xs:attribute name="MajorCount" type="xs:int" use="optional" />
+                                                            <xs:attribute name="MinorCount" type="xs:int" use="optional" />
+                                                            <xs:attribute name="GoodValue" type="xs:int" use="optional" />
+                                                          </xs:complexType>
+                                                        </xs:element>
+                                                      </xs:sequence>
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                  <xs:element minOccurs="0" name="Chart" />
+                                                </xs:sequence>
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="Name" type="xs:string" use="required" />
+                                          <xs:attribute name="ModbusType" type="ModbusTypes" use="required" />
+                                          <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
+                                          <xs:attribute name="RefreshRate" type="xs:string" use="optional" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="Name" type="xs:string" use="required" />
+                              <xs:attribute name="ModbusAddress" type="xs:unsignedByte" use="required" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="Name" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="ModbusTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Discrete"/>
+      <xs:enumeration value="Coil" />
+      <xs:enumeration value="InputRegister" />
+      <xs:enumeration value="HoldingRegister" />
+    </xs:restriction>
+  </xs:simpleType> 
+  <xs:simpleType name="BalloonTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Normal"/>
+      <xs:enumeration value="Info" />
+      <xs:enumeration value="Warning" />
+      <xs:enumeration value="Exclamation" />
+      <xs:enumeration value="Alarm" />
+      <xs:enumeration value="Error" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

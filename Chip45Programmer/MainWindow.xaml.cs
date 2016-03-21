@@ -17,7 +17,7 @@ namespace Chip45Programmer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : INotifyPropertyChanged
     {
         private SerialPort _port;
         private Chip45 _chip45;
@@ -239,15 +239,19 @@ namespace Chip45Programmer
 
         private void WriteLog(string msg)
         {
+            ExecDispatched(() =>
+            {
+                LbLog.Items.Add(msg);
+                LbLog.SelectedIndex = LbLog.Items.Count - 1;
+                LbLog.ScrollIntoView(LbLog.SelectedItem);
+            });
+        }
+
+        private void ExecDispatched(Action action)
+        {
             Application.Current.Dispatcher.BeginInvoke(
               DispatcherPriority.Background,
-              new Action(() =>
-              {
-                  LbLog.Items.Add(msg);
-                  LbLog.SelectedIndex = LbLog.Items.Count - 1;
-                  LbLog.ScrollIntoView(LbLog.SelectedItem);
-              }));
-
+              action);
         }
 
         private void BConnectClick(object sender, RoutedEventArgs e)
@@ -326,10 +330,7 @@ namespace Chip45Programmer
             };
             if (complete != null)
                 _backgroundWorker.RunWorkerCompleted += complete;
-            _backgroundWorker.RunWorkerCompleted += (sender, args) =>
-            {
-                BiMain.IsBusy = false;
-            };
+
             _backgroundWorker.ProgressChanged += (sender, args) =>
             {
                 Value = args.ProgressPercentage;

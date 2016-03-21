@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<HomeSettings>
+  <Rooms>
+    <Room Name="Спальня">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="2">
+          <Parameters>
+            <Parameter Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0"/>
+            <Parameter Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0">
+              <Visibility>
+                <AnalogIndicator>
+                  <Scale Min="10" Max="35" MajorCount="5" MinorCount="5" GoodValue="20">
+                    <Ranges>
+                      <Range StartValue="18" EndValue="24" />
+                      <Range StartValue="10" EndValue="18" />
+                      <Range StartValue="24" EndValue="35" />
+                    </Ranges>
+                  </Scale>
+                </AnalogIndicator>
+              <Chart/>
+              </Visibility>
+            </Parameter>
+            <Parameter Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" RefreshRate="0:1:0">
+              <Visibility>
+                <AnalogIndicator>
+                  <Scale Min="0" Max="100" MinorCount="5" GoodValue="50">
+                    <Ranges>
+                      <Range StartValue="30" EndValue="60" />
+                      <Range StartValue="60" EndValue="100" />
+                      <Range StartValue="0" EndValue="30" />
+                    </Ranges>
+                  </Scale>
+                </AnalogIndicator>
+                <Chart/>
+              </Visibility>
+
+            </Parameter>
+            <Parameter Name="Вызов" ModbusType="Coil" ModbusIndex="4">
+              <Visibility>
+                <ShowBalloon Type="Exclamation" Text="Вызов!!!!">
+                  <OnClose>
+                    <ResetParameter/>
+                  </OnClose>
+                </ShowBalloon>
+              </Visibility>
+            </Parameter>
+          </Parameters>
+        </Controller>
+      </Controllers>
+    </Room>
+    <Room Name="Коридор">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="1">
+          <Parameters>
+            <Parameter Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3">
+              <Visibility>
+                <ShowBalloon Type="Alarm" Text="Движение!!!!" ShowWhileParameterSet="True">
+                </ShowBalloon>
+              </Visibility>
+            </Parameter>
+          </Parameters>
+        </Controller>
+      </Controllers>
+    </Room>
+    <Room Name="Ванна">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="3">
+          <Parameters>
+            <Parameter Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0"/>
+            <Parameter Name="Свет включён" ModbusType="Discrete" ModbusIndex="1"/>
+          </Parameters>
+        </Controller>
+      </Controllers>
+    </Room>
+  </Rooms>
+</HomeSettings>

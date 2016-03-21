@@ -1,0 +1,24 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:HomeModbus"
+                    xmlns:tooltip="clr-namespace:HomeModbus.Tooltip">
+    
+    <Style TargetType="tooltip:FancyBalloon">
+        <Style.Resources>
+            <SolidColorBrush x:Key="BackBorder" Color="Bisque" ></SolidColorBrush>
+        </Style.Resources>
+    </Style>
+    
+    <Style x:Key="AlarmStyle" TargetType="tooltip:FancyBalloon">
+        <Style.Resources>
+            <SolidColorBrush x:Key="BackBorder" Color="Red" ></SolidColorBrush>
+        </Style.Resources>
+    </Style>
+    
+    <Style x:Key="ExclamationStyle" TargetType="tooltip:FancyBalloon">
+        <Style.Resources>
+            <SolidColorBrush x:Key="BackBorder" Color="Chartreuse" ></SolidColorBrush>
+        </Style.Resources>
+    </Style>
+
+</ResourceDictionary>
