@@ -1,31 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using HomeModbus.Annotations;
 
 namespace HomeModbus.Controls
 {
     /// <summary>
-    /// Interaction logic for SimpleIndicator.xaml
+    /// Interaction logic for LastTimeIndicator.xaml
     /// </summary>
-    public partial class SimpleIndicator : UserControl, INotifyPropertyChanged
+    public partial class LastTimeIndicator : UserControl, INotifyPropertyChanged
     {
-        private double _value;
+        private DateTime _value;
 
-        public double Value
+        public DateTime Value
         {
             get { return _value; }
             set
@@ -35,7 +23,7 @@ namespace HomeModbus.Controls
             }
         }
 
-        public SimpleIndicator()
+        public LastTimeIndicator()
         {
             InitializeComponent();
         }

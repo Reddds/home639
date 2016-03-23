@@ -42,6 +42,7 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 #define CALL_LED_PIN 13
 
 #define KAKA_EEPROM_ADDRESS 10
+#define LAST_KAKA_TIME_EEPROM_ADDRESS 1
 
 #define RESET_COIL 1 // Адрес : 17. Команда MODBUS: [slaveID] 05 0011 FF00 [CRC]
 #define RESET_KAKA_COIL 2 // Адрес 18
@@ -54,6 +55,10 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 // Температура - влажность
 #define TEMP_INPUT_REG 2
 #define HUM_INPUT_REG 3
+
+#define LAST_KAK_MONTH_YEAR_INPUT_REG 4
+#define LAST_KAK_DAY_SEC_INPUT_REG 5
+#define LAST_KAK_HOUR_MIN_INPUT_REG 6
 
 // -------- Установка времени -----------------------------
 #define HOUR_MIN_HOLDING_REG 0
@@ -73,7 +78,7 @@ LiquidCrystal lcd(A4, A5, 5, 9, 3, 2);//4
 									  //Задаём ведомому адрес, последовательный порт, выход управления TX
 Modbus slave(ID, 0, TXEN);
 // массив данных modbus
-#define modbusInputBufLen 5
+#define modbusInputBufLen 7
 #define modbusHoldingBufLen 5
 uint16_t _MODBUSDiscreteInputs;
 uint16_t _MODBUSCoils;
@@ -95,6 +100,8 @@ void InitRtc();
 void ResetArduino();
 void print2digits(int number);
 
+void LoadLastKakTime();
+
 void printTime(time_t t);
 void printDate(time_t t);
 void printI00(int val, char delim);
@@ -106,6 +113,7 @@ IRrecv irrecv(RECV_PIN);
 void setup() {
 	// настраиваем входы и выходы
 	io_setup();
+	LoadLastKakTime();
 	// настраиваем последовательный порт ведомого
 	slave.begin(9600);
 
@@ -194,6 +202,36 @@ bool isBannerMode = false;
 decode_results irResults;
 
 
+void SaveLastKakTime(int cur_year, int cur_month, int cur_day, int cur_hour, int cur_minute, int cur_second)
+{
+	EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS] = cur_year;
+	EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 1] = cur_month;
+	EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 2] = cur_day;
+	EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 3] = cur_hour;
+	EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 4] = cur_minute;
+	EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 5] = cur_second;
+}
+
+void LoadLastKakTime()
+{
+	uint16_t tmp = EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS];
+	// Если в память не записаны значения, там везде 0xff
+	if (tmp == 0xff)
+	{
+		_MODBUSInputRegs[LAST_KAK_MONTH_YEAR_INPUT_REG] = 0;
+		_MODBUSInputRegs[LAST_KAK_DAY_SEC_INPUT_REG] = 0;
+		_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = 0;
+		return;
+	}
+	tmp <<= 8 | EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 1];
+	_MODBUSInputRegs[LAST_KAK_MONTH_YEAR_INPUT_REG] = tmp;
+	tmp = EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 2];
+	tmp <<= 8 | EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 5];
+	_MODBUSInputRegs[LAST_KAK_DAY_SEC_INPUT_REG] = tmp;
+	tmp = EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 3];
+	tmp <<= 8 | EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 4];
+	_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = tmp;
+}
 
 void loop() {
 	if (Serial.available()) {
@@ -262,7 +300,20 @@ void loop() {
 					lcd.clear();
 				}
 				else
+				{
 					SetKakaKount(kakaCounter + 1, true);
+					auto curYear = year() - 1970;
+					auto curMonth = month();
+					auto curDay = day();
+					auto curHour = hour();
+					auto curMinute = minute();
+					auto curSecond = second();
+					SaveLastKakTime(curYear, curMonth, curDay, curHour, curMinute, curSecond);
+					_MODBUSInputRegs[LAST_KAK_MONTH_YEAR_INPUT_REG] = (curMonth << 8) | curYear;
+					_MODBUSInputRegs[LAST_KAK_DAY_SEC_INPUT_REG] = (curDay << 8) | curSecond;
+					_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = (curHour << 8) | curMinute;
+
+				}
 			}
 		}
 		if (callPinCurState != buttonCallState) {

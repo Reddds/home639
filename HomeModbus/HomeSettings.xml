@@ -5,7 +5,17 @@
       <Controllers>
         <Controller Name="Контроллер 1" ModbusAddress="2">
           <Parameters>
-            <Parameter Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0"/>
+            <Parameter Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0">
+              <Visibility>
+                <DigitalIndicator/>
+                <LastTimeIndicator/>
+              </Visibility>
+            </Parameter>
+            <Parameter Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" ModbusIndex="4" RefreshRate="0:1:0">
+              <Visibility>
+                <LastTimeIndicator/>
+              </Visibility>
+              </Parameter>
             <Parameter Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0">
               <Visibility>
                 <AnalogIndicator>
@@ -33,7 +43,6 @@
                 </AnalogIndicator>
                 <Chart/>
               </Visibility>
-
             </Parameter>
             <Parameter Name="Вызов" ModbusType="Coil" ModbusIndex="4">
               <Visibility>
@@ -54,7 +63,7 @@
           <Parameters>
             <Parameter Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3">
               <Visibility>
-                <ShowBalloon Type="Alarm" Text="Движение!!!!" ShowWhileParameterSet="True">
+                <ShowBalloon Type="Alarm" Text="Движение!!!!" ShowWhileParameterSet="true">
                 </ShowBalloon>
               </Visibility>
             </Parameter>

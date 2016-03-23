@@ -954,11 +954,18 @@ namespace HomeModbus.Models
 
         private ModbusTypes _modbusType;
 
+        private DataTypes _dataType;
+
         private byte _modbusIndex;
 
         private string _refreshRate;
 
         private static XmlSerializer serializer;
+
+        public HomeSettingsRoomControllersControllerParameter()
+        {
+            this._dataType = DataTypes.UInt16;
+        }
 
         public HomeSettingsRoomControllersControllerParameterVisibility Visibility
         {
@@ -995,6 +1002,20 @@ namespace HomeModbus.Models
             set
             {
                 this._modbusType = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [System.ComponentModel.DefaultValueAttribute(DataTypes.UInt16)]
+        public DataTypes DataType
+        {
+            get
+            {
+                return this._dataType;
+            }
+            set
+            {
+                this._dataType = value;
             }
         }
 
@@ -1226,13 +1247,29 @@ namespace HomeModbus.Models
     public partial class HomeSettingsRoomControllersControllerParameterVisibility
     {
 
+        private object _digitalIndicator;
+
         private HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon _showBalloon;
 
         private HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator _analogIndicator;
 
+        private object _lastTimeIndicator;
+
         private object _chart;
 
         private static XmlSerializer serializer;
+
+        public object DigitalIndicator
+        {
+            get
+            {
+                return this._digitalIndicator;
+            }
+            set
+            {
+                this._digitalIndicator = value;
+            }
+        }
 
         public HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon ShowBalloon
         {
@@ -1255,6 +1292,18 @@ namespace HomeModbus.Models
             set
             {
                 this._analogIndicator = value;
+            }
+        }
+
+        public object LastTimeIndicator
+        {
+            get
+            {
+                return this._lastTimeIndicator;
+            }
+            set
+            {
+                this._lastTimeIndicator = value;
             }
         }
 
@@ -1480,7 +1529,7 @@ namespace HomeModbus.Models
 
         private string _text1;
 
-        private string _showWhileParameterSet;
+        private System.Nullable<bool> _showWhileParameterSet;
 
         private static XmlSerializer serializer;
 
@@ -1536,15 +1585,38 @@ namespace HomeModbus.Models
         }
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string ShowWhileParameterSet
+        public bool ShowWhileParameterSet
         {
             get
             {
-                return this._showWhileParameterSet;
+                if (this._showWhileParameterSet.HasValue)
+                {
+                    return this._showWhileParameterSet.Value;
+                }
+                else
+                {
+                    return default(bool);
+                }
             }
             set
             {
                 this._showWhileParameterSet = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool ShowWhileParameterSetSpecified
+        {
+            get
+            {
+                return this._showWhileParameterSet.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._showWhileParameterSet = null;
+                }
             }
         }
 
@@ -2815,6 +2887,24 @@ namespace HomeModbus.Models
 
         /// <remarks/>
         HoldingRegister,
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    public enum DataTypes
+    {
+
+        /// <remarks/>
+        UInt16,
+
+        /// <remarks/>
+        Float,
+
+        /// <remarks/>
+        RdDateTime,
+
+        /// <remarks/>
+        RdTime,
     }
 }
 #pragma warning restore

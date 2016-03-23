@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Chip45Programmer;
 using DevExpress.Xpf.Charts;
+using DevExpress.Xpf.Docking;
 using DevExpress.Xpf.Gauges;
 using HomeModbus.Controls;
 using HomeModbus.Implementation;
@@ -340,25 +341,43 @@ namespace HomeModbus
                     roomIbject.ShControllers.Add(controllerObject);
                     foreach (var parameter in controller.Controller.Parameters)
                     {
+                        var indicatorControl = new IndicatorControl
+                        {
+                            Caption = parameter.Name
+                        };
+                        //                        roomTab.MainPanel.Items = new SerializableItemCollection();
+                        roomTab.MainPanel.Items.Add(indicatorControl);
                         switch (parameter.ModbusType)
                         {
                             case ModbusTypes.Discrete:
                             case ModbusTypes.Coil:
-                                roomTab.MainPanel.Children.Add(new CheckBox() { Content = parameter.Name });
-                                if (parameter.ModbusType == ModbusTypes.Discrete)
+                                var simpleCheckBox = new CheckBox() { Content = parameter.Name };
+                                indicatorControl.SpMain.Children.Add(simpleCheckBox);
+                                var isCoil = parameter.ModbusType == ModbusTypes.Coil;
+                                FancyBalloon dutyBalloon = null;
+                                var showWhileParameterSet = false;
+                                if (parameter.Visibility != null)
                                 {
-
-                                }
-                                else
-                                {
-                                    controllerObject.SetActionOnDiscreteOrCoil(true, ShController.CheckCoilStatus.OnTrue, parameter.ModbusIndex,
-                                        (actionOn, state) =>
+                                    if (parameter.Visibility.ShowBalloon != null)
+                                    {
+                                        var balloonSettings = parameter.Visibility.ShowBalloon;
+                                        if (balloonSettings.ShowWhileParameterSetSpecified && balloonSettings.ShowWhileParameterSet)
                                         {
-                                            ExecDispatched(() =>
+                                            //                                            dutyBalloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
+                                            showWhileParameterSet = true;
+                                        }
+                                    }
+                                }
+                                controllerObject.SetActionOnDiscreteOrCoil(isCoil, showWhileParameterSet ? ShController.CheckCoilStatus.OnBoth : ShController.CheckCoilStatus.OnTrue, parameter.ModbusIndex,
+                                    (actionOn, state) =>
+                                    {
+                                        ExecDispatched(() =>
+                                        {
+                                            if (parameter.Visibility != null)
                                             {
-                                                if (parameter.Visibility != null)
+                                                if (parameter.Visibility.ShowBalloon != null)
                                                 {
-                                                    if (parameter.Visibility.ShowBalloon != null)
+                                                    if (state)
                                                     {
                                                         var balloonSettings = parameter.Visibility.ShowBalloon;
                                                         var balloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
@@ -375,24 +394,35 @@ namespace HomeModbus
                                                                 }
                                                             };
                                                         }
+                                                        if (showWhileParameterSet)
+                                                            dutyBalloon = balloon;
+
+                                                    }
+                                                    else if (showWhileParameterSet && dutyBalloon != null)
+                                                    {
+                                                        dutyBalloon.Close();
                                                     }
                                                 }
-                                            });
-
+                                            }
+                                            else
+                                            {
+                                                simpleCheckBox.IsChecked = state;
+                                            }
                                         });
-                                }
+                                    });
                                 break;
                             case ModbusTypes.InputRegister:
                             case ModbusTypes.HoldingRegister:
-
+                                SimpleIndicator simpleIndicator = null;
                                 AnalogIndicator analogControl = null;
+                                LastTimeIndicator lastTimeControl = null;
                                 if (parameter.Visibility != null)
                                 {
                                     var analogIndicator = parameter.Visibility.AnalogIndicator;
                                     if (analogIndicator != null)
                                     {
                                         analogControl = new AnalogIndicator();
-                                        roomTab.MainPanel.Children.Add(analogControl);
+                                        indicatorControl.SpMain.Children.Add(analogControl);
                                         var scale = analogControl.MainGauge.Scales[0];
                                         scale.StartValue = analogIndicator.Scale.Min;
                                         scale.EndValue = analogIndicator.Scale.Max;
@@ -418,12 +448,25 @@ namespace HomeModbus
                                                 });
                                             }
                                         }
-
+                                    }
+                                    var digitalIndicatorSettings = parameter.Visibility.DigitalIndicator;
+                                    if (digitalIndicatorSettings != null)
+                                    {
+                                        simpleIndicator = new SimpleIndicator();
+                                        indicatorControl.SpMain.Children.Add(simpleIndicator);
+                                    }
+                                    var lastTimeIndicator = parameter.Visibility.LastTimeIndicator;
+                                    if (lastTimeIndicator != null)
+                                    {
+                                        lastTimeControl = new LastTimeIndicator();
+                                        indicatorControl.SpMain.Children.Add(lastTimeControl);
                                     }
                                 }
                                 else
                                 {
-                                    
+                                    simpleIndicator = new SimpleIndicator();
+                                    indicatorControl.SpMain.Children.Add(simpleIndicator);
+                                    //                                    simpleIndicator.LTitle.Content = parameter.Name;
                                 }
                                 TimeSpan? interval = null;
                                 if (!string.IsNullOrEmpty(parameter.RefreshRate))
@@ -432,18 +475,46 @@ namespace HomeModbus
                                     if (TimeSpan.TryParseExact(parameter.RefreshRate, "g", null, TimeSpanStyles.None, out tmpVal))
                                         interval = tmpVal;
                                 }
-                                controllerObject.SetActionOnRegister(false, parameter.ModbusIndex, value =>
+                                switch (parameter.DataType)
                                 {
-                                    if (analogControl != null)
-                                    {
-                                        analogControl.Value = value;
-                                    }
-                                }, false, interval);
+                                    case DataTypes.UInt16:
+                                        controllerObject.SetActionOnRegister(false, parameter.ModbusIndex, value =>
+                                        {
+                                            if (analogControl != null)
+                                            {
+                                                analogControl.Value = value;
+                                            }
+                                            if (lastTimeControl != null)
+                                            {
+                                                lastTimeControl.Value = DateTime.Now;
+                                            }
+                                            if (simpleIndicator != null)
+                                                simpleIndicator.Value = value;
+                                        }, false, interval);
+                                        break;
+                                    case DataTypes.Float:
+                                        break;
+                                    case DataTypes.RdDateTime:
+                                        controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
+                                            value =>
+                                            {
+                                                if (lastTimeControl != null)
+                                                {
+                                                    lastTimeControl.Value = value;
+                                                }
+                                            }, false, interval);
+                                        break;
+                                    case DataTypes.RdTime:
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
 
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
+
                     }
                 }
             }

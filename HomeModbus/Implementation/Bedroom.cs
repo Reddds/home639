@@ -25,7 +25,7 @@ namespace HomeModbus.Implementation
             badroomController.SetActionOnDiscreteOrCoil(true, ShController.CheckCoilStatus.OnTrue, 4, OnCall);
             badroomController.SetActionOnDiscreteOrCoil(true, ShController.CheckCoilStatus.OnTrue, 3, OnKaka, null, true);
 
-            badroomController.SetActionOnRegister(false, 2, OnTempHymChanged, false, TimeSpan.FromMinutes(1));
+//            badroomController.SetActionOnRegister(false, 2, OnTempHymChanged, false, TimeSpan.FromMinutes(1));
         }
         private void OnCall(ShController.ActionOnDiscreteOrCoil actionOn, bool state)
         {

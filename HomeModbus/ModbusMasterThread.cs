@@ -251,16 +251,16 @@ namespace HomeModbus
                         _setCurrentTime = false;
                         SendTime();
                     }
-                    if (_getTempAndHym)
-                    {
-                        _getTempAndHym = false;
-                        ModbusGetTempAndHym();
-                    }
-                    if (_resetCall)
-                    {
-                        _resetCall = false;
-                        ModbusResetCall();
-                    }
+//                    if (_getTempAndHym)
+//                    {
+//                        _getTempAndHym = false;
+//                        ModbusGetTempAndHym();
+//                    }
+//                    if (_resetCall)
+//                    {
+//                        _resetCall = false;
+//                        ModbusResetCall();
+//                    }
 
                     Thread.Sleep(200);
                   

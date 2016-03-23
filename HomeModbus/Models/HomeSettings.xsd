@@ -24,6 +24,7 @@
                                             <xs:element name="Visibility">
                                               <xs:complexType>
                                                 <xs:sequence>
+                                                  <xs:element minOccurs="0" name="DigitalIndicator" />
                                                   <xs:element minOccurs="0" name="ShowBalloon">
                                                     <xs:complexType mixed="true">
                                                       <xs:sequence minOccurs="0">
@@ -37,7 +38,7 @@
                                                       </xs:sequence>
                                                       <xs:attribute name="Type" type="BalloonTypes" use="required" />
                                                       <xs:attribute name="Text" type="xs:string" use="optional" />
-                                                      <xs:attribute name="ShowWhileParameterSet" type="xs:string" use="optional" />
+                                                      <xs:attribute name="ShowWhileParameterSet" type="xs:boolean" use="optional" />
                                                     </xs:complexType>
                                                   </xs:element>
                                                   <xs:element minOccurs="0" name="AnalogIndicator">
@@ -69,6 +70,7 @@
                                                       </xs:sequence>
                                                     </xs:complexType>
                                                   </xs:element>
+                                                  <xs:element minOccurs="0" name="LastTimeIndicator" />
                                                   <xs:element minOccurs="0" name="Chart" />
                                                 </xs:sequence>
                                               </xs:complexType>
@@ -76,6 +78,7 @@
                                           </xs:sequence>
                                           <xs:attribute name="Name" type="xs:string" use="required" />
                                           <xs:attribute name="ModbusType" type="ModbusTypes" use="required" />
+                                          <xs:attribute name="DataType" type="DataTypes" use="optional" default="UInt16" />
                                           <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
                                           <xs:attribute name="RefreshRate" type="xs:string" use="optional" />
                                         </xs:complexType>
@@ -107,6 +110,26 @@
       <xs:enumeration value="Coil" />
       <xs:enumeration value="InputRegister" />
       <xs:enumeration value="HoldingRegister" />
+    </xs:restriction>
+  </xs:simpleType> 
+  <xs:simpleType name="DataTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UInt16"/>
+      <xs:enumeration value="Float" />
+      <xs:enumeration value="RdDateTime">
+        <xs:annotation>
+          <xs:documentation>
+            3 регистра [Год,Месяц] [День,Секунда] [Час,Минута]
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RdTime">
+        <xs:annotation>
+          <xs:documentation>
+            [Час,Минута]
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType> 
   <xs:simpleType name="BalloonTypes">

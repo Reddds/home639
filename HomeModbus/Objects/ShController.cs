@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HomeModbus.Models;
 using Modbus.Device;
 
 namespace HomeModbus.Objects
@@ -18,6 +19,7 @@ namespace HomeModbus.Objects
 
         #region DiscreteOrCoil
         public enum CheckCoilStatus { OnTrue, OnFalse, OnBoth }
+
 
         internal class ActionOnDiscreteOrCoil
         {
@@ -116,7 +118,7 @@ namespace HomeModbus.Objects
         private class ActionOnRegister
         {
             private ushort? _currentValue;
-            private DateTime _lastCheck = DateTime.MinValue;
+            protected DateTime _lastCheck = DateTime.MinValue;
 
             public ushort Index { get; set; }
             private Action<ushort> CallBack { get; set; }
@@ -148,10 +150,9 @@ namespace HomeModbus.Objects
             public bool CheckState(ushort newValue)
             {
                 // Проверяем, если установлен интервал проверок, то 
-                if (CheckInterval != null)
+                if (!IsNeedCheck())
                 {
-                    if (DateTime.Now.Subtract(_lastCheck) < CheckInterval)
-                        return false;
+                    return false;
                 }
                 if (_currentValue == newValue)
                     return false;
@@ -162,19 +163,70 @@ namespace HomeModbus.Objects
             }
         }
 
-        private class ActionOnIputRegister : ActionOnRegister
+        private class ActionOnRegisterDateTime : ActionOnRegister
         {
-            public ActionOnIputRegister(ushort index, Action<ushort> callBack) : base(index, callBack)
+            private DateTime _currentDateTime;
+            private Action<DateTime> CallBack { get; set; }
+
+            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, null)
             {
+            }
+
+            public bool CheckState(ushort yearMonth, ushort daySecond, ushort hourMinute)
+            {
+                // Проверяем, если установлен интервал проверок, то 
+                if (!IsNeedCheck())
+                {
+                    return false;
+                }
+                if (yearMonth == 0)
+                    return false;
+                var checkDateTime = new DateTime(
+                    (yearMonth >> 8) + 1970,
+                    yearMonth & 0xFF,
+                    daySecond >> 8,
+                    hourMinute >> 8,
+                    hourMinute & 0xFF,
+                    daySecond & 0xFF);
+                if (_currentDateTime == checkDateTime)
+                    return false;
+                _currentDateTime = checkDateTime;
+                _lastCheck = DateTime.Now;
+                CallBack?.Invoke(checkDateTime);
+                return true;
+            }
+
+            public DateTime GetDateTime()
+            {
+                return _currentDateTime;
             }
         }
 
-        private class ActionOnHoldingRegister : ActionOnRegister
-        {
-            public ActionOnHoldingRegister(ushort index, Action<ushort> callBack) : base(index, callBack)
-            {
-            }
-        }
+        /*        private class ActionOnIputRegister : ActionOnRegister
+                {
+                    public ActionOnIputRegister(ushort index, Action<ushort> callBack) : base(index, callBack)
+                    {
+                    }
+                }
+
+                private class ActionOnIputRegisterDateTime : ActionOnRegisterDateTime
+                {
+                    public ActionOnIputRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, callBack)
+                    {
+                    }
+                }
+
+                private class ActionOnHoldingRegister : ActionOnRegister
+                {
+                    public ActionOnHoldingRegister(ushort index, Action<ushort> callBack) : base(index, callBack)
+                    {
+                    }
+                }
+
+                private class ActionOnHoldingRegisterDateTime
+                {
+
+                }*/
 
         /// <summary>
         /// Минимальный индекс входного регистра для проверки
@@ -196,8 +248,8 @@ namespace HomeModbus.Objects
         /// </summary>
         private ushort _holdingRegisterMaxIndex;
 
-        private List<ActionOnIputRegister> _inputChecks;
-        private List<ActionOnHoldingRegister> _holdingChecks;
+        private List<ActionOnRegister> _inputChecks;
+        private List<ActionOnRegister> _holdingChecks;
 
         #endregion
 
@@ -224,6 +276,7 @@ namespace HomeModbus.Objects
             }
             if (_coilChecks != null)
             {
+                Thread.Sleep(10);
                 var coilStatus = modbus.ReadCoils(SlaveAddress, _coilMinIndex,
                     (ushort)(_coilMaxIndex - _coilMinIndex + 1));
                 foreach (var check in _coilChecks)
@@ -257,11 +310,20 @@ namespace HomeModbus.Objects
                 }
                 if (needCheck)
                 {
+                    Thread.Sleep(10);
                     var inputsStatus = modbus.ReadInputRegisters(SlaveAddress, _inputRegisterMinIndex,
                         (ushort)(_inputRegisterMaxIndex - _inputRegisterMinIndex + 1));
                     foreach (var inputCheck in _inputChecks)
                     {
-                        inputCheck.CheckState(inputsStatus[inputCheck.Index - _inputRegisterMinIndex]);
+                        var dateTimeCheck = inputCheck as ActionOnRegisterDateTime;
+                        if (dateTimeCheck != null)
+                        {
+                            dateTimeCheck.CheckState(inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex],
+                                inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex + 1],
+                                inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex + 2]);
+                        }
+                        else
+                            inputCheck.CheckState(inputsStatus[inputCheck.Index - _inputRegisterMinIndex]);
                     }
                 }
             }
@@ -278,6 +340,7 @@ namespace HomeModbus.Objects
                 }
                 if (needCheck)
                 {
+                    Thread.Sleep(10);
                     var holdingsStatus = modbus.ReadInputRegisters(SlaveAddress, _holdingRegisterMinIndex,
                         (ushort)(_holdingRegisterMaxIndex - _holdingRegisterMinIndex + 1));
                     foreach (var holdingCheck in _holdingChecks)
@@ -325,7 +388,8 @@ namespace HomeModbus.Objects
         /// <param name="callback">Метод, который будет вызываться</param>
         /// <param name="initialState">Начальное состояние</param>
         /// <param name="resetAfter">Сброс значения только для катушек и checkCoilStatus != OnBoth</param>
-        public ActionOnDiscreteOrCoil SetActionOnDiscreteOrCoil(bool isCoil, CheckCoilStatus checkCoilStatus, ushort index, Action<ActionOnDiscreteOrCoil, bool> callback,
+        public ActionOnDiscreteOrCoil SetActionOnDiscreteOrCoil(bool isCoil, CheckCoilStatus checkCoilStatus, ushort index,
+            Action<ActionOnDiscreteOrCoil, bool> callback,
             bool? initialState = null, bool resetAfter = false)
         {
             if (index > MaxDiscreteOrCoilIndex)
@@ -373,9 +437,12 @@ namespace HomeModbus.Objects
         /// <param name="isHolding"></param>
         /// <param name="index"></param>
         /// <param name="callback"></param>
+        /// <param name="dataType">Тип данные, которые получаются с контроллера</param>
         /// <param name="raiseOlwais">Вызывать callback даже когда показания не изменились</param>
         /// <param name="checkInterval"></param>
-        public void SetActionOnRegister(bool isHolding, ushort index, Action<ushort> callback, bool raiseOlwais = false, TimeSpan? checkInterval = null)
+        public void SetActionOnRegister(bool isHolding, ushort index, Action<ushort> callback,
+
+            bool raiseOlwais = false, TimeSpan? checkInterval = null)
         {
             if (callback == null)
                 throw new ArgumentNullException(nameof(callback));
@@ -386,8 +453,8 @@ namespace HomeModbus.Objects
                 if (_inputRegisterMaxIndex < index)
                     _inputRegisterMaxIndex = index;
                 if (_inputChecks == null)
-                    _inputChecks = new List<ActionOnIputRegister>();
-                _inputChecks.Add(new ActionOnIputRegister(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
+                    _inputChecks = new List<ActionOnRegister>();
+                _inputChecks.Add(new ActionOnRegister(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
             }
             else
             {
@@ -396,8 +463,37 @@ namespace HomeModbus.Objects
                 if (_holdingRegisterMaxIndex < index)
                     _holdingRegisterMaxIndex = index;
                 if (_holdingChecks == null)
-                    _holdingChecks = new List<ActionOnHoldingRegister>();
-                _holdingChecks.Add(new ActionOnHoldingRegister(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
+                    _holdingChecks = new List<ActionOnRegister>();
+                _holdingChecks.Add(new ActionOnRegister(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
+
+            }
+        }
+
+        public void SetActionOnRegisterDateTime(bool isHolding, ushort index, Action<DateTime> callback,
+            bool raiseOlwais = false, TimeSpan? checkInterval = null)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+            var endIndex = (ushort)(index + 2);
+            if (!isHolding)
+            {
+                if (_inputRegisterMinIndex > index)
+                    _inputRegisterMinIndex = index;
+                if (_inputRegisterMaxIndex < endIndex)
+                    _inputRegisterMaxIndex = endIndex;
+                if (_inputChecks == null)
+                    _inputChecks = new List<ActionOnRegister>();
+                _inputChecks.Add(new ActionOnRegisterDateTime(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
+            }
+            else
+            {
+                if (_holdingRegisterMinIndex > index)
+                    _holdingRegisterMinIndex = index;
+                if (_holdingRegisterMaxIndex < endIndex)
+                    _holdingRegisterMaxIndex = endIndex;
+                if (_holdingChecks == null)
+                    _holdingChecks = new List<ActionOnRegister>();
+                _inputChecks.Add(new ActionOnRegisterDateTime(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
             }
         }
 
