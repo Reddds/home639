@@ -179,7 +179,7 @@ namespace HomeModbus
             var timeData = new ushort[3];
             timeData[0] = (ushort)((curTime.Hour << 8) | curTime.Minute);
             timeData[1] = (ushort)((curTime.Day << 8) | curTime.Second);
-            timeData[2] = (ushort)((curTime.Month << 8) | (curTime.Year % 100));
+            timeData[2] = (ushort)((curTime.Year << 8) | (curTime.Month % 100));
 
             //            _modbus.WriteMultipleRegisters(2, 8, timeData);
             _modbus.WriteMultipleRegisters(2, 0, timeData);

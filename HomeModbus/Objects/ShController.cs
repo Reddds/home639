@@ -170,7 +170,7 @@ namespace HomeModbus.Objects
 
             public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, null)
             {
-            }
+                CallBack = callBack;}
 
             public bool CheckState(ushort yearMonth, ushort daySecond, ushort hourMinute)
             {

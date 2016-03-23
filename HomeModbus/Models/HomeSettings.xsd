@@ -68,8 +68,17 @@
                                                           </xs:complexType>
                                                         </xs:element>
                                                       </xs:sequence>
+                                                      <xs:attribute name="Icon" type="xs:string" use="optional" />
+
                                                     </xs:complexType>
                                                   </xs:element>
+                                                  <xs:element minOccurs="0" name="BinaryIndicator">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="OnIcon" type="xs:string" use="optional" />
+                                                      <xs:attribute name="OffIcon" type="xs:string" use="optional" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+
                                                   <xs:element minOccurs="0" name="LastTimeIndicator" />
                                                   <xs:element minOccurs="0" name="Chart" />
                                                 </xs:sequence>

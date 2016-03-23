@@ -7,12 +7,9 @@
              xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
              mc:Ignorable="d" 
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             Height="300" Width="200">
+             Height="200" Width="200">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="100"/>
-        </Grid.RowDefinitions>
+
         <dxga:CircularGaugeControl x:Name="MainGauge" Width="200" Height="200"  >
             <dxga:CircularGaugeControl.Model>
                 <dxga:CircularEcoModel/>
@@ -20,21 +17,21 @@
             <dxga:CircularGaugeControl.Scales>
                 <dxga:ArcScale StartAngle="-230" EndAngle="50" >
 
-                    <!--<dxga:ArcScale.CustomElements>
+                    <dxga:ArcScale.CustomElements>
                         <dxga:ScaleCustomElement VerticalAlignment="Bottom">
-                            <Image Source="Assets/Images/Objects/Thermometre.png" Height="30" Margin="0,0,0,30" />
+                            <Image x:Name="IIcon"  Height="30" Margin="0,0,0,30" />
                         </dxga:ScaleCustomElement>
-                    </dxga:ArcScale.CustomElements>-->
+                    </dxga:ArcScale.CustomElements>
                     <dxga:ArcScale.LabelOptions>
                         <dxga:ArcScaleLabelOptions Orientation="LeftToRight" />
                     </dxga:ArcScale.LabelOptions>
                     <dxga:ArcScale.Needles>
                         <dxga:ArcScaleNeedle x:Name="MainNeedle"  Value="{Binding Value}" />
                     </dxga:ArcScale.Needles>
-<!--                    <dxga:ArcScale.Markers>
+                    <!--                    <dxga:ArcScale.Markers>
                         <dxga:ArcScaleMarker Value="20" />
                     </dxga:ArcScale.Markers>-->
-<!--
+                    <!--
                     <dxga:ArcScale.RangeBars>
                         <dxga:ArcScaleRangeBar AnchorValue="24" Value="18" />
                     </dxga:ArcScale.RangeBars>
@@ -50,30 +47,8 @@
                 </dxga:ArcScale>
             </dxga:CircularGaugeControl.Scales>
         </dxga:CircularGaugeControl>
-
-        <dxga:DigitalGaugeControl Grid.Row="1" x:Name="DgMain"
-						Text="{Binding Value}" HorizontalAlignment="Left" VerticalAlignment="Top"
-						Height="100" Width="150" Padding="7">
-            <!--region #Layers-->
-            <dxga:DigitalGaugeControl.Layers>
-                <dxga:DigitalGaugeLayer>
-                    <dxga:DigitalGaugeLayer.Presentation>
-                        <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
-                    </dxga:DigitalGaugeLayer.Presentation>
-                </dxga:DigitalGaugeLayer>
-            </dxga:DigitalGaugeControl.Layers>
-            <!--endregion #Layers-->
-            <!--region #Model-->
-            <dxga:DigitalGaugeControl.Model>
-                <dxga:DigitalEcoModel/>
-            </dxga:DigitalGaugeControl.Model>
-            <!--endregion #Model-->
-            <dxga:DigitalGaugeControl.SymbolView>
-                <dxga:SevenSegmentsView/>
-            </dxga:DigitalGaugeControl.SymbolView>
-        </dxga:DigitalGaugeControl>
-        <dxga:StateIndicatorControl Grid.Row="1" dxga:AnalogGaugeControl.ValueIndicator="{Binding ElementName=MainNeedle}"  
-						HorizontalAlignment="Left" Margin="155,35,0,0"  
+        <dxga:StateIndicatorControl Grid.Row="0" dxga:AnalogGaugeControl.ValueIndicator="{Binding ElementName=MainNeedle}"  
+						HorizontalAlignment="Left" Margin="161,9,0,0"  
 						VerticalAlignment="Top" Height="32" Width="32" >
             <dxga:StateIndicatorControl.AdditionalStates>
                 <dxga:State>

@@ -18,7 +18,7 @@
               </Parameter>
             <Parameter Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0">
               <Visibility>
-                <AnalogIndicator>
+                <AnalogIndicator Icon="Thermometre.png">
                   <Scale Min="10" Max="35" MajorCount="5" MinorCount="5" GoodValue="20">
                     <Ranges>
                       <Range StartValue="18" EndValue="24" />
@@ -32,7 +32,7 @@
             </Parameter>
             <Parameter Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" RefreshRate="0:1:0">
               <Visibility>
-                <AnalogIndicator>
+                <AnalogIndicator Icon="Humidity.png">
                   <Scale Min="0" Max="100" MinorCount="5" GoodValue="50">
                     <Ranges>
                       <Range StartValue="30" EndValue="60" />
@@ -75,8 +75,16 @@
       <Controllers>
         <Controller Name="Контроллер 1" ModbusAddress="3">
           <Parameters>
-            <Parameter Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0"/>
-            <Parameter Name="Свет включён" ModbusType="Discrete" ModbusIndex="1"/>
+            <Parameter Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0">
+              <Visibility>
+                <BinaryIndicator OnIcon="DoorOpened.png" OffIcon="DoorClosed.png"/>
+              </Visibility>
+            </Parameter>
+            <Parameter Name="Свет включён" ModbusType="Discrete" ModbusIndex="1">
+              <Visibility>
+                <BinaryIndicator OnIcon="LightBulbOn.png" OffIcon="LightBulbOff.png"/>
+              </Visibility>
+            </Parameter>
           </Parameters>
         </Controller>
       </Controllers>

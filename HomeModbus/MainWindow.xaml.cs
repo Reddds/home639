@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Chip45Programmer;
 using DevExpress.Xpf.Charts;
@@ -323,6 +324,26 @@ namespace HomeModbus
             };
         }
 
+        private ImageSource GetImageSource(string imageName, string defaultImage = null)
+        {
+            var workDir = AppDomain.CurrentDomain.BaseDirectory;
+            var imagesPath = Path.Combine(workDir, @"Assets\Images\Objects");
+            var imagePath = Path.Combine(imagesPath, imageName);
+            if (!File.Exists(imagePath))
+            {
+                if (defaultImage == null)
+                    return null;
+                imagePath = Path.Combine(imagesPath, defaultImage);
+                if (!File.Exists(imagePath))
+                {
+                    return null;
+                }
+            }
+            var bmp = new BitmapImage(new Uri(imagePath));
+            bmp.Freeze();
+            return bmp;
+        }
+
         private void ApplySettings()
         {
             foreach (var room in _homeSettings.Rooms)
@@ -351,8 +372,9 @@ namespace HomeModbus
                         {
                             case ModbusTypes.Discrete:
                             case ModbusTypes.Coil:
-                                var simpleCheckBox = new CheckBox() { Content = parameter.Name };
-                                indicatorControl.SpMain.Children.Add(simpleCheckBox);
+//                                var simpleCheckBox = new CheckBox() { Content = parameter.Name };
+                                ObjectButton binaryIndicator = null;
+//                                indicatorControl.SpMain.Children.Add(simpleCheckBox);
                                 var isCoil = parameter.ModbusType == ModbusTypes.Coil;
                                 FancyBalloon dutyBalloon = null;
                                 var showWhileParameterSet = false;
@@ -367,6 +389,18 @@ namespace HomeModbus
                                             showWhileParameterSet = true;
                                         }
                                     }
+                                    var binaryIndicatorSettings = parameter.Visibility.BinaryIndicator;
+                                    if (binaryIndicatorSettings != null)
+                                    {
+                                        binaryIndicator = new ObjectButton();
+                                        indicatorControl.SpMain.Children.Add(binaryIndicator);
+                                        var onIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OnIcon) ? "DefaultChecked.png" : binaryIndicatorSettings.OnIcon;
+                                        var offIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OffIcon) ? "DefaultUnChecked.png" : binaryIndicatorSettings.OffIcon;
+
+                                        binaryIndicator.EnabledChecked = GetImageSource(onIcon, "DefaultChecked.png");
+
+                                        binaryIndicator.EnabledUnchecked = GetImageSource(offIcon, "DefaultUnChecked.png");
+                                    }
                                 }
                                 controllerObject.SetActionOnDiscreteOrCoil(isCoil, showWhileParameterSet ? ShController.CheckCoilStatus.OnBoth : ShController.CheckCoilStatus.OnTrue, parameter.ModbusIndex,
                                     (actionOn, state) =>
@@ -375,6 +409,10 @@ namespace HomeModbus
                                         {
                                             if (parameter.Visibility != null)
                                             {
+                                                if (binaryIndicator != null)
+                                                {
+                                                    binaryIndicator.IsChecked = state;
+                                                }
                                                 if (parameter.Visibility.ShowBalloon != null)
                                                 {
                                                     if (state)
@@ -406,7 +444,7 @@ namespace HomeModbus
                                             }
                                             else
                                             {
-                                                simpleCheckBox.IsChecked = state;
+//                                                simpleCheckBox.IsChecked = state;
                                             }
                                         });
                                     });
@@ -447,6 +485,11 @@ namespace HomeModbus
                                                     EndValue = new RangeValue(range.EndValue)
                                                 });
                                             }
+                                        }
+
+                                        if (!string.IsNullOrEmpty(analogIndicator.Icon))
+                                        {
+                                            analogControl.IIcon.Source = GetImageSource(analogIndicator.Icon);
                                         }
                                     }
                                     var digitalIndicatorSettings = parameter.Visibility.DigitalIndicator;

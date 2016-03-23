@@ -124,6 +124,9 @@
     <Compile Include="Controls\AnalogIndicator.xaml.cs">
       <DependentUpon>AnalogIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\BinaryIndicator.xaml.cs">
+      <DependentUpon>BinaryIndicator.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\IndicatorControl.xaml.cs">
       <DependentUpon>IndicatorControl.xaml</DependentUpon>
     </Compile>
@@ -159,6 +162,10 @@
       <DependentUpon>FancyPopup.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\AnalogIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\BinaryIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -285,21 +292,41 @@
     <Resource Include="Assets\Images\Remove.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Images\Objects\LightBulbOff.png" />
-    <Resource Include="Assets\Images\Objects\LightBulbOn.png" />
+    <Content Include="Assets\Images\Objects\DefaultChecked.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Images\Objects\DefaultUnChecked.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Images\Objects\LightBulbOff.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Images\Objects\LightBulbOn.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Images\Objects\DoorClosed.png" />
-    <Resource Include="Assets\Images\Objects\DoorOpened.png" />
+    <Content Include="Assets\Images\Objects\DoorClosed.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Images\Objects\DoorOpened.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Images\Objects\Thermometre.png" />
+    <Content Include="Assets\Images\Objects\Thermometre.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Images\Objects\Humidity.png" />
+    <Content Include="Assets\Images\Objects\Humidity.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Images\Objects\poo.png" />
+    <Content Include="Assets\Images\Objects\poo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="HomeSettings.xml">
