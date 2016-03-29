@@ -3334,7 +3334,7 @@ namespace HomeModbus.Models
 
         private List<Visibility> _visibility;
 
-        private string _orientation;
+        private Orientations _orientation;
 
         private static XmlSerializer serializer;
 
@@ -3365,7 +3365,7 @@ namespace HomeModbus.Models
         }
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Orientation
+        public Orientations Orientation
         {
             get
             {
@@ -3569,6 +3569,18 @@ namespace HomeModbus.Models
                 }
             }
         }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    public enum Orientations
+    {
+
+        /// <remarks/>
+        Vertical,
+
+        /// <remarks/>
+        Horizontal,
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]

@@ -18,14 +18,12 @@ using DevExpress.Xpf.Gauges;
 using DevExpress.Xpo.DB.Helpers;
 using DevExpress.XtraPrinting.Native.WebClientUIControl;
 using HomeModbus.Controls;
-using HomeModbus.Implementation;
 using HomeModbus.Models;
 using HomeModbus.Models.Base;
 using HomeModbus.Objects;
 using HomeModbus.Properties;
 using HomeModbus.Tooltip;
-using log4net;
-using log4net.Config;
+using log4net;using log4net.Config;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Newtonsoft.Json;
@@ -236,6 +234,7 @@ namespace HomeModbus
 
 
 
+/*
             var corridor = new Corridor();
             //            _modbusMasterThread.ControolerObjects.Add(corridor);
             corridor.LightInCorridorChanged += (sender, lightState) =>
@@ -264,6 +263,7 @@ namespace HomeModbus
                     }
                 });
             };
+*/
             _modbusMasterThread.PortChanged += (sender, args) =>
             {
                 OnPropertyChanged("IsPortOpen");
@@ -272,8 +272,7 @@ namespace HomeModbus
             {
                 IsListening = isListening;
             };
-            _modbusMasterThread.WriteToLog += (sender, msg) =>
-            {
+            _modbusMasterThread.WriteToLog += (sender, msg) =>{
                 WriteToLog(msg);
             };
         }
@@ -341,10 +340,12 @@ namespace HomeModbus
                 foreach (var controller in controllerGroup.Controllers)
                 {
                     var controllerObject = new ShController(controller.Id, controller.ModbusAddress);
+                    if(controllerGroupObject.ShControllers == null)
+                        controllerGroupObject.ShControllers = new List<ShController>();
                     controllerGroupObject.ShControllers.Add(controllerObject);
                     allControllers.Add(controllerObject);
-                    //                    ProcessPararmeters(controller.Parameters, roomTab, controllerObject);
-                    //                    ProcessSetters(controller.Setters, roomTab, controllerObject);
+                    //                    ProcessPararmeters(controller.Parameters, layoutGroupObject, controllerObject);
+                    //                    ProcessSetters(controller.Setters, layoutGroupObject, controllerObject);
 
                 }
             }
@@ -356,12 +357,12 @@ namespace HomeModbus
 
                 foreach (var layoutGroup in room.Layout.LayoutGroup)
                 {
-                    ProcessLayoutGroup(roomTab, layoutGroup, allControllers, _homeSettings.ControllerGroups);}
+                    ProcessLayoutGroup(roomTab.MainPanel, layoutGroup, allControllers, _homeSettings.ControllerGroups);
+                }
                 foreach (var visibility in room.Layout.Visibility)
                 {
-                    ProcessVisibility(roomTab, visibility, allControllers, _homeSettings.ControllerGroups);
-                }
-            }
+                    ProcessVisibility(roomTab.MainPanel, visibility, allControllers, _homeSettings.ControllerGroups);
+                }}
 
 
 /*
@@ -383,15 +384,15 @@ namespace HomeModbus
                 {
                     var controllerObject = new ShController(controller.Controller.ModbusAddress);
                     controllerGroupObject.ShControllers.Add(controllerObject);
-                    ProcessPararmeters(controller.Controller.Parameters, roomTab, controllerObject);
-                    ProcessSetters(controller.Controller.Setters, roomTab, controllerObject);
+                    ProcessPararmeters(controller.Controller.Parameters, layoutGroupObject, controllerObject);
+                    ProcessSetters(controller.Controller.Setters, layoutGroupObject, controllerObject);
 
                 }
             }
 */
         }
 
-        private void ProcessVisibility(RoomTab roomTab, Visibility visibility, List<ShController> allControllers, List<HomeSettingsControllerGroup> controllerGroups)
+        private void ProcessVisibility(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, Visibility visibility, List<ShController> allControllers, List<HomeSettingsControllerGroup> controllerGroups)
         {
             // Ищем соответствующий параметр
             if (!string.IsNullOrEmpty(visibility.ParameterId))
@@ -409,7 +410,7 @@ namespace HomeModbus
                                 {
                                     return;
                                 }
-                                CreateVisibilityParameter(roomTab, visibility, parameter, controllerObject);
+                                CreateVisibilityParameter(layoutGroupObject, visibility, parameter, controllerObject);
                                 return;
                             }
                         }
@@ -432,7 +433,7 @@ namespace HomeModbus
                                 {
                                     return;
                                 }
-                                CreateVisibilitySetter(roomTab, visibility, setter, controllerObject);
+                                CreateVisibilitySetter(layoutGroupObject, visibility, setter, controllerObject);
                                 return;
                             }
                         }
@@ -441,13 +442,13 @@ namespace HomeModbus
             }
         }
 
-        private void CreateVisibilitySetter(RoomTab roomTab, Visibility visibility, HomeSettingsControllerGroupControllerSetter setter, ShController controllerObject)
+        private void CreateVisibilitySetter(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, Visibility visibility, HomeSettingsControllerGroupControllerSetter setter, ShController controllerObject)
         {
             var setterControl = new IndicatorControl
             {
                 Caption = setter.Name
             };
-            roomTab.MainPanel.Items.Add(setterControl);
+            layoutGroupObject.Add(setterControl);
             switch (setter.Type)
             {
                 case SetterTypes.RealDateTime:
@@ -464,14 +465,14 @@ namespace HomeModbus
             }
         }
 
-        private void CreateVisibilityParameter(RoomTab roomTab, Visibility visibility, HomeSettingsControllerGroupControllerParameter parameter, ShController controllerObject)
+        private void CreateVisibilityParameter(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, Visibility visibility, HomeSettingsControllerGroupControllerParameter parameter, ShController controllerObject)
         {
             var indicatorControl = new IndicatorControl
             {
                 Caption = parameter.Name
             };
             //                        roomTab.MainPanel.Items = new SerializableItemCollection();
-            roomTab.MainPanel.Items.Add(indicatorControl);
+            layoutGroupObject.Items.Add(indicatorControl);
             if (parameter.Icon != null)
             {
                 indicatorControl.CaptionImage = GetImageSource(parameter.Icon);
@@ -690,21 +691,25 @@ namespace HomeModbus
             }
         }
 
-        private void ProcessLayoutGroup(RoomTab roomTab, LayoutGroup layoutGroup, List<ShController> allControllers, List<HomeSettingsControllerGroup> controllerGroups)
+        private void ProcessLayoutGroup(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, LayoutGroup layoutGroup, List<ShController> allControllers, List<HomeSettingsControllerGroup> controllerGroups)
         {
-            foreach (var layoutGroup1 in layoutGroup.LayoutGroup1)
+            var newLayoutGroupObject = new DevExpress.Xpf.Docking.LayoutGroup();
+            layoutGroupObject.Items.Add(newLayoutGroupObject);
+            newLayoutGroupObject.Orientation = layoutGroup.Orientation == Orientations.Horizontal
+                ? Orientation.Horizontal
+                : Orientation.Vertical;foreach (var layoutGroup1 in layoutGroup.LayoutGroup1)
             {
-                ProcessLayoutGroup(roomTab, layoutGroup1, allControllers, _homeSettings.ControllerGroups);
+                ProcessLayoutGroup(newLayoutGroupObject, layoutGroup1, allControllers, _homeSettings.ControllerGroups);
             }
             foreach (var visibility in layoutGroup.Visibility)
             {
-                ProcessVisibility(roomTab, visibility, allControllers, _homeSettings.ControllerGroups);
+                ProcessVisibility(newLayoutGroupObject, visibility, allControllers, _homeSettings.ControllerGroups);
             }
         }
 
 
 /*
-        private void ProcessSetters(List<HomeSettingsRoomControllersControllerSetter> setters, RoomTab roomTab,
+        private void ProcessSetters(List<HomeSettingsRoomControllersControllerSetter> setters, RoomTab layoutGroupObject,
             ShController controllerObject)
         {
             foreach (var setter in setters)

@@ -146,6 +146,12 @@
       <xs:enumeration value="Error" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="Orientations">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Vertical"/>
+      <xs:enumeration value="Horizontal" />
+    </xs:restriction>
+  </xs:simpleType>
 
 
   <xs:complexType name="LayoutGroup">
@@ -153,7 +159,7 @@
       <xs:element minOccurs="0" maxOccurs="unbounded" name="LayoutGroup" type="LayoutGroup"/>
       <xs:element maxOccurs="unbounded" name="Visibility" type="Visibility"/>
     </xs:sequence>
-    <xs:attribute name="Orientation" type="xs:string" use="required" />
+    <xs:attribute name="Orientation" type="Orientations" use="required" />
   </xs:complexType>
   
   <xs:complexType name="Visibility">
