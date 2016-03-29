@@ -44,7 +44,7 @@ namespace HomeModbus
         /// </summary>
         private bool _resetCall;
 
-        public List<Room> Rooms = new List<Room>(); 
+        public List<ControllerGroup> ControolerObjects = new List<ControllerGroup>(); 
 
         public ModbusMasterThread()
         {
@@ -225,6 +225,7 @@ namespace HomeModbus
             do
             {
                 var currentControllerAddress = 0;
+                var curAction = string.Empty;
                 _isListening.WaitOne();
                 try
                 {
@@ -265,15 +266,17 @@ namespace HomeModbus
                     Thread.Sleep(200);
                   
 
-                    if (Rooms != null && Rooms.Count > 0)
+                    if (ControolerObjects != null && ControolerObjects.Count > 0)
                     {
-                        foreach (var room in Rooms)
+                        foreach (var room in ControolerObjects)
                         {
                             foreach (var controller in room.ShControllers)
                             {
                                 currentControllerAddress = controller.SlaveAddress;
+                                curAction = "GetStatus";
                                 controller.GetStatus(_modbus);
                                 Thread.Sleep(20);
+                                curAction = "DoActions";
                                 controller.DoActions(_modbus);
                                 Thread.Sleep(20);
                             }
@@ -289,7 +292,7 @@ namespace HomeModbus
                 }
                 catch (Exception ee)
                 {
-                    WriteToLog?.Invoke(this, $"Address = {currentControllerAddress}; {ee.Message}");
+                    WriteToLog?.Invoke(this, $"Address = {currentControllerAddress}; Action: {curAction}; {ee}");
                 }
             } while (true);
 

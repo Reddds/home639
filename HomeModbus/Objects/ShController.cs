@@ -253,101 +253,208 @@ namespace HomeModbus.Objects
 
         #endregion
 
+        #region Setters
 
+        public class ModbusSetter
+        {
+            public ushort Index;
+            public SetterTypes SetterType;
+            public bool IsPending { get; private set; }
+            private object _pendingObject;
 
+            public ModbusSetter(ushort index, SetterTypes setterType)
+            {
+                Index = index;
+                SetterType = setterType;
+            }
+
+            public void PendingSet(object newValue = null)
+            {
+                _pendingObject = newValue;
+                IsPending = true;
+            }
+
+            /// <summary>
+            /// Установка новго значения
+            /// </summary>
+            /// <param name="modbus"></param>
+            /// <param name="slaveAddress"></param>
+            /// <returns></returns>
+            public bool Set(ModbusSerialMaster modbus, byte slaveAddress)
+            {
+                IsPending = false;
+                switch (SetterType)
+                {
+                    case SetterTypes.RealDateTime:
+                        return SendTime(modbus, slaveAddress);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                return false;
+            }
+
+            private bool SendTime(ModbusSerialMaster modbus, byte slaveAddress)
+            {
+                var curTime = DateTime.Now;
+                var timeData = new ushort[3];
+                timeData[0] = (ushort)(((curTime.Hour << 8)) | curTime.Minute);
+                timeData[1] = (ushort)((curTime.Day << 8) | curTime.Second);
+                timeData[2] = (ushort)(((curTime.Year % 100) << 8) | curTime.Month);
+
+                //            _modbus.WriteMultipleRegisters(2, 8, timeData);
+                modbus.WriteMultipleRegisters(slaveAddress, Index, timeData);
+                Thread.Sleep(500);
+
+                var setTimeRes = modbus.ReadInputRegisters(slaveAddress, Index, 1);
+                return setTimeRes[0] == 0x0000;
+                /*if (setTimeRes.Length > 0 && setTimeRes[0] == 0xffff)
+                    WriteToLog?.Invoke(this, "Время установлено успешно!");
+                else
+                {
+                    WriteToLog?.Invoke(this, $"Ошибка установки времени! ({setTimeRes[0]:X4})");
+                    //MessageBox.Show($"Ошибка установки времени! ({setTimeRes[0]:X4})");
+                }*/
+
+            }
+
+        }
+
+        private List<ModbusSetter> _setters;
+
+        /*        class RealDateTimeSetter : ModbusSetter
+                {
+                    public RealDateTimeSetter(ushort index, SetterTypes setterType) : base(index, setterType)
+                    {
+                    }
+
+                    public ushort[] GetSetRegisters()
+                    {
+                        var curTime = DateTime.Now;
+                        var timeData = new ushort[3];
+                        timeData[0] = (ushort)((curTime.Hour << 8) | curTime.Minute);
+                        timeData[1] = (ushort)((curTime.Day << 8) | curTime.Second);
+                        timeData[2] = (ushort)((curTime.Year << 8) | (curTime.Month % 100));
+                        return timeData;
+                    }
+                }*/
+
+        #endregion
+
+        public readonly string Id;
         public byte SlaveAddress;
 
 
-        public ShController(byte slaveAddress)
+        public ShController(string id, byte slaveAddress)
         {
+            Id = id;
             SlaveAddress = slaveAddress;
         }
 
         public virtual void GetStatus(ModbusSerialMaster modbus)
         {
-            if (_discreteChecks != null)
+            var curOperation = string.Empty;
+            try
             {
-                var discreteStatus = modbus.ReadInputs(SlaveAddress, _discreteRegisterMinIndex,
-                    (ushort)(_discreteRegisterMaxIndex - _discreteRegisterMinIndex + 1));
-                foreach (var check in _discreteChecks)
-                {
-                    check.CheckState(discreteStatus[check.Index - _discreteRegisterMinIndex]);
-                }
-            }
-            if (_coilChecks != null)
-            {
-                Thread.Sleep(10);
-                var coilStatus = modbus.ReadCoils(SlaveAddress, _coilMinIndex,
-                    (ushort)(_coilMaxIndex - _coilMinIndex + 1));
-                foreach (var check in _coilChecks)
-                {
-                    if (check.CheckState(coilStatus[check.Index - _coilMinIndex]))
-                        if (check.ResetAfter)
-                        {
-                            switch (check.CheckCoilStatus)
-                            {
-                                case CheckCoilStatus.OnTrue:
-                                    modbus.WriteSingleCoil(SlaveAddress, check.Index, false);
-                                    break;
-                                case CheckCoilStatus.OnFalse:
-                                    modbus.WriteSingleCoil(SlaveAddress, check.Index, true);
-                                    break;
-                            }
-                        }
-                }
-            }
 
-            if (_inputChecks != null)
-            {
-                var needCheck = false;
-                foreach (var inputCheck in _inputChecks)
+                if (_discreteChecks != null)
                 {
-                    if (inputCheck.IsNeedCheck())
+                    curOperation = $"CheckDiscrete ";
+                    var discreteStatus = modbus.ReadInputs(SlaveAddress, _discreteRegisterMinIndex,
+                        (ushort)(_discreteRegisterMaxIndex - _discreteRegisterMinIndex + 1));
+                    foreach (var check in _discreteChecks)
                     {
-                        needCheck = true;
-                        break;
+                        check.CheckState(discreteStatus[check.Index - _discreteRegisterMinIndex]);
                     }
                 }
-                if (needCheck)
+                if (_coilChecks != null)
                 {
                     Thread.Sleep(10);
-                    var inputsStatus = modbus.ReadInputRegisters(SlaveAddress, _inputRegisterMinIndex,
-                        (ushort)(_inputRegisterMaxIndex - _inputRegisterMinIndex + 1));
+                    curOperation = $"CheckCoil";
+                    var coilStatus = modbus.ReadCoils(SlaveAddress, _coilMinIndex,
+                        (ushort)(_coilMaxIndex - _coilMinIndex + 1));
+                    foreach (var check in _coilChecks)
+                    {
+                        
+                        if (check.CheckState(coilStatus[check.Index - _coilMinIndex]))
+                            if (check.ResetAfter)
+                            {
+                                switch (check.CheckCoilStatus)
+                                {
+                                    case CheckCoilStatus.OnTrue:
+                                        modbus.WriteSingleCoil(SlaveAddress, check.Index, false);
+                                        break;
+                                    case CheckCoilStatus.OnFalse:
+                                        modbus.WriteSingleCoil(SlaveAddress, check.Index, true);
+                                        break;
+                                }
+                            }
+                    }
+                }
+
+                if (_inputChecks != null)
+                {
+                    var needCheck = false;
                     foreach (var inputCheck in _inputChecks)
                     {
-                        var dateTimeCheck = inputCheck as ActionOnRegisterDateTime;
-                        if (dateTimeCheck != null)
+
+                        if (inputCheck.IsNeedCheck())
                         {
-                            dateTimeCheck.CheckState(inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex],
-                                inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex + 1],
-                                inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex + 2]);
+                            needCheck = true;
+                            break;
                         }
-                        else
-                            inputCheck.CheckState(inputsStatus[inputCheck.Index - _inputRegisterMinIndex]);
                     }
-                }
-            }
-            if (_holdingChecks != null)
-            {
-                var needCheck = false;
-                foreach (var holdingCheck in _holdingChecks)
-                {
-                    if (holdingCheck.IsNeedCheck())
+                    if (needCheck)
                     {
-                        needCheck = true;
-                        break;
+                        Thread.Sleep(10);
+                        curOperation = $"CheckInput ";
+                        var inputsStatus = modbus.ReadInputRegisters(SlaveAddress, _inputRegisterMinIndex,
+                            (ushort)(_inputRegisterMaxIndex - _inputRegisterMinIndex + 1));
+                        foreach (var inputCheck in _inputChecks)
+                        {
+                            
+                            var dateTimeCheck = inputCheck as ActionOnRegisterDateTime;
+                            if (dateTimeCheck != null)
+                            {
+                                dateTimeCheck.CheckState(inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex],
+                                    inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex + 1],
+                                    inputsStatus[dateTimeCheck.Index - _inputRegisterMinIndex + 2]);
+                            }
+                            else
+                                inputCheck.CheckState(inputsStatus[inputCheck.Index - _inputRegisterMinIndex]);
+                        }
                     }
                 }
-                if (needCheck)
+                if (_holdingChecks != null)
                 {
-                    Thread.Sleep(10);
-                    var holdingsStatus = modbus.ReadInputRegisters(SlaveAddress, _holdingRegisterMinIndex,
-                        (ushort)(_holdingRegisterMaxIndex - _holdingRegisterMinIndex + 1));
+                    var needCheck = false;
                     foreach (var holdingCheck in _holdingChecks)
                     {
-                        holdingCheck.CheckState(holdingsStatus[holdingCheck.Index - _holdingRegisterMinIndex]);
+                        if (holdingCheck.IsNeedCheck())
+                        {
+                            needCheck = true;
+                            break;
+                        }
+                    }
+                    if (needCheck)
+                    {
+                        Thread.Sleep(10);
+                        curOperation = $"CheckHolding";
+                        var holdingsStatus = modbus.ReadInputRegisters(SlaveAddress, _holdingRegisterMinIndex,
+                            (ushort)(_holdingRegisterMaxIndex - _holdingRegisterMinIndex + 1));
+                        foreach (var holdingCheck in _holdingChecks)
+                        {
+                            
+                            holdingCheck.CheckState(holdingsStatus[holdingCheck.Index - _holdingRegisterMinIndex]);
+                        }
                     }
                 }
+
+            }
+            catch (Exception ee)
+            {
+                
+                throw new Exception($"{curOperation} " + ee.Message);
             }
         }
 
@@ -377,6 +484,16 @@ namespace HomeModbus.Objects
                 }
             }
 
+            if (_setters != null)
+            {
+                foreach (var setter in _setters)
+                {
+                    if (setter.IsPending)
+                    {
+                        setter.Set(modbus, SlaveAddress);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -495,6 +612,15 @@ namespace HomeModbus.Objects
                     _holdingChecks = new List<ActionOnRegister>();
                 _inputChecks.Add(new ActionOnRegisterDateTime(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
             }
+        }
+
+        public ModbusSetter SetSetter(ushort index, SetterTypes type)
+        {
+            if(_setters == null)
+                _setters = new List<ModbusSetter>();
+            var newSetter = new ModbusSetter(index, type);
+            _setters.Add(newSetter);
+            return newSetter;
         }
 
     }

@@ -28,9 +28,24 @@ namespace HomeModbus.Models
     public partial class HomeSettings
     {
 
+        private List<HomeSettingsControllerGroup> _controllerGroups;
+
         private List<HomeSettingsRoom> _rooms;
 
         private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlArrayItemAttribute("ControllerGroup", IsNullable = false)]
+        public List<HomeSettingsControllerGroup> ControllerGroups
+        {
+            get
+            {
+                return this._controllerGroups;
+            }
+            set
+            {
+                this._controllerGroups = value;
+            }
+        }
 
         [System.Xml.Serialization.XmlArrayItemAttribute("Room", IsNullable = false)]
         public List<HomeSettingsRoom> Rooms
@@ -244,17 +259,17 @@ namespace HomeModbus.Models
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoom
+    public partial class HomeSettingsControllerGroup
     {
 
-        private List<HomeSettingsRoomControllers> _controllers;
+        private List<HomeSettingsControllerGroupController> _controllers;
 
         private string _name;
 
         private static XmlSerializer serializer;
 
-        [System.Xml.Serialization.XmlElementAttribute("Controllers")]
-        public List<HomeSettingsRoomControllers> Controllers
+        [System.Xml.Serialization.XmlArrayItemAttribute("Controller", IsNullable = false)]
+        public List<HomeSettingsControllerGroupController> Controllers
         {
             get
             {
@@ -263,6 +278,3595 @@ namespace HomeModbus.Models
             set
             {
                 this._controllers = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsControllerGroup));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroup object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an HomeSettingsControllerGroup object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroup object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out HomeSettingsControllerGroup obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroup);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out HomeSettingsControllerGroup obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroup Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((HomeSettingsControllerGroup)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static HomeSettingsControllerGroup Deserialize(System.IO.Stream s)
+        {
+            return ((HomeSettingsControllerGroup)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroup object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an HomeSettingsControllerGroup object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroup object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroup obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroup);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroup obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroup LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class HomeSettingsControllerGroupController
+    {
+
+        private List<HomeSettingsControllerGroupControllerParameter> _parameters;
+
+        private List<HomeSettingsControllerGroupControllerSetter> _setters;
+
+        private string _id;
+
+        private string _name;
+
+        private byte _modbusAddress;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlArrayItemAttribute("Parameter", IsNullable = false)]
+        public List<HomeSettingsControllerGroupControllerParameter> Parameters
+        {
+            get
+            {
+                return this._parameters;
+            }
+            set
+            {
+                this._parameters = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlArrayItemAttribute("Setter", IsNullable = false)]
+        public List<HomeSettingsControllerGroupControllerSetter> Setters
+        {
+            get
+            {
+                return this._setters;
+            }
+            set
+            {
+                this._setters = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Id
+        {
+            get
+            {
+                return this._id;
+            }
+            set
+            {
+                this._id = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte ModbusAddress
+        {
+            get
+            {
+                return this._modbusAddress;
+            }
+            set
+            {
+                this._modbusAddress = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsControllerGroupController));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroupController object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an HomeSettingsControllerGroupController object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroupController object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out HomeSettingsControllerGroupController obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroupController);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out HomeSettingsControllerGroupController obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroupController Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((HomeSettingsControllerGroupController)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static HomeSettingsControllerGroupController Deserialize(System.IO.Stream s)
+        {
+            return ((HomeSettingsControllerGroupController)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroupController object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an HomeSettingsControllerGroupController object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroupController object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroupController obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroupController);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroupController obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroupController LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class HomeSettingsControllerGroupControllerParameter
+    {
+
+        private string _id;
+
+        private string _name;
+
+        private ModbusTypes _modbusType;
+
+        private byte _modbusIndex;
+
+        private string _refreshRate;
+
+        private System.Nullable<DataTypes> _dataType;
+
+        private string _icon;
+
+        private string _value;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Id
+        {
+            get
+            {
+                return this._id;
+            }
+            set
+            {
+                this._id = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public ModbusTypes ModbusType
+        {
+            get
+            {
+                return this._modbusType;
+            }
+            set
+            {
+                this._modbusType = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte ModbusIndex
+        {
+            get
+            {
+                return this._modbusIndex;
+            }
+            set
+            {
+                this._modbusIndex = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string RefreshRate
+        {
+            get
+            {
+                return this._refreshRate;
+            }
+            set
+            {
+                this._refreshRate = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public DataTypes DataType
+        {
+            get
+            {
+                if (this._dataType.HasValue)
+                {
+                    return this._dataType.Value;
+                }
+                else
+                {
+                    return default(DataTypes);
+                }
+            }
+            set
+            {
+                this._dataType = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool DataTypeSpecified
+        {
+            get
+            {
+                return this._dataType.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._dataType = null;
+                }
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Icon
+        {
+            get
+            {
+                return this._icon;
+            }
+            set
+            {
+                this._icon = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlTextAttribute()]
+        public string Value
+        {
+            get
+            {
+                return this._value;
+            }
+            set
+            {
+                this._value = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsControllerGroupControllerParameter));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroupControllerParameter object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an HomeSettingsControllerGroupControllerParameter object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroupControllerParameter object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out HomeSettingsControllerGroupControllerParameter obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroupControllerParameter);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out HomeSettingsControllerGroupControllerParameter obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroupControllerParameter Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((HomeSettingsControllerGroupControllerParameter)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static HomeSettingsControllerGroupControllerParameter Deserialize(System.IO.Stream s)
+        {
+            return ((HomeSettingsControllerGroupControllerParameter)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroupControllerParameter object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an HomeSettingsControllerGroupControllerParameter object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroupControllerParameter object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroupControllerParameter obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroupControllerParameter);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroupControllerParameter obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroupControllerParameter LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    public enum ModbusTypes
+    {
+
+        /// <remarks/>
+        Discrete,
+
+        /// <remarks/>
+        Coil,
+
+        /// <remarks/>
+        InputRegister,
+
+        /// <remarks/>
+        HoldingRegister,
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    public enum DataTypes
+    {
+
+        /// <remarks/>
+        UInt16,
+
+        /// <remarks/>
+        Float,
+
+        /// <remarks/>
+        RdDateTime,
+
+        /// <remarks/>
+        RdTime,
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class Visibility
+    {
+
+        private object _digitalIndicator;
+
+        private VisibilityShowBalloon _showBalloon;
+
+        private VisibilityAnalogIndicator _analogIndicator;
+
+        private VisibilityBinaryIndicator _binaryIndicator;
+
+        private VisibilityLastTimeIndicator _lastTimeIndicator;
+
+        private object _chart;
+
+        private string _name;
+
+        private string _parameterId;
+
+        private string _setterId;
+
+        private string _icon;
+
+        private static XmlSerializer serializer;
+
+        public object DigitalIndicator
+        {
+            get
+            {
+                return this._digitalIndicator;
+            }
+            set
+            {
+                this._digitalIndicator = value;
+            }
+        }
+
+        public VisibilityShowBalloon ShowBalloon
+        {
+            get
+            {
+                return this._showBalloon;
+            }
+            set
+            {
+                this._showBalloon = value;
+            }
+        }
+
+        public VisibilityAnalogIndicator AnalogIndicator
+        {
+            get
+            {
+                return this._analogIndicator;
+            }
+            set
+            {
+                this._analogIndicator = value;
+            }
+        }
+
+        public VisibilityBinaryIndicator BinaryIndicator
+        {
+            get
+            {
+                return this._binaryIndicator;
+            }
+            set
+            {
+                this._binaryIndicator = value;
+            }
+        }
+
+        public VisibilityLastTimeIndicator LastTimeIndicator
+        {
+            get
+            {
+                return this._lastTimeIndicator;
+            }
+            set
+            {
+                this._lastTimeIndicator = value;
+            }
+        }
+
+        public object Chart
+        {
+            get
+            {
+                return this._chart;
+            }
+            set
+            {
+                this._chart = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string ParameterId
+        {
+            get
+            {
+                return this._parameterId;
+            }
+            set
+            {
+                this._parameterId = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string SetterId
+        {
+            get
+            {
+                return this._setterId;
+            }
+            set
+            {
+                this._setterId = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Icon
+        {
+            get
+            {
+                return this._icon;
+            }
+            set
+            {
+                this._icon = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(Visibility));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current Visibility object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an Visibility object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output Visibility object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out Visibility obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(Visibility);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out Visibility obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static Visibility Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((Visibility)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static Visibility Deserialize(System.IO.Stream s)
+        {
+            return ((Visibility)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current Visibility object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an Visibility object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output Visibility object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out Visibility obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(Visibility);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out Visibility obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static Visibility LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityShowBalloon
+    {
+
+        private VisibilityShowBalloonOnClose _onClose;
+
+        private List<string> _text;
+
+        private BalloonTypes _type;
+
+        private string _text1;
+
+        private System.Nullable<bool> _showWhileParameterSet;
+
+        private static XmlSerializer serializer;
+
+        public VisibilityShowBalloonOnClose OnClose
+        {
+            get
+            {
+                return this._onClose;
+            }
+            set
+            {
+                this._onClose = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlTextAttribute()]
+        public List<string> Text
+        {
+            get
+            {
+                return this._text;
+            }
+            set
+            {
+                this._text = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public BalloonTypes Type
+        {
+            get
+            {
+                return this._type;
+            }
+            set
+            {
+                this._type = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute("Text")]
+        public string Text1
+        {
+            get
+            {
+                return this._text1;
+            }
+            set
+            {
+                this._text1 = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool ShowWhileParameterSet
+        {
+            get
+            {
+                if (this._showWhileParameterSet.HasValue)
+                {
+                    return this._showWhileParameterSet.Value;
+                }
+                else
+                {
+                    return default(bool);
+                }
+            }
+            set
+            {
+                this._showWhileParameterSet = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool ShowWhileParameterSetSpecified
+        {
+            get
+            {
+                return this._showWhileParameterSet.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._showWhileParameterSet = null;
+                }
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityShowBalloon));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityShowBalloon object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityShowBalloon object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityShowBalloon object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityShowBalloon obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityShowBalloon);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityShowBalloon obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityShowBalloon Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityShowBalloon)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityShowBalloon Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityShowBalloon)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityShowBalloon object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityShowBalloon object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityShowBalloon object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityShowBalloon obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityShowBalloon);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityShowBalloon obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityShowBalloon LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityShowBalloonOnClose
+    {
+
+        private object _resetParameter;
+
+        private static XmlSerializer serializer;
+
+        public object ResetParameter
+        {
+            get
+            {
+                return this._resetParameter;
+            }
+            set
+            {
+                this._resetParameter = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityShowBalloonOnClose));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityShowBalloonOnClose object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityShowBalloonOnClose object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityShowBalloonOnClose object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityShowBalloonOnClose obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityShowBalloonOnClose);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityShowBalloonOnClose obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityShowBalloonOnClose Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityShowBalloonOnClose)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityShowBalloonOnClose Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityShowBalloonOnClose)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityShowBalloonOnClose object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityShowBalloonOnClose object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityShowBalloonOnClose object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityShowBalloonOnClose obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityShowBalloonOnClose);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityShowBalloonOnClose obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityShowBalloonOnClose LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    public enum BalloonTypes
+    {
+
+        /// <remarks/>
+        Normal,
+
+        /// <remarks/>
+        Info,
+
+        /// <remarks/>
+        Warning,
+
+        /// <remarks/>
+        Exclamation,
+
+        /// <remarks/>
+        Alarm,
+
+        /// <remarks/>
+        Error,
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityAnalogIndicator
+    {
+
+        private VisibilityAnalogIndicatorScale _scale;
+
+        private string _icon;
+
+        private static XmlSerializer serializer;
+
+        public VisibilityAnalogIndicatorScale Scale
+        {
+            get
+            {
+                return this._scale;
+            }
+            set
+            {
+                this._scale = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Icon
+        {
+            get
+            {
+                return this._icon;
+            }
+            set
+            {
+                this._icon = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityAnalogIndicator));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityAnalogIndicator object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityAnalogIndicator object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityAnalogIndicator object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityAnalogIndicator obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityAnalogIndicator);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityAnalogIndicator obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityAnalogIndicator Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityAnalogIndicator)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityAnalogIndicator Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityAnalogIndicator)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityAnalogIndicator object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityAnalogIndicator object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityAnalogIndicator object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityAnalogIndicator obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityAnalogIndicator);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityAnalogIndicator obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityAnalogIndicator LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityAnalogIndicatorScale
+    {
+
+        private List<VisibilityAnalogIndicatorScaleRange> _ranges;
+
+        private byte _min;
+
+        private byte _max;
+
+        private System.Nullable<byte> _majorCount;
+
+        private System.Nullable<byte> _minorCount;
+
+        private System.Nullable<byte> _goodValue;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlArrayItemAttribute("Range", IsNullable = false)]
+        public List<VisibilityAnalogIndicatorScaleRange> Ranges
+        {
+            get
+            {
+                return this._ranges;
+            }
+            set
+            {
+                this._ranges = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte Min
+        {
+            get
+            {
+                return this._min;
+            }
+            set
+            {
+                this._min = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte Max
+        {
+            get
+            {
+                return this._max;
+            }
+            set
+            {
+                this._max = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte MajorCount
+        {
+            get
+            {
+                if (this._majorCount.HasValue)
+                {
+                    return this._majorCount.Value;
+                }
+                else
+                {
+                    return default(byte);
+                }
+            }
+            set
+            {
+                this._majorCount = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool MajorCountSpecified
+        {
+            get
+            {
+                return this._majorCount.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._majorCount = null;
+                }
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte MinorCount
+        {
+            get
+            {
+                if (this._minorCount.HasValue)
+                {
+                    return this._minorCount.Value;
+                }
+                else
+                {
+                    return default(byte);
+                }
+            }
+            set
+            {
+                this._minorCount = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool MinorCountSpecified
+        {
+            get
+            {
+                return this._minorCount.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._minorCount = null;
+                }
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte GoodValue
+        {
+            get
+            {
+                if (this._goodValue.HasValue)
+                {
+                    return this._goodValue.Value;
+                }
+                else
+                {
+                    return default(byte);
+                }
+            }
+            set
+            {
+                this._goodValue = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool GoodValueSpecified
+        {
+            get
+            {
+                return this._goodValue.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._goodValue = null;
+                }
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityAnalogIndicatorScale));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityAnalogIndicatorScale object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityAnalogIndicatorScale object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityAnalogIndicatorScale object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityAnalogIndicatorScale obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityAnalogIndicatorScale);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityAnalogIndicatorScale obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityAnalogIndicatorScale Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityAnalogIndicatorScale)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityAnalogIndicatorScale Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityAnalogIndicatorScale)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityAnalogIndicatorScale object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityAnalogIndicatorScale object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityAnalogIndicatorScale object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityAnalogIndicatorScale obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityAnalogIndicatorScale);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityAnalogIndicatorScale obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityAnalogIndicatorScale LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityAnalogIndicatorScaleRange
+    {
+
+        private byte _startValue;
+
+        private byte _endValue;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte StartValue
+        {
+            get
+            {
+                return this._startValue;
+            }
+            set
+            {
+                this._startValue = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte EndValue
+        {
+            get
+            {
+                return this._endValue;
+            }
+            set
+            {
+                this._endValue = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityAnalogIndicatorScaleRange));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityAnalogIndicatorScaleRange object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityAnalogIndicatorScaleRange object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityAnalogIndicatorScaleRange object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityAnalogIndicatorScaleRange obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityAnalogIndicatorScaleRange);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityAnalogIndicatorScaleRange obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityAnalogIndicatorScaleRange Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityAnalogIndicatorScaleRange)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityAnalogIndicatorScaleRange Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityAnalogIndicatorScaleRange)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityAnalogIndicatorScaleRange object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityAnalogIndicatorScaleRange object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityAnalogIndicatorScaleRange object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityAnalogIndicatorScaleRange obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityAnalogIndicatorScaleRange);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityAnalogIndicatorScaleRange obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityAnalogIndicatorScaleRange LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityBinaryIndicator
+    {
+
+        private string _onIcon;
+
+        private string _offIcon;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string OnIcon
+        {
+            get
+            {
+                return this._onIcon;
+            }
+            set
+            {
+                this._onIcon = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string OffIcon
+        {
+            get
+            {
+                return this._offIcon;
+            }
+            set
+            {
+                this._offIcon = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityBinaryIndicator));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityBinaryIndicator object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityBinaryIndicator object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityBinaryIndicator object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityBinaryIndicator obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityBinaryIndicator);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityBinaryIndicator obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityBinaryIndicator Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityBinaryIndicator)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityBinaryIndicator Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityBinaryIndicator)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityBinaryIndicator object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityBinaryIndicator object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityBinaryIndicator object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityBinaryIndicator obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityBinaryIndicator);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityBinaryIndicator obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityBinaryIndicator LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class VisibilityLastTimeIndicator
+    {
+
+        private string _icon;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Icon
+        {
+            get
+            {
+                return this._icon;
+            }
+            set
+            {
+                this._icon = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(VisibilityLastTimeIndicator));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current VisibilityLastTimeIndicator object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an VisibilityLastTimeIndicator object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output VisibilityLastTimeIndicator object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out VisibilityLastTimeIndicator obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityLastTimeIndicator);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out VisibilityLastTimeIndicator obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static VisibilityLastTimeIndicator Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((VisibilityLastTimeIndicator)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static VisibilityLastTimeIndicator Deserialize(System.IO.Stream s)
+        {
+            return ((VisibilityLastTimeIndicator)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current VisibilityLastTimeIndicator object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an VisibilityLastTimeIndicator object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output VisibilityLastTimeIndicator object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out VisibilityLastTimeIndicator obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(VisibilityLastTimeIndicator);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out VisibilityLastTimeIndicator obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static VisibilityLastTimeIndicator LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class LayoutGroup
+    {
+
+        private List<LayoutGroup> _layoutGroup1;
+
+        private List<Visibility> _visibility;
+
+        private string _orientation;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlElementAttribute("LayoutGroup")]
+        public List<LayoutGroup> LayoutGroup1
+        {
+            get
+            {
+                return this._layoutGroup1;
+            }
+            set
+            {
+                this._layoutGroup1 = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlElementAttribute("Visibility")]
+        public List<Visibility> Visibility
+        {
+            get
+            {
+                return this._visibility;
+            }
+            set
+            {
+                this._visibility = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Orientation
+        {
+            get
+            {
+                return this._orientation;
+            }
+            set
+            {
+                this._orientation = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(LayoutGroup));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current LayoutGroup object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an LayoutGroup object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output LayoutGroup object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out LayoutGroup obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(LayoutGroup);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out LayoutGroup obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static LayoutGroup Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((LayoutGroup)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static LayoutGroup Deserialize(System.IO.Stream s)
+        {
+            return ((LayoutGroup)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current LayoutGroup object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an LayoutGroup object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output LayoutGroup object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out LayoutGroup obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(LayoutGroup);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out LayoutGroup obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static LayoutGroup LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class HomeSettingsControllerGroupControllerSetter
+    {
+
+        private string _id;
+
+        private string _name;
+
+        private SetterTypes _type;
+
+        private byte _modbusIndex;
+
+        private static XmlSerializer serializer;
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Id
+        {
+            get
+            {
+                return this._id;
+            }
+            set
+            {
+                this._id = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public SetterTypes Type
+        {
+            get
+            {
+                return this._type;
+            }
+            set
+            {
+                this._type = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public byte ModbusIndex
+        {
+            get
+            {
+                return this._modbusIndex;
+            }
+            set
+            {
+                this._modbusIndex = value;
+            }
+        }
+
+        private static XmlSerializer Serializer
+        {
+            get
+            {
+                if ((serializer == null))
+                {
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsControllerGroupControllerSetter));
+                }
+                return serializer;
+            }
+        }
+
+        #region Serialize/Deserialize
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroupControllerSetter object into an XML string
+        /// </summary>
+        /// <returns>string XML value</returns>
+        public virtual string Serialize()
+        {
+            System.IO.StreamReader streamReader = null;
+            System.IO.MemoryStream memoryStream = null;
+            try
+            {
+                memoryStream = new System.IO.MemoryStream();
+                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
+                xmlWriterSettings.Indent = true;
+                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
+                Serializer.Serialize(xmlWriter, this);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                streamReader = new System.IO.StreamReader(memoryStream);
+                return streamReader.ReadToEnd();
+            }
+            finally
+            {
+                if ((streamReader != null))
+                {
+                    streamReader.Dispose();
+                }
+                if ((memoryStream != null))
+                {
+                    memoryStream.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes workflow markup into an HomeSettingsControllerGroupControllerSetter object
+        /// </summary>
+        /// <param name="input">string workflow markup to deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroupControllerSetter object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool Deserialize(string input, out HomeSettingsControllerGroupControllerSetter obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroupControllerSetter);
+            try
+            {
+                obj = Deserialize(input);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool Deserialize(string input, out HomeSettingsControllerGroupControllerSetter obj)
+        {
+            System.Exception exception = null;
+            return Deserialize(input, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroupControllerSetter Deserialize(string input)
+        {
+            System.IO.StringReader stringReader = null;
+            try
+            {
+                stringReader = new System.IO.StringReader(input);
+                return ((HomeSettingsControllerGroupControllerSetter)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+            }
+            finally
+            {
+                if ((stringReader != null))
+                {
+                    stringReader.Dispose();
+                }
+            }
+        }
+
+        public static HomeSettingsControllerGroupControllerSetter Deserialize(System.IO.Stream s)
+        {
+            return ((HomeSettingsControllerGroupControllerSetter)(Serializer.Deserialize(s)));
+        }
+        #endregion
+
+        /// <summary>
+        /// Serializes current HomeSettingsControllerGroupControllerSetter object into file
+        /// </summary>
+        /// <param name="fileName">full path of outupt xml file</param>
+        /// <param name="exception">output Exception value if failed</param>
+        /// <returns>true if can serialize and save into file; otherwise, false</returns>
+        public virtual bool SaveToFile(string fileName, out System.Exception exception)
+        {
+            exception = null;
+            try
+            {
+                SaveToFile(fileName);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                exception = e;
+                return false;
+            }
+        }
+
+        public virtual void SaveToFile(string fileName)
+        {
+            System.IO.StreamWriter streamWriter = null;
+            try
+            {
+                string xmlString = Serialize();
+                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
+                streamWriter = xmlFile.CreateText();
+                streamWriter.WriteLine(xmlString);
+                streamWriter.Close();
+            }
+            finally
+            {
+                if ((streamWriter != null))
+                {
+                    streamWriter.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserializes xml markup from file into an HomeSettingsControllerGroupControllerSetter object
+        /// </summary>
+        /// <param name="fileName">string xml file to load and deserialize</param>
+        /// <param name="obj">Output HomeSettingsControllerGroupControllerSetter object</param>
+        /// <param name="exception">output Exception value if deserialize failed</param>
+        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroupControllerSetter obj, out System.Exception exception)
+        {
+            exception = null;
+            obj = default(HomeSettingsControllerGroupControllerSetter);
+            try
+            {
+                obj = LoadFromFile(fileName);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
+        }
+
+        public static bool LoadFromFile(string fileName, out HomeSettingsControllerGroupControllerSetter obj)
+        {
+            System.Exception exception = null;
+            return LoadFromFile(fileName, out obj, out exception);
+        }
+
+        public static HomeSettingsControllerGroupControllerSetter LoadFromFile(string fileName)
+        {
+            System.IO.FileStream file = null;
+            System.IO.StreamReader sr = null;
+            try
+            {
+                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
+                sr = new System.IO.StreamReader(file);
+                string xmlString = sr.ReadToEnd();
+                sr.Close();
+                file.Close();
+                return Deserialize(xmlString);
+            }
+            finally
+            {
+                if ((file != null))
+                {
+                    file.Dispose();
+                }
+                if ((sr != null))
+                {
+                    sr.Dispose();
+                }
+            }
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    public enum SetterTypes
+    {
+
+        /// <remarks/>
+        RealDateTime,
+    }
+
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class HomeSettingsRoom
+    {
+
+        private HomeSettingsRoomLayout _layout;
+
+        private string _name;
+
+        private static XmlSerializer serializer;
+
+        public HomeSettingsRoomLayout Layout
+        {
+            get
+            {
+                return this._layout;
+            }
+            set
+            {
+                this._layout = value;
             }
         }
 
@@ -478,496 +4082,32 @@ namespace HomeModbus.Models
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllers
+    public partial class HomeSettingsRoomLayout
     {
 
-        private HomeSettingsRoomControllersController _controller;
+        private List<LayoutGroup> _layoutGroup;
+
+        private List<Visibility> _visibility;
+
+        private List<string> _text;
 
         private static XmlSerializer serializer;
 
-        public HomeSettingsRoomControllersController Controller
+        [System.Xml.Serialization.XmlElementAttribute("LayoutGroup")]
+        public List<LayoutGroup> LayoutGroup
         {
             get
             {
-                return this._controller;
+                return this._layoutGroup;
             }
             set
             {
-                this._controller = value;
+                this._layoutGroup = value;
             }
         }
 
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllers));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllers object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllers object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllers object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllers obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllers);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllers obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllers Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllers)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllers Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllers)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllers object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllers object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllers object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllers obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllers);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllers obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllers LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersController
-    {
-
-        private List<HomeSettingsRoomControllersControllerParameter> _parameters;
-
-        private string _name;
-
-        private byte _modbusAddress;
-
-        private static XmlSerializer serializer;
-
-        [System.Xml.Serialization.XmlArrayItemAttribute("Parameter", IsNullable = false)]
-        public List<HomeSettingsRoomControllersControllerParameter> Parameters
-        {
-            get
-            {
-                return this._parameters;
-            }
-            set
-            {
-                this._parameters = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Name
-        {
-            get
-            {
-                return this._name;
-            }
-            set
-            {
-                this._name = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte ModbusAddress
-        {
-            get
-            {
-                return this._modbusAddress;
-            }
-            set
-            {
-                this._modbusAddress = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersController));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersController object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersController object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersController object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersController obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersController);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersController obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersController Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersController)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersController Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersController)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersController object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersController object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersController object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersController obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersController);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersController obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersController LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameter
-    {
-
-        private HomeSettingsRoomControllersControllerParameterVisibility _visibility;
-
-        private string _name;
-
-        private ModbusTypes _modbusType;
-
-        private DataTypes _dataType;
-
-        private byte _modbusIndex;
-
-        private string _refreshRate;
-
-        private static XmlSerializer serializer;
-
-        public HomeSettingsRoomControllersControllerParameter()
-        {
-            this._dataType = DataTypes.UInt16;
-        }
-
-        public HomeSettingsRoomControllersControllerParameterVisibility Visibility
+        [System.Xml.Serialization.XmlElementAttribute("Visibility")]
+        public List<Visibility> Visibility
         {
             get
             {
@@ -976,586 +4116,6 @@ namespace HomeModbus.Models
             set
             {
                 this._visibility = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Name
-        {
-            get
-            {
-                return this._name;
-            }
-            set
-            {
-                this._name = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public ModbusTypes ModbusType
-        {
-            get
-            {
-                return this._modbusType;
-            }
-            set
-            {
-                this._modbusType = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        [System.ComponentModel.DefaultValueAttribute(DataTypes.UInt16)]
-        public DataTypes DataType
-        {
-            get
-            {
-                return this._dataType;
-            }
-            set
-            {
-                this._dataType = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte ModbusIndex
-        {
-            get
-            {
-                return this._modbusIndex;
-            }
-            set
-            {
-                this._modbusIndex = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string RefreshRate
-        {
-            get
-            {
-                return this._refreshRate;
-            }
-            set
-            {
-                this._refreshRate = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameter));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameter object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameter object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameter object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameter obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameter);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameter obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameter Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameter)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameter Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameter)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameter object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameter object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameter object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameter obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameter);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameter obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameter LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibility
-    {
-
-        private object _digitalIndicator;
-
-        private HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon _showBalloon;
-
-        private HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator _analogIndicator;
-
-        private HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator _binaryIndicator;
-
-        private object _lastTimeIndicator;
-
-        private object _chart;
-
-        private static XmlSerializer serializer;
-
-        public object DigitalIndicator
-        {
-            get
-            {
-                return this._digitalIndicator;
-            }
-            set
-            {
-                this._digitalIndicator = value;
-            }
-        }
-
-        public HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon ShowBalloon
-        {
-            get
-            {
-                return this._showBalloon;
-            }
-            set
-            {
-                this._showBalloon = value;
-            }
-        }
-
-        public HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator AnalogIndicator
-        {
-            get
-            {
-                return this._analogIndicator;
-            }
-            set
-            {
-                this._analogIndicator = value;
-            }
-        }
-
-        public HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator BinaryIndicator
-        {
-            get
-            {
-                return this._binaryIndicator;
-            }
-            set
-            {
-                this._binaryIndicator = value;
-            }
-        }
-
-        public object LastTimeIndicator
-        {
-            get
-            {
-                return this._lastTimeIndicator;
-            }
-            set
-            {
-                this._lastTimeIndicator = value;
-            }
-        }
-
-        public object Chart
-        {
-            get
-            {
-                return this._chart;
-            }
-            set
-            {
-                this._chart = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibility));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibility object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibility object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibility object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibility obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibility);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibility obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibility Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibility)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibility Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameterVisibility)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibility object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibility object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibility object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibility obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibility);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibility obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibility LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon
-    {
-
-        private HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose _onClose;
-
-        private List<string> _text;
-
-        private BalloonTypes _type;
-
-        private string _text1;
-
-        private System.Nullable<bool> _showWhileParameterSet;
-
-        private static XmlSerializer serializer;
-
-        public HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose OnClose
-        {
-            get
-            {
-                return this._onClose;
-            }
-            set
-            {
-                this._onClose = value;
             }
         }
 
@@ -1572,75 +4132,13 @@ namespace HomeModbus.Models
             }
         }
 
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public BalloonTypes Type
-        {
-            get
-            {
-                return this._type;
-            }
-            set
-            {
-                this._type = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute("Text")]
-        public string Text1
-        {
-            get
-            {
-                return this._text1;
-            }
-            set
-            {
-                this._text1 = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public bool ShowWhileParameterSet
-        {
-            get
-            {
-                if (this._showWhileParameterSet.HasValue)
-                {
-                    return this._showWhileParameterSet.Value;
-                }
-                else
-                {
-                    return default(bool);
-                }
-            }
-            set
-            {
-                this._showWhileParameterSet = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool ShowWhileParameterSetSpecified
-        {
-            get
-            {
-                return this._showWhileParameterSet.HasValue;
-            }
-            set
-            {
-                if (value == false)
-                {
-                    this._showWhileParameterSet = null;
-                }
-            }
-        }
-
         private static XmlSerializer Serializer
         {
             get
             {
                 if ((serializer == null))
                 {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon));
+                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomLayout));
                 }
                 return serializer;
             }
@@ -1648,7 +4146,7 @@ namespace HomeModbus.Models
 
         #region Serialize/Deserialize
         /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon object into an XML string
+        /// Serializes current HomeSettingsRoomLayout object into an XML string
         /// </summary>
         /// <returns>string XML value</returns>
         public virtual string Serialize()
@@ -1680,16 +4178,16 @@ namespace HomeModbus.Models
         }
 
         /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon object
+        /// Deserializes workflow markup into an HomeSettingsRoomLayout object
         /// </summary>
         /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon object</param>
+        /// <param name="obj">Output HomeSettingsRoomLayout object</param>
         /// <param name="exception">output Exception value if deserialize failed</param>
         /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon obj, out System.Exception exception)
+        public static bool Deserialize(string input, out HomeSettingsRoomLayout obj, out System.Exception exception)
         {
             exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon);
+            obj = default(HomeSettingsRoomLayout);
             try
             {
                 obj = Deserialize(input);
@@ -1702,19 +4200,19 @@ namespace HomeModbus.Models
             }
         }
 
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon obj)
+        public static bool Deserialize(string input, out HomeSettingsRoomLayout obj)
         {
             System.Exception exception = null;
             return Deserialize(input, out obj, out exception);
         }
 
-        public static HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon Deserialize(string input)
+        public static HomeSettingsRoomLayout Deserialize(string input)
         {
             System.IO.StringReader stringReader = null;
             try
             {
                 stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
+                return ((HomeSettingsRoomLayout)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
             }
             finally
             {
@@ -1725,14 +4223,14 @@ namespace HomeModbus.Models
             }
         }
 
-        public static HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon Deserialize(System.IO.Stream s)
+        public static HomeSettingsRoomLayout Deserialize(System.IO.Stream s)
         {
-            return ((HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon)(Serializer.Deserialize(s)));
+            return ((HomeSettingsRoomLayout)(Serializer.Deserialize(s)));
         }
         #endregion
 
         /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon object into file
+        /// Serializes current HomeSettingsRoomLayout object into file
         /// </summary>
         /// <param name="fileName">full path of outupt xml file</param>
         /// <param name="exception">output Exception value if failed</param>
@@ -1773,16 +4271,16 @@ namespace HomeModbus.Models
         }
 
         /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon object
+        /// Deserializes xml markup from file into an HomeSettingsRoomLayout object
         /// </summary>
         /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon object</param>
+        /// <param name="obj">Output HomeSettingsRoomLayout object</param>
         /// <param name="exception">output Exception value if deserialize failed</param>
         /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon obj, out System.Exception exception)
+        public static bool LoadFromFile(string fileName, out HomeSettingsRoomLayout obj, out System.Exception exception)
         {
             exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon);
+            obj = default(HomeSettingsRoomLayout);
             try
             {
                 obj = LoadFromFile(fileName);
@@ -1795,13 +4293,13 @@ namespace HomeModbus.Models
             }
         }
 
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon obj)
+        public static bool LoadFromFile(string fileName, out HomeSettingsRoomLayout obj)
         {
             System.Exception exception = null;
             return LoadFromFile(fileName, out obj, out exception);
         }
 
-        public static HomeSettingsRoomControllersControllerParameterVisibilityShowBalloon LoadFromFile(string fileName)
+        public static HomeSettingsRoomLayout LoadFromFile(string fileName)
         {
             System.IO.FileStream file = null;
             System.IO.StreamReader sr = null;
@@ -1826,1348 +4324,6 @@ namespace HomeModbus.Models
                 }
             }
         }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose
-    {
-
-        private object _resetParameter;
-
-        private static XmlSerializer serializer;
-
-        public object ResetParameter
-        {
-            get
-            {
-                return this._resetParameter;
-            }
-            set
-            {
-                this._resetParameter = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityShowBalloonOnClose LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    public enum BalloonTypes
-    {
-
-        /// <remarks/>
-        Normal,
-
-        /// <remarks/>
-        Info,
-
-        /// <remarks/>
-        Warning,
-
-        /// <remarks/>
-        Exclamation,
-
-        /// <remarks/>
-        Alarm,
-
-        /// <remarks/>
-        Error,
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator
-    {
-
-        private HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale _scale;
-
-        private string _icon;
-
-        private static XmlSerializer serializer;
-
-        public HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale Scale
-        {
-            get
-            {
-                return this._scale;
-            }
-            set
-            {
-                this._scale = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Icon
-        {
-            get
-            {
-                return this._icon;
-            }
-            set
-            {
-                this._icon = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicator LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale
-    {
-
-        private List<HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange> _ranges;
-
-        private int _min;
-
-        private int _max;
-
-        private System.Nullable<int> _majorCount;
-
-        private System.Nullable<int> _minorCount;
-
-        private System.Nullable<int> _goodValue;
-
-        private static XmlSerializer serializer;
-
-        [System.Xml.Serialization.XmlArrayItemAttribute("Range", IsNullable = false)]
-        public List<HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange> Ranges
-        {
-            get
-            {
-                return this._ranges;
-            }
-            set
-            {
-                this._ranges = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int Min
-        {
-            get
-            {
-                return this._min;
-            }
-            set
-            {
-                this._min = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int Max
-        {
-            get
-            {
-                return this._max;
-            }
-            set
-            {
-                this._max = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int MajorCount
-        {
-            get
-            {
-                if (this._majorCount.HasValue)
-                {
-                    return this._majorCount.Value;
-                }
-                else
-                {
-                    return default(int);
-                }
-            }
-            set
-            {
-                this._majorCount = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool MajorCountSpecified
-        {
-            get
-            {
-                return this._majorCount.HasValue;
-            }
-            set
-            {
-                if (value == false)
-                {
-                    this._majorCount = null;
-                }
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int MinorCount
-        {
-            get
-            {
-                if (this._minorCount.HasValue)
-                {
-                    return this._minorCount.Value;
-                }
-                else
-                {
-                    return default(int);
-                }
-            }
-            set
-            {
-                this._minorCount = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool MinorCountSpecified
-        {
-            get
-            {
-                return this._minorCount.HasValue;
-            }
-            set
-            {
-                if (value == false)
-                {
-                    this._minorCount = null;
-                }
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int GoodValue
-        {
-            get
-            {
-                if (this._goodValue.HasValue)
-                {
-                    return this._goodValue.Value;
-                }
-                else
-                {
-                    return default(int);
-                }
-            }
-            set
-            {
-                this._goodValue = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool GoodValueSpecified
-        {
-            get
-            {
-                return this._goodValue.HasValue;
-            }
-            set
-            {
-                if (value == false)
-                {
-                    this._goodValue = null;
-                }
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScale LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange
-    {
-
-        private double _startValue;
-
-        private double _endValue;
-
-        private static XmlSerializer serializer;
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double StartValue
-        {
-            get
-            {
-                return this._startValue;
-            }
-            set
-            {
-                this._startValue = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double EndValue
-        {
-            get
-            {
-                return this._endValue;
-            }
-            set
-            {
-                this._endValue = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityAnalogIndicatorScaleRange LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator
-    {
-
-        private string _onIcon;
-
-        private string _offIcon;
-
-        private static XmlSerializer serializer;
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string OnIcon
-        {
-            get
-            {
-                return this._onIcon;
-            }
-            set
-            {
-                this._onIcon = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string OffIcon
-        {
-            get
-            {
-                return this._offIcon;
-            }
-            set
-            {
-                this._offIcon = value;
-            }
-        }
-
-        private static XmlSerializer Serializer
-        {
-            get
-            {
-                if ((serializer == null))
-                {
-                    serializer = new XmlSerializerFactory().CreateSerializer(typeof(HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator));
-                }
-                return serializer;
-            }
-        }
-
-        #region Serialize/Deserialize
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator object into an XML string
-        /// </summary>
-        /// <returns>string XML value</returns>
-        public virtual string Serialize()
-        {
-            System.IO.StreamReader streamReader = null;
-            System.IO.MemoryStream memoryStream = null;
-            try
-            {
-                memoryStream = new System.IO.MemoryStream();
-                System.Xml.XmlWriterSettings xmlWriterSettings = new System.Xml.XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                System.Xml.XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-                Serializer.Serialize(xmlWriter, this);
-                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
-                streamReader = new System.IO.StreamReader(memoryStream);
-                return streamReader.ReadToEnd();
-            }
-            finally
-            {
-                if ((streamReader != null))
-                {
-                    streamReader.Dispose();
-                }
-                if ((memoryStream != null))
-                {
-                    memoryStream.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes workflow markup into an HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator object
-        /// </summary>
-        /// <param name="input">string workflow markup to deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator);
-            try
-            {
-                obj = Deserialize(input);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool Deserialize(string input, out HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator obj)
-        {
-            System.Exception exception = null;
-            return Deserialize(input, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator Deserialize(string input)
-        {
-            System.IO.StringReader stringReader = null;
-            try
-            {
-                stringReader = new System.IO.StringReader(input);
-                return ((HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator)(Serializer.Deserialize(System.Xml.XmlReader.Create(stringReader))));
-            }
-            finally
-            {
-                if ((stringReader != null))
-                {
-                    stringReader.Dispose();
-                }
-            }
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator Deserialize(System.IO.Stream s)
-        {
-            return ((HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator)(Serializer.Deserialize(s)));
-        }
-        #endregion
-
-        /// <summary>
-        /// Serializes current HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator object into file
-        /// </summary>
-        /// <param name="fileName">full path of outupt xml file</param>
-        /// <param name="exception">output Exception value if failed</param>
-        /// <returns>true if can serialize and save into file; otherwise, false</returns>
-        public virtual bool SaveToFile(string fileName, out System.Exception exception)
-        {
-            exception = null;
-            try
-            {
-                SaveToFile(fileName);
-                return true;
-            }
-            catch (System.Exception e)
-            {
-                exception = e;
-                return false;
-            }
-        }
-
-        public virtual void SaveToFile(string fileName)
-        {
-            System.IO.StreamWriter streamWriter = null;
-            try
-            {
-                string xmlString = Serialize();
-                System.IO.FileInfo xmlFile = new System.IO.FileInfo(fileName);
-                streamWriter = xmlFile.CreateText();
-                streamWriter.WriteLine(xmlString);
-                streamWriter.Close();
-            }
-            finally
-            {
-                if ((streamWriter != null))
-                {
-                    streamWriter.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserializes xml markup from file into an HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator object
-        /// </summary>
-        /// <param name="fileName">string xml file to load and deserialize</param>
-        /// <param name="obj">Output HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator object</param>
-        /// <param name="exception">output Exception value if deserialize failed</param>
-        /// <returns>true if this Serializer can deserialize the object; otherwise, false</returns>
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator obj, out System.Exception exception)
-        {
-            exception = null;
-            obj = default(HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator);
-            try
-            {
-                obj = LoadFromFile(fileName);
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                exception = ex;
-                return false;
-            }
-        }
-
-        public static bool LoadFromFile(string fileName, out HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator obj)
-        {
-            System.Exception exception = null;
-            return LoadFromFile(fileName, out obj, out exception);
-        }
-
-        public static HomeSettingsRoomControllersControllerParameterVisibilityBinaryIndicator LoadFromFile(string fileName)
-        {
-            System.IO.FileStream file = null;
-            System.IO.StreamReader sr = null;
-            try
-            {
-                file = new System.IO.FileStream(fileName, FileMode.Open, FileAccess.Read);
-                sr = new System.IO.StreamReader(file);
-                string xmlString = sr.ReadToEnd();
-                sr.Close();
-                file.Close();
-                return Deserialize(xmlString);
-            }
-            finally
-            {
-                if ((file != null))
-                {
-                    file.Dispose();
-                }
-                if ((sr != null))
-                {
-                    sr.Dispose();
-                }
-            }
-        }
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    public enum ModbusTypes
-    {
-
-        /// <remarks/>
-        Discrete,
-
-        /// <remarks/>
-        Coil,
-
-        /// <remarks/>
-        InputRegister,
-
-        /// <remarks/>
-        HoldingRegister,
-    }
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
-    [System.SerializableAttribute()]
-    public enum DataTypes
-    {
-
-        /// <remarks/>
-        UInt16,
-
-        /// <remarks/>
-        Float,
-
-        /// <remarks/>
-        RdDateTime,
-
-        /// <remarks/>
-        RdTime,
     }
 }
 #pragma warning restore

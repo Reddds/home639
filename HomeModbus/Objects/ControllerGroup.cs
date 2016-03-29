@@ -9,7 +9,7 @@ namespace HomeModbus.Objects
     /// <summary>
     /// Комната
     /// </summary>
-    class Room
+    class ControllerGroup
     {
         public event EventHandler<string> WriteToLog;
         public List<ShController> ShControllers;

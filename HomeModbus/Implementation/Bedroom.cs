@@ -4,7 +4,7 @@ using HomeModbus.Objects;
 
 namespace HomeModbus.Implementation
 {
-    class Bedroom : Room
+    class Bedroom : ControllerGroup
     {
         public event EventHandler<bool> CallFromBedRoomChanged;
         //        public bool CallFromBedRoomState { get; private set; }

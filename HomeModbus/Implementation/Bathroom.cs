@@ -7,7 +7,7 @@ using HomeModbus.Objects;
 
 namespace HomeModbus.Implementation
 {
-    class Bathroom : Room
+    class Bathroom : ControllerGroup
     {
         public event EventHandler<bool> BathDoorChanged;
 //        public bool BathDoorState { get; private set; }

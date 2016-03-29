@@ -10,16 +10,19 @@
         xmlns:commands="clr-namespace:HomeModbus.Commands"
         xmlns:tooltip="clr-namespace:HomeModbus.Tooltip"
         xmlns:controls="clr-namespace:HomeModbus.Controls"
-        xmlns:wpfGauge="clr-namespace:WpfGauge;assembly=WpfGauge"
-        xmlns:CircularGauge="clr-namespace:CircularGauge;assembly=CircularGauge" 
         xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
         xmlns:properties="clr-namespace:HomeModbus.Properties"
         xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
+        xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking" xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
         x:Class="HomeModbus.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing" Loaded="Window_Loaded">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="200"/>
+        </Grid.RowDefinitions>
         <TabControl x:Name="MainTabs">
             <TabItem Header="Основное">
                 <Grid>
@@ -147,7 +150,7 @@
             </TabItem>
             <TabItem Header="Коридор">
                 <Grid>
-                    <GroupBox x:Name="groupBox1" Header="Demo EEPROM" HorizontalAlignment="Left" Height="107" Margin="246,10,0,0" VerticalAlignment="Top" Width="372">
+                    <GroupBox x:Name="groupBox1" Header="Demo EEPROM" HorizontalAlignment="Left" Height="107" Margin="10,10,0,0" VerticalAlignment="Top" Width="372">
                         <Grid>
                             <rdControls:FilePicker x:Name="FpDemoEeprom" SettingKey="DemoEeprom" Filter="EEPROM|*.eep;*.hex" Margin="0,10,0,0" VerticalAlignment="Top"/>
                             <Button x:Name="button1" Content="Послать программу для Demo" HorizontalAlignment="Left" Height="36" Margin="0,45,0,0" VerticalAlignment="Top" Width="186" Click="button1_Click"/>
@@ -181,281 +184,33 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
-            <TabItem Header="Ванна">
-                <Grid>
-                    <controls:ObjectButton x:Name="OBathBulb" Width="70" Height="70" HorizontalAlignment="Left"
-						VerticalAlignment="Top"
-						EnabledChecked="Assets/Images/Objects/LightBulbOn.png"
-						EnabledUnchecked="Assets/Images/Objects/LightBulbOff.png" Margin="51,34,0,0"/>
+            <TabItem>
 
-                    <controls:ObjectButton x:Name="OBathDoor" Width="70" Height="70" HorizontalAlignment="Left"
-						VerticalAlignment="Top"
-						EnabledChecked="Assets/Images/Objects/DoorClosed.png"
-						EnabledUnchecked="Assets/Images/Objects/DoorOpened.png"  Margin="148,47,0,0"/>
+                <dxdo:DockLayoutManager>
+                    <dxdo:LayoutGroup Caption="LayoutRoot" dxb:MergingProperties.ElementMergingBehavior="Undefined">
+                        <dxdo:LayoutPanel Caption="Panel1" dxb:MergingProperties.ElementMergingBehavior="Undefined"/>
+                        <dxdo:LayoutPanel Caption="Panel2" dxb:MergingProperties.ElementMergingBehavior="Undefined"/>
+                    </dxdo:LayoutGroup>
+                </dxdo:DockLayoutManager>
 
-                </Grid>
-            </TabItem>
-            <TabItem Header="Спальня">
-                <Grid>
-                    <Button x:Name="button2" Content="Установить текущее время" Click="SetCurrentTime" HorizontalAlignment="Left" Height="27" Margin="10,10,0,0" VerticalAlignment="Top" Width="262"/>
-                    <!--
-
-                    <wpfGauge:Gauge 
-						FontSize="12" AutoScale="False" Value="20"
-						x:Name="GBedroomTemp" MajorTickCount="10" MinorTickCount="5" MinValue="0" MaxValue="50" 
-						HorizontalAlignment="Left" StartAngle="-65" EndAngle="247" MajorTickMarkColor="LightYellow" Margin="10,88,0,0" Grid.Row="0" VerticalAlignment="Top" Height="200" Width="200">
-                        <wpfGauge:Gauge.GoalMarkers>
-                            <wpfGauge:GoalMarker MarkerColor="Red" Value="20" />
-                        </wpfGauge:Gauge.GoalMarkers>
-                        <wpfGauge:Gauge.ValueTextStyle>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Margin" Value="0,60,0,0" />
-                                <Setter Property="FontSize" Value="16"/>
-                            </Style>
-                        </wpfGauge:Gauge.ValueTextStyle>
-
-                        <wpfGauge:Gauge.TickLabelStyle>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontSize" Value="12"/>
-                            </Style>
-                        </wpfGauge:Gauge.TickLabelStyle>
-
-                    </wpfGauge:Gauge>
-                    <wpfGauge:Gauge 
-						FontSize="12" AutoScale="False" Value="20"
-						x:Name="GBedroomHym" MajorTickCount="10" MinorTickCount="5" MinValue="0" MaxValue="100" 
-						HorizontalAlignment="Left" StartAngle="-65" EndAngle="247" MajorTickMarkColor="LightYellow" Margin="268,88,0,0" Grid.Row="0" VerticalAlignment="Top" Height="200" Width="200">
-                        <wpfGauge:Gauge.GoalMarkers>
-                            <wpfGauge:GoalMarker MarkerColor="Red" Value="30" />
-                        </wpfGauge:Gauge.GoalMarkers>
-                        <wpfGauge:Gauge.ValueTextStyle>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Margin" Value="0,60,0,0" />
-                                <Setter Property="FontSize" Value="16"/>
-                            </Style>
-                        </wpfGauge:Gauge.ValueTextStyle>
-
-                        <wpfGauge:Gauge.TickLabelStyle>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontSize" Value="12"/>
-                            </Style>
-                        </wpfGauge:Gauge.TickLabelStyle>
-
-                    </wpfGauge:Gauge>
--->
-                    <dxga:CircularGaugeControl x:Name="GBedroomTemp" Width="200" Height="200" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="23,38,0,0">
-                        <dxga:CircularGaugeControl.Model>
-                            <dxga:CircularEcoModel/>
-                        </dxga:CircularGaugeControl.Model>
-                        <dxga:CircularGaugeControl.Scales>
-                            <dxga:ArcScale StartValue="10" EndValue="35" 
-								StartAngle="-230" EndAngle="50" MinorIntervalCount="5" MajorIntervalCount="5">
-
-                                <dxga:ArcScale.CustomElements>
-                                    <dxga:ScaleCustomElement VerticalAlignment="Bottom">
-                                        <Image Source="Assets/Images/Objects/Thermometre.png" Height="30" Margin="0,0,0,30" />
-                                    </dxga:ScaleCustomElement>
-                                </dxga:ArcScale.CustomElements>
-                                <dxga:ArcScale.LabelOptions>
-                                    <dxga:ArcScaleLabelOptions Orientation="LeftToRight" />
-                                </dxga:ArcScale.LabelOptions>
-                                <dxga:ArcScale.Needles>
-                                    <dxga:ArcScaleNeedle x:Name="BedroomTempNeedle"  Value="{Binding BedroomTemp}" />
-                                </dxga:ArcScale.Needles>
-                                <dxga:ArcScale.Markers>
-                                    <dxga:ArcScaleMarker Value="20" />
-                                </dxga:ArcScale.Markers>
-                                <dxga:ArcScale.RangeBars>
-                                    <dxga:ArcScaleRangeBar AnchorValue="24" Value="18" />
-                                </dxga:ArcScale.RangeBars>
-                                <dxga:ArcScale.Layers>
-                                    <dxga:ArcScaleLayer />
-                                </dxga:ArcScale.Layers>
-                                <dxga:ArcScale.Ranges>
-                                    <dxga:ArcScaleRange StartValue="18" EndValue="24" />
-                                    <dxga:ArcScaleRange StartValue="10" EndValue="18" />
-                                    <dxga:ArcScaleRange StartValue="24" EndValue="35" />
-                                </dxga:ArcScale.Ranges>
-                            </dxga:ArcScale>
-                        </dxga:CircularGaugeControl.Scales>
-                    </dxga:CircularGaugeControl>
-                    <dxga:StateIndicatorControl dxga:AnalogGaugeControl.ValueIndicator="{Binding ElementName=BedroomTempNeedle}"  
-						HorizontalAlignment="Left" Margin="201,279,0,0"  
-						VerticalAlignment="Top" Height="32" Width="32" >
-                        <dxga:StateIndicatorControl.AdditionalStates>
-                            <dxga:State>
-                                <dxga:State.Presentation>
-                                    <dxga:LampGreenStatePresentation />
-                                </dxga:State.Presentation>
-                            </dxga:State>
-                            <dxga:State>
-                                <dxga:State.Presentation>
-                                    <dxga:LampYellowStatePresentation />
-                                </dxga:State.Presentation>
-                            </dxga:State>
-                            <dxga:State>
-                                <dxga:State.Presentation>
-                                    <dxga:LampRedStatePresentation />
-                                </dxga:State.Presentation>
-                            </dxga:State>
-                        </dxga:StateIndicatorControl.AdditionalStates>
-                    </dxga:StateIndicatorControl>
-
-
-
-                    <dxga:CircularGaugeControl x:Name="GBedroomHym" Width="200"  Height="200" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="276,38,0,0">
-                        <dxga:CircularGaugeControl.Model>
-                            <dxga:CircularEcoModel/>
-                        </dxga:CircularGaugeControl.Model>
-
-                        <dxga:CircularGaugeControl.Scales>
-                            <dxga:ArcScale StartValue="0" EndValue="100" 
-								StartAngle="-230" EndAngle="50" MinorIntervalCount="5">
-                                <dxga:ArcScale.LabelOptions>
-                                    <dxga:ArcScaleLabelOptions Orientation="LeftToRight" />
-                                </dxga:ArcScale.LabelOptions>
-                                <dxga:ArcScale.CustomElements>
-                                    <dxga:ScaleCustomElement VerticalAlignment="Bottom">
-                                        <Image Source="Assets/Images/Objects/Humidity.png"  Height="30" Margin="0,0,0,30" />
-                                    </dxga:ScaleCustomElement>
-                                </dxga:ArcScale.CustomElements>
-
-                                <dxga:ArcScale.Needles>
-                                    <dxga:ArcScaleNeedle x:Name="BedroomHymNeedle"  Value="{Binding BedroomHym}" />
-                                </dxga:ArcScale.Needles>
-                                <dxga:ArcScale.Markers>
-                                    <dxga:ArcScaleMarker Value="50" />
-                                </dxga:ArcScale.Markers>
-                                <dxga:ArcScale.RangeBars>
-                                    <dxga:ArcScaleRangeBar AnchorValue="60" Value="30" />
-                                </dxga:ArcScale.RangeBars>
-                                <dxga:ArcScale.Layers>
-                                    <dxga:ArcScaleLayer />
-                                </dxga:ArcScale.Layers>
-                                <dxga:ArcScale.Ranges>
-                                    <dxga:ArcScaleRange StartValue="30" EndValue="60" />
-                                    <dxga:ArcScaleRange StartValue="60" EndValue="100" />
-                                    <dxga:ArcScaleRange StartValue="0" EndValue="30" />
-                                </dxga:ArcScale.Ranges>
-                            </dxga:ArcScale>
-                        </dxga:CircularGaugeControl.Scales>
-                    </dxga:CircularGaugeControl>
-                    <dxga:StateIndicatorControl dxga:AnalogGaugeControl.ValueIndicator="{Binding ElementName=BedroomHymNeedle}"  
-						HorizontalAlignment="Left" Margin="456,279,0,0"  
-						VerticalAlignment="Top" Height="32" Width="32" >
-                        <dxga:StateIndicatorControl.AdditionalStates>
-                            <dxga:State>
-                                <dxga:State.Presentation>
-                                    <dxga:LampGreenStatePresentation />
-                                </dxga:State.Presentation>
-                            </dxga:State>
-                            <dxga:State>
-                                <dxga:State.Presentation>
-                                    <dxga:LampYellowStatePresentation />
-                                </dxga:State.Presentation>
-                            </dxga:State>
-                            <dxga:State>
-                                <dxga:State.Presentation>
-                                    <dxga:LampRedStatePresentation />
-                                </dxga:State.Presentation>
-                            </dxga:State>
-                        </dxga:StateIndicatorControl.AdditionalStates>
-                    </dxga:StateIndicatorControl>
-
-
-
-
-                    <dxga:DigitalGaugeControl x:Name="digitalGaugeControl1"
-						Text="{Binding BedroomTemp}" HorizontalAlignment="Left" VerticalAlignment="Top"
-						Height="100" Width="150" Padding="7" Margin="51,243,0,0">
-                        <!--region #Layers-->
-                        <dxga:DigitalGaugeControl.Layers>
-                            <dxga:DigitalGaugeLayer>
-                                <dxga:DigitalGaugeLayer.Presentation>
-                                    <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
-                                </dxga:DigitalGaugeLayer.Presentation>
-                            </dxga:DigitalGaugeLayer>
-                        </dxga:DigitalGaugeControl.Layers>
-                        <!--endregion #Layers-->
-                        <!--region #Model-->
-                        <dxga:DigitalGaugeControl.Model>
-                            <dxga:DigitalEcoModel/>
-                        </dxga:DigitalGaugeControl.Model>
-                        <!--endregion #Model-->
-                        <dxga:DigitalGaugeControl.SymbolView>
-                            <dxga:SevenSegmentsView/>
-                        </dxga:DigitalGaugeControl.SymbolView>
-                    </dxga:DigitalGaugeControl>
-                    <dxga:DigitalGaugeControl x:Name="digitalGaugeControl1_Copy"
-						Text="{Binding BedroomHym}" HorizontalAlignment="Left" VerticalAlignment="Top"
-						Height="100" Width="150" Padding="7" Margin="301,243,0,0">
-                        <!--endregion #Layers-->
-                        <!--region #Layers-->
-                        <dxga:DigitalGaugeControl.Layers>
-                            <dxga:DigitalGaugeLayer>
-                                <dxga:DigitalGaugeLayer.Presentation>
-                                    <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
-                                </dxga:DigitalGaugeLayer.Presentation>
-                            </dxga:DigitalGaugeLayer>
-                        </dxga:DigitalGaugeControl.Layers>
-                        <!--region #Model-->
-                        <dxga:DigitalGaugeControl.Model>
-                            <dxga:DigitalEcoModel/>
-                        </dxga:DigitalGaugeControl.Model>
-                        <!--endregion #Model-->
-                        <dxga:DigitalGaugeControl.SymbolView>
-                            <dxga:SevenSegmentsView/>
-                        </dxga:DigitalGaugeControl.SymbolView>
-                    </dxga:DigitalGaugeControl>
-                    <dxga:DigitalGaugeControl x:Name="DgcLastPooTime"
-						Text="{Binding LastPooTime, Source={x:Static properties:Settings.Default}, StringFormat=dd MMM HH:mm}" HorizontalAlignment="Left" VerticalAlignment="Top"
-						Height="76" Width="266" Padding="7" Margin="591,148,0,0">
-                        <!--region #Layers-->
-                        <dxga:DigitalGaugeControl.Layers>
-                            <dxga:DigitalGaugeLayer>
-                                <dxga:DigitalGaugeLayer.Presentation>
-                                    <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
-                                </dxga:DigitalGaugeLayer.Presentation>
-                            </dxga:DigitalGaugeLayer>
-                        </dxga:DigitalGaugeControl.Layers>
-                        <!--endregion #Layers-->
-                        <!--region #Model-->
-                        <dxga:DigitalGaugeControl.Model>
-                            <dxga:DigitalEcoModel/>
-                        </dxga:DigitalGaugeControl.Model>
-                        <!--endregion #Model-->
-                        <dxga:DigitalGaugeControl.SymbolView>
-                            <dxga:FourteenSegmentsView/>
-                        </dxga:DigitalGaugeControl.SymbolView>
-                    </dxga:DigitalGaugeControl>
-
-                    <Image x:Name="image" HorizontalAlignment="Left" Height="48" Margin="538,163,0,0" VerticalAlignment="Top" Width="48" Source="Assets/Images/Objects/poo.png"/>
-                    <dxc:ChartControl x:Name="BedroomLog" HorizontalAlignment="Stretch" Height="257" Margin="10,348,10,0" VerticalAlignment="Top" Width="888">
-                        <dxc:ChartControl.Legend>
-                            <dxc:Legend/>
-                        </dxc:ChartControl.Legend>
-                        <dxc:XYDiagram2D>
-                            <dxc:XYDiagram2D.AxisX>
-                                <dxc:AxisX2D>
-                                    <dxc:AxisX2D.DateTimeScaleOptions>
-                                        <dxc:ManualDateTimeScaleOptions MeasureUnit="Minute">
-
-                                        </dxc:ManualDateTimeScaleOptions>
-
-                                    </dxc:AxisX2D.DateTimeScaleOptions>
-                                </dxc:AxisX2D>
-                            </dxc:XYDiagram2D.AxisX>
-                            <dxc:LineSeries2D DisplayName="Влажность"/>
-                            <dxc:LineSeries2D DisplayName="Температура"/>
-                        </dxc:XYDiagram2D>
-                    </dxc:ChartControl>
-
-                </Grid>
             </TabItem>
         </TabControl>
+        <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" >
+            <dxc:ChartControl.Legend>
+                <dxc:Legend/>
+            </dxc:ChartControl.Legend>
+            <dxc:XYDiagram2D EnableAxisXNavigation="True">
+                <dxc:XYDiagram2D.AxisX>
+                    <dxc:AxisX2D>
+                        <dxc:AxisX2D.DateTimeScaleOptions>
+                            <dxc:ManualDateTimeScaleOptions MeasureUnit="Minute"/>
+                        </dxc:AxisX2D.DateTimeScaleOptions>
+                    </dxc:AxisX2D>
+                </dxc:XYDiagram2D.AxisX>
+                <dxc:LineSeries2D DisplayName="Влажность"/>
+                <dxc:LineSeries2D DisplayName="Температура"/>
+            </dxc:XYDiagram2D>
+        </dxc:ChartControl>
+
     </Grid>
 </Window>

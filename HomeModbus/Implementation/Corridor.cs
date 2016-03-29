@@ -4,7 +4,7 @@ using HomeModbus.Objects;
 
 namespace HomeModbus.Implementation
 {
-    class Corridor : Room
+    class Corridor : ControllerGroup
     {
         public event EventHandler<bool> LightInCorridorChanged;
         public bool LightInCorridorState { get; private set; }

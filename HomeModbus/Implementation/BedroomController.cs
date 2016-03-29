@@ -17,7 +17,7 @@ namespace HomeModbus.Implementation
             base.GetStatus(modbus);
         }
 
-        public BedroomController(byte slaveAddress) : base(slaveAddress)
+        public BedroomController(byte slaveAddress, string id) : base(id, slaveAddress)
         {
         }
     }

@@ -9,12 +9,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     
-    <dxdo:DockLayoutManager>
+    <dxdo:DockLayoutManager x:Name="DlmMainLayout">
         <dxdo:LayoutGroup x:Name="MainPanel" Caption="LayoutRoot" dxb:MergingProperties.ElementMergingBehavior="Undefined">
-<!--
-          <dxdo:LayoutPanel Caption="Panel1" dxb:MergingProperties.ElementMergingBehavior="Undefined"/>
-            <dxdo:LayoutPanel Caption="Panel2" dxb:MergingProperties.ElementMergingBehavior="Undefined"/>
--->
         </dxdo:LayoutGroup>
     </dxdo:DockLayoutManager>
 
