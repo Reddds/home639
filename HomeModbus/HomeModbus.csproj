@@ -61,11 +61,15 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.6\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
+      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="M2Mqtt.Net, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\M2Mqtt.4.3.0.0\lib\net45\M2Mqtt.Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -149,6 +153,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\HomeServer\SocketExchangeClasses.cs">
+      <Link>SocketExchangeClasses.cs</Link>
+    </Compile>
     <Compile Include="Controls\AnalogIndicator.xaml.cs">
       <DependentUpon>AnalogIndicator.xaml</DependentUpon>
     </Compile>
@@ -170,9 +177,12 @@
     <Compile Include="Controls\SimpleIndicator.xaml.cs">
       <DependentUpon>SimpleIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\SimpleSetter.xaml.cs">
+      <DependentUpon>SimpleSetter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DataAccess.cs" />
+    <Compile Include="HsClient.cs" />
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="ModbusMasterThread.cs" />
     <Compile Include="Models\Base\ValueLog.cs" />
     <Compile Include="Models\GlobalData.cs" />
     <Compile Include="Models\HomeSettings.Designer.cs" />
@@ -214,6 +224,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\SimpleIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SimpleSetter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -381,6 +395,9 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\System.Data.SQLite.Core.1.0.99.0\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Data.SQLite.Core.1.0.99.0\build\net46\System.Data.SQLite.Core.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PreBuildEvent>echo. 2&gt;"$(ProjectDir)\Properties\licenses.licx"</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

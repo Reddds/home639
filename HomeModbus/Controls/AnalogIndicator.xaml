@@ -7,10 +7,10 @@
              xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
              mc:Ignorable="d" 
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             Height="200" Width="200">
+             Height="180" Width="180">
     <Grid>
 
-        <dxga:CircularGaugeControl x:Name="MainGauge" Width="200" Height="200"  >
+        <dxga:CircularGaugeControl x:Name="MainGauge" Width="180" Height="180"  >
             <dxga:CircularGaugeControl.Model>
                 <dxga:CircularEcoModel/>
             </dxga:CircularGaugeControl.Model>
@@ -19,7 +19,7 @@
 
                     <dxga:ArcScale.CustomElements>
                         <dxga:ScaleCustomElement VerticalAlignment="Bottom">
-                            <Image x:Name="IIcon"  Height="30" Margin="0,0,0,30" />
+                            <Image x:Name="IIcon"  Height="24" Margin="0,0,0,30" />
                         </dxga:ScaleCustomElement>
                     </dxga:ArcScale.CustomElements>
                     <dxga:ArcScale.LabelOptions>
@@ -48,7 +48,7 @@
             </dxga:CircularGaugeControl.Scales>
         </dxga:CircularGaugeControl>
         <dxga:StateIndicatorControl Grid.Row="0" dxga:AnalogGaugeControl.ValueIndicator="{Binding ElementName=MainNeedle}"  
-						HorizontalAlignment="Left" Margin="161,9,0,0"  
+						HorizontalAlignment="Left" Margin="142,7,0,0"  
 						VerticalAlignment="Top" Height="32" Width="32" >
             <dxga:StateIndicatorControl.AdditionalStates>
                 <dxga:State>

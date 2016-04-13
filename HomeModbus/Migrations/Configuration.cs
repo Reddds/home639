@@ -1,11 +1,9 @@
+using System.Data.Entity.Migrations;
+using HomeModbus.Models.Base;
+
 namespace HomeModbus.Migrations
 {
-    using System;
-    using System.Data.Entity;
-    using System.Data.Entity.Migrations;
-    using System.Linq;
-
-    internal sealed class Configuration : DbMigrationsConfiguration<Models.Base.ValueLogContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<ValueLogContext>
     {
         public Configuration()
         {
@@ -14,7 +12,7 @@ namespace HomeModbus.Migrations
             AutomaticMigrationDataLossAllowed = true;
         }
 
-        protected override void Seed(HomeModbus.Models.Base.ValueLogContext context)
+        protected override void Seed(ValueLogContext context)
         {
             //  This method will be called after migrating to the latest version.
 

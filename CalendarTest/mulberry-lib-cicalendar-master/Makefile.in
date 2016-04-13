@@ -1,0 +1,111 @@
+#
+# Makefile for Mulberry's CICalendar Lib
+#
+# Compatibility: GNU
+#
+# $Date$
+# $Revision$
+#
+
+#
+# Default installation root...
+#
+prefix = @prefix@
+
+DESTDIR = @DESTDIR@
+
+#
+# tools used for compiling / installing...
+#
+CXX = @CXX@
+AR = @AR@
+INSTALL = @INSTALL@
+HAS_MM = @HAS_MM@
+PRELINK = @PRELINK@
+O = .o
+E =
+A = .a
+D = .so
+
+#
+# Name of target object files:
+#
+LIBRARY = libCICalendar
+LIBDIR = $(DESTDIR)$(prefix)/lib
+INCDIR = $(DESTDIR)$(prefix)/include
+OBJS = \
+	Source/CICalendarAttribute$O \
+	Source/CICalendarCalAddressValue$O \
+	Source/CICalendarComponentBase$O \
+	Source/CICalendarComponent$O \
+	Source/CICalendarComponentDB$O \
+	Source/CICalendarComponentExpanded$O \
+	Source/CICalendarComponentRecord$O \
+	Source/CICalendarComponentRecur$O \
+	Source/CICalendar$O \
+	Source/CICalendarDateTime$O \
+	Source/CICalendarDateTimeValue$O \
+	Source/CICalendarDefinitions$O \
+	Source/CICalendarDummyValue$O \
+	Source/CICalendarDuration$O \
+	Source/CICalendarDurationValue$O \
+	Source/CICalendarFreeBusy$O \
+	Source/CICalendarInit$O \
+	Source/CICalendarIntegerValue$O \
+	Source/CICalendarLocale$O \
+	Source/CICalendarManager$O \
+	Source/CICalendarMultiValue$O \
+	Source/CICalendarPeriod$O \
+	Source/CICalendarPeriodValue$O \
+	Source/CICalendarPlainTextValue$O \
+	Source/CICalendarProperty$O \
+	Source/CICalendarRecurrence$O \
+	Source/CICalendarRecurrenceSet$O \
+	Source/CICalendarRecurrenceValue$O \
+	Source/CICalendarSync$O \
+	Source/CICalendarTextValue$O \
+	Source/CICalendarTimezone$O \
+	Source/CICalendarURIValue$O \
+	Source/CICalendarUTCOffsetValue$O \
+	Source/CICalendarUtils$O \
+	Source/CICalendarVAlarm$O \
+	Source/CICalendarValue$O \
+	Source/CICalendarVEvent$O \
+	Source/CICalendarVFreeBusy$O \
+	Source/CICalendarVJournal$O \
+	Source/CICalendarVTimezone$O \
+	Source/CICalendarVTimezoneDaylight$O \
+	Source/CICalendarVTimezoneElement$O \
+	Source/CICalendarVTimezoneStandard$O \
+	Source/CICalendarVToDo$O \
+	Source/CITIPDefinitions$O \
+	Source/CITIPProcessor$O \
+	Source/CITIPScheduleResults$O \
+
+.PHONY : all clean distclean debug
+
+#
+# Main target and file dependencies:
+#
+
+all: $(LIBRARY)$A
+
+#
+# Flags passed to the compiler
+#
+
+JX_ROOT = ../JX
+JX_MAKE_INCLUDE_DIR = $(JX_ROOT)/include/make
+include $(JX_MAKE_INCLUDE_DIR)/jx_constants
+include $(JX_MAKE_INCLUDE_DIR)/jx_config
+CXXDEBUG = -g
+CXXOPT = @CXXOPT@
+CXXWARN = @CXXWARN@
+CPPFLAGS = $(J_RAW_SYSTEM_STUFF) -include ../../Linux/Sources/Mulberry_Prefix.h -I../../Libraries/CICalendar/Source -I../../Sources_Common/Mail/URLs -I../../Sources_Common/Application/Three_Pane -I../../Sources_Common/Application/Calendar/Calendar_View/Calendar_Window -I../../Sources_Common/Mail/Search -I../../Linux/Sources/Support/Streams -I../../Linux/Sources/Application/General -I../../Sources_Common/Plugins/Security -I../../Sources_Common/Mail/Extensions -I../../Sources_Common/Calendar_Store -I../../Sources_Common/Mail/Protocols -I../../Sources_Common/Calendar_Store/Protocols -I../../Sources_Common/Mail/Attachments -I../../Sources_Common/Mail/Message -I../../Sources_Common/Automation -I../../Sources_Common/Calendar_Store/Notifications -I../../Sources_Common/Mail -I../../Sources_Common/Plugins/General -I../../Linux/Sources/Support -I../../Sources_Common/Offline -I../../Sources_Common/Resources/ -I../../Sources_Common/Mail/Mailbox/ -I../XMLLib/Source -I../../Sources_Common/Application/Preferences -I../../Sources_Common/Mail/Network -I../../Sources_Common/Mail/Control -I../../Sources_Common/Mail/Automation -I../../Sources_Common/Mail/Address -I../../Sources_Common/i18n/Charsets -I../../Linux/Includes -I../../Sources_Common -I../../Linux/Resources -I../../Sources_Common/Utilities/ -I$(JX_ROOT)/include/jcore -I$(JX_ROOT)/include/jx -I$(JX_ROOT)/include/jximage -I$(JX_ROOT)/ACE/ACE_wrappers
+CXXFLAGS = @CXXFLAGS@ $(CPPFLAGS) $(CXXOPT) $(CXXDEBUG) $(CXXWARN)
+
+include ../include/libraryrules.mak
+
+ifeq (yes,${HAS_MM})
+-include $(DEPENDS)
+endif

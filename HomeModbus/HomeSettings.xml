@@ -1,67 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <HomeSettings>
   
-  <ControllerGroups>
-    <ControllerGroup Name="Спальня">
-      <Controllers>
-        <Controller Id="con_2" Name="Контроллер 1" ModbusAddress="2">
-          <Parameters>
-            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0">
-            </Parameter>
-            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" ModbusIndex="4" RefreshRate="0:1:0">
-            </Parameter>
-            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0"
-                        Icon="ThermometreSmall.png">
-            </Parameter>
-            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" RefreshRate="0:1:0"
-                        Icon="HumiditySmall.png">
-            </Parameter>
-            <Parameter Id="bed_5" Name="Вызов" ModbusType="Coil" ModbusIndex="4">
-            </Parameter>
-          </Parameters>
-          <Setters>
-            <Setter Id="bed_10" Name="Установка времени и даты" Type="RealDateTime" ModbusIndex="0"/>
-          </Setters>
-        </Controller>
-      </Controllers>
-
-    </ControllerGroup>
-    <ControllerGroup Name="Коридор">
-      <Controllers>
-        <Controller Id="con_1" Name="Контроллер 1" ModbusAddress="1">
-          <Parameters>
-            <Parameter Id="corr_1" Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3">
-              
-            </Parameter>
-          </Parameters>
-        </Controller>
-      </Controllers>
-    </ControllerGroup>
-    <ControllerGroup Name="Ванна">
-      <Controllers>
-        <Controller Id="con_3" Name="Контроллер 1" ModbusAddress="3">
-          <Parameters>
-            <Parameter Id="bath_1" Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0">
-              
-            </Parameter>
-            <Parameter Id="bath_2" Name="Свет включён" ModbusType="Discrete" ModbusIndex="1">
-             
-            </Parameter>
-          </Parameters>
-        </Controller>
-      </Controllers>
-    </ControllerGroup>
-  </ControllerGroups>
-  
-  
-  
   <Rooms>
     <Room Name="Спальня">
       <Layout>
         <LayoutGroup Orientation="Vertical">
           <Visibility Name="Сколько покакал" ParameterId="bed_1">
-            <DigitalIndicator/>
-            <LastTimeIndicator/>
+            <DigitalIndicator/>           
           </Visibility>
           <Visibility ParameterId="bed_2">
             <LastTimeIndicator Icon="poo.png"/>
@@ -102,8 +47,8 @@
             </OnClose>
           </ShowBalloon>
         </Visibility>
-        <Visibility SetterId="bed_10">
-
+        <Visibility SetterId="bed_10" >
+          <CurrentTime/>
         </Visibility>
 
       </Layout>

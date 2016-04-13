@@ -13,7 +13,12 @@
 #define RELAY_PIN 7
 
 // массив данных modbus
-uint16_t au16data[11];
+#define modbusInputBufLen 5
+#define modbusHoldingBufLen 5
+uint16_t _MODBUSDiscreteInputs;
+uint16_t _MODBUSCoils;
+uint16_t _MODBUSInputRegs[modbusInputBufLen];
+uint16_t _MODBUSHoldingRegs[modbusHoldingBufLen];
 int8_t state = 0;
 
 // the following variables are long's because the time, measured in miliseconds,
@@ -73,14 +78,14 @@ void LightOn()
 {
 	digitalWrite(RELAY_PIN, LOW);
 	digitalWrite(13, HIGH);
-	bitWrite(au16data[0], LIGHT_INPUT, 1);
+	bitWrite(_MODBUSDiscreteInputs, LIGHT_INPUT, 1);
 }
 
 void LightOff()
 {
 	digitalWrite(RELAY_PIN, HIGH);
 	digitalWrite(13, LOW);
-	bitWrite(au16data[0], LIGHT_INPUT, 0);
+	bitWrite(_MODBUSDiscreteInputs, LIGHT_INPUT, 0);
 }
 
 void loop()
@@ -124,7 +129,7 @@ void loop()
 			// only toggle the LED if the new button state is LOW
 			if (buttonDoorState == HIGH) // Дверь открылась 
 			{
-				bitWrite(au16data[0], DOOR_INPUT, 0);
+				bitWrite(_MODBUSDiscreteInputs, DOOR_INPUT, 1);
 				// Ещё никто не входил
 				if(!isEnterInBath)
 				{
@@ -141,7 +146,7 @@ void loop()
 			}
 			else // Дверь закрылась
 			{
-				bitWrite(au16data[0], DOOR_INPUT, 1);
+				bitWrite(_MODBUSDiscreteInputs, DOOR_INPUT, 0);
 				if(!isEnterInBath)
 				{
 					LightOff();
@@ -153,13 +158,9 @@ void loop()
 
 
 	// обработка сообщений
-	state = slave.poll(au16data, 11);
+	state = slave.poll(_MODBUSDiscreteInputs, _MODBUSCoils, _MODBUSInputRegs, modbusInputBufLen, _MODBUSHoldingRegs, modbusHoldingBufLen);
 	//обновляем данные в регистрах Modbus и в пользовательской программе
 	io_poll();
-
-
-
-
 }
 
 void io_poll()

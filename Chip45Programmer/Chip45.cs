@@ -139,7 +139,7 @@ namespace Chip45Programmer
             }
 
             // How many ms to wait for bootloader prompt
-            const int initialTimeOut = 30000; //60000;
+            const int initialTimeOut = 60000; //60000;
             const double progressStep = 100d / (initialTimeOut/1000d);
             
 //            QTime t;

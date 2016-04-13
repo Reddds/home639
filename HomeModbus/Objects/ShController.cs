@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HomeModbus.Models;
+using HomeServer;
 using Modbus.Device;
 
 namespace HomeModbus.Objects
@@ -18,7 +19,7 @@ namespace HomeModbus.Objects
         private const int MaxDiscreteOrCoilIndex = 15;
 
         #region DiscreteOrCoil
-        public enum CheckCoilStatus { OnTrue, OnFalse, OnBoth }
+//        public enum CheckCoilStatus { OnTrue, OnFalse, OnBoth }
 
 
         internal class ActionOnDiscreteOrCoil
@@ -255,6 +256,7 @@ namespace HomeModbus.Objects
 
         #region Setters
 
+/*
         public class ModbusSetter
         {
             public ushort Index;
@@ -314,13 +316,14 @@ namespace HomeModbus.Objects
                 {
                     WriteToLog?.Invoke(this, $"Ошибка установки времени! ({setTimeRes[0]:X4})");
                     //MessageBox.Show($"Ошибка установки времени! ({setTimeRes[0]:X4})");
-                }*/
+                }#1#
 
             }
 
         }
 
         private List<ModbusSetter> _setters;
+*/
 
         /*        class RealDateTimeSetter : ModbusSetter
                 {
@@ -484,6 +487,7 @@ namespace HomeModbus.Objects
                 }
             }
 
+/*
             if (_setters != null)
             {
                 foreach (var setter in _setters)
@@ -494,6 +498,7 @@ namespace HomeModbus.Objects
                     }
                 }
             }
+*/
         }
 
         /// <summary>
@@ -614,6 +619,7 @@ namespace HomeModbus.Objects
             }
         }
 
+/*
         public ModbusSetter SetSetter(ushort index, SetterTypes type)
         {
             if(_setters == null)
@@ -622,6 +628,7 @@ namespace HomeModbus.Objects
             _setters.Add(newSetter);
             return newSetter;
         }
+*/
 
     }
 }

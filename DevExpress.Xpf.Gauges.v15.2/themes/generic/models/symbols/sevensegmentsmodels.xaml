@@ -1,0 +1,99 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+                    xmlns:local="clr-namespace:DevExpress.Xpf.Gauges">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="{dx:GaugesResource themes/Generic/Models/Symbols/BaseStyles.xaml}"/>
+  </ResourceDictionary.MergedDictionaries>
+  <local:PresentationToFillConverter x:Key="BrushConverter"/>
+  <local:SymbolStateToVisibilityConverter x:Key="VisibilityConverter"/>
+  <Style TargetType="{x:Type local:DefaultSevenSegmentsControl}" BasedOn="{StaticResource SymbolStyleBase}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:DefaultSevenSegmentsControl}">
+          <Viewbox Stretch="Fill">
+            <Canvas Width="74" Height="122">
+              <Path Width="45.1277" Height="10" Canvas.Left="14.4362" Canvas.Top="56" Stretch="Fill"
+                    Data="F1 M 53.9502,56 C 54.5273,56 55.334,56.334 55.7427,56.7422 L 59.2573,60.2578 C 59.666,60.666 59.666,61.334 59.2573,61.7422 L 55.7427,65.2578 C 55.334,65.666 54.5273,66 53.9502,66 L 20.0498,66 C 19.4728,66 18.666,65.666 18.2573,65.2578 L 14.7427,61.7422 C 14.334,61.334 14.334,60.666 14.7427,60.2578 L 18.2573,56.7422 C 18.666,56.334 19.4728,56 20.0498,56 L 53.9502,56 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="8" Canvas.Top="10.436" Stretch="Fill"
+                    Data="F1 M 8,53.9502 C 8,54.5273 8.33398,55.334 8.74268,55.7422 L 12.2573,59.2578 C 12.666,59.666 13.334,59.666 13.7427,59.2578 L 17.2573,55.7422 C 17.666,55.334 18,54.5273 18,53.9502 L 18,18.0498 C 18,17.4728 17.666,16.666 17.2573,16.2578 L 11.7427,10.7422 C 11.334,10.334 10.666,10.334 10.2573,10.7422 L 8.74268,12.2578 C 8.33398,12.666 8,13.4728 8,14.0498 L 8,53.9502 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="8" Canvas.Top="62.436" Stretch="Fill"
+                    Data="F1 M 8,68.0498 C 8,67.4728 8.33398,66.666 8.74268,66.2578 L 12.2573,62.7422 C 12.666,62.334 13.334,62.334 13.7427,62.7422 L 17.2573,66.2578 C 17.666,66.666 18,67.4728 18,68.0498 L 18,103.95 C 18,104.527 17.666,105.334 17.2573,105.742 L 11.7427,111.258 C 11.334,111.666 10.666,111.666 10.2573,111.258 L 8.74268,109.742 C 8.33398,109.334 8,108.527 8,107.95 L 8,68.0498 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="49.1277" Height="10" Canvas.Left="12.4362" Canvas.Top="106" Stretch="Fill"
+                    Data="F1 M 16.0498,116 C 15.4728,116 14.666,115.666 14.2573,115.258 L 12.7427,113.742 C 12.334,113.334 12.334,112.666 12.7427,112.258 L 18.2573,106.742 C 18.666,106.334 19.4728,106 20.0498,106 L 53.9502,106 C 54.5273,106 55.334,106.334 55.7427,106.742 L 61.2573,112.258 C 61.666,112.666 61.666,113.334 61.2573,113.742 L 59.7427,115.258 C 59.334,115.666 58.5273,116 57.9502,116 L 16.0498,116 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="56" Canvas.Top="62.436" Stretch="Fill"
+                    Data="F1 M 66,68.0498 C 66,67.4728 65.666,66.666 65.2573,66.2578 L 61.7427,62.7422 C 61.334,62.334 60.666,62.334 60.2573,62.7422 L 56.7427,66.2578 C 56.334,66.666 56,67.4728 56,68.0498 L 56,103.95 C 56,104.527 56.334,105.334 56.7427,105.742 L 62.2573,111.258 C 62.666,111.666 63.334,111.666 63.7427,111.258 L 65.2573,109.742 C 65.666,109.334 66,108.527 66,107.95 L 66,68.0498 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="56" Canvas.Top="10.436" Stretch="Fill"
+                    Data="F1 M 66,53.9502 C 66,54.5273 65.666,55.334 65.2573,55.7422 L 61.7427,59.2578 C 61.334,59.666 60.666,59.666 60.2573,59.2578 L 56.7427,55.7422 C 56.334,55.334 56,54.5273 56,53.9502 L 56,18.0498 C 56,17.4728 56.334,16.666 56.7427,16.2578 L 62.2573,10.7422 C 62.666,10.334 63.334,10.334 63.7427,10.7422 L 65.2573,12.2578 C 65.666,12.666 66,13.4728 66,14.0498 L 66,53.9502 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="49.1277" Height="10" Canvas.Left="12.4362" Canvas.Top="6" Stretch="Fill"
+                    Data="F1 M 57.9502,6 C 58.5273,6 59.334,6.33398 59.7427,6.74219 L 61.2573,8.25781 C 61.666,8.66602 61.666,9.33398 61.2573,9.74219 L 55.7427,15.2578 C 55.334,15.666 54.5273,16 53.9502,16 L 20.0498,16 C 19.4728,16 18.666,15.666 18.2573,15.2578 L 12.7427,9.74219 C 12.334,9.33398 12.334,8.66602 12.7427,8.25781 L 14.2573,6.74219 C 14.666,6.33398 15.4728,6 16.0498,6 L 57.9502,6 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="10" Canvas.Left="64" Canvas.Top="112" Stretch="Fill"
+                    Data="F1 M 74,117 C 74,119.761 71.7612,122 69,122 66.2388,122 64,119.761 64,117 64,114.239 66.2388,112 69,112 71.7612,112 74,114.239 74,117 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="10" Canvas.Left="64" Canvas.Top="0" Stretch="Fill"
+                    Data="F1 M 74,5 C 74,7.76123 71.7612,10 69,10 66.2388,10 64,7.76123 64,5 64,2.23877 66.2388,0 69,0 71.7612,0 74,2.23877 74,5 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="10" Canvas.Left="32" Canvas.Top="31" Stretch="Fill"
+                    Data="F1 M 42,36 C 42,38.7612 39.7612,41 37,41 34.2388,41 32,38.7612 32,36 32,33.2388 34.2388,31 37,31 39.7612,31 42,33.2388 42,36 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="10" Height="10" Canvas.Left="32" Canvas.Top="81" Stretch="Fill"
+                    Data="F1 M 42,86 C 42,88.7612 39.7612,91 37,91 34.2388,91 32,88.7612 32,86 32,83.2388 34.2388,81 37,81 39.7612,81 42,83.2388 42,86 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Inactive}"/>
+              <Path Width="45.1277" Height="10" Canvas.Left="14.4362" Canvas.Top="56" Stretch="Fill"
+                    Data="F1 M 53.9502,56 C 54.5273,56 55.334,56.334 55.7427,56.7422 L 59.2573,60.2578 C 59.666,60.666 59.666,61.334 59.2573,61.7422 L 55.7427,65.2578 C 55.334,65.666 54.5273,66 53.9502,66 L 20.0498,66 C 19.4728,66 18.666,65.666 18.2573,65.2578 L 14.7427,61.7422 C 14.334,61.334 14.334,60.666 14.7427,60.2578 L 18.2573,56.7422 C 18.666,56.334 19.4728,56 20.0498,56 L 53.9502,56 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=6}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="8" Canvas.Top="10.436" Stretch="Fill"
+                    Data="F1 M 8,53.9502 C 8,54.5273 8.33398,55.334 8.74268,55.7422 L 12.2573,59.2578 C 12.666,59.666 13.334,59.666 13.7427,59.2578 L 17.2573,55.7422 C 17.666,55.334 18,54.5273 18,53.9502 L 18,18.0498 C 18,17.4728 17.666,16.666 17.2573,16.2578 L 11.7427,10.7422 C 11.334,10.334 10.666,10.334 10.2573,10.7422 L 8.74268,12.2578 C 8.33398,12.666 8,13.4728 8,14.0498 L 8,53.9502 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=5}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="8" Canvas.Top="62.436" Stretch="Fill"
+                    Data="F1 M 8,68.0498 C 8,67.4728 8.33398,66.666 8.74268,66.2578 L 12.2573,62.7422 C 12.666,62.334 13.334,62.334 13.7427,62.7422 L 17.2573,66.2578 C 17.666,66.666 18,67.4728 18,68.0498 L 18,103.95 C 18,104.527 17.666,105.334 17.2573,105.742 L 11.7427,111.258 C 11.334,111.666 10.666,111.666 10.2573,111.258 L 8.74268,109.742 C 8.33398,109.334 8,108.527 8,107.95 L 8,68.0498 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=4}"/>
+              <Path Width="49.1277" Height="10" Canvas.Left="12.4362" Canvas.Top="106" Stretch="Fill"
+                    Data="F1 M 16.0498,116 C 15.4728,116 14.666,115.666 14.2573,115.258 L 12.7427,113.742 C 12.334,113.334 12.334,112.666 12.7427,112.258 L 18.2573,106.742 C 18.666,106.334 19.4728,106 20.0498,106 L 53.9502,106 C 54.5273,106 55.334,106.334 55.7427,106.742 L 61.2573,112.258 C 61.666,112.666 61.666,113.334 61.2573,113.742 L 59.7427,115.258 C 59.334,115.666 58.5273,116 57.9502,116 L 16.0498,116 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=3}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="56" Canvas.Top="62.436" Stretch="Fill"
+                    Data="F1 M 66,68.0498 C 66,67.4728 65.666,66.666 65.2573,66.2578 L 61.7427,62.7422 C 61.334,62.334 60.666,62.334 60.2573,62.7422 L 56.7427,66.2578 C 56.334,66.666 56,67.4728 56,68.0498 L 56,103.95 C 56,104.527 56.334,105.334 56.7427,105.742 L 62.2573,111.258 C 62.666,111.666 63.334,111.666 63.7427,111.258 L 65.2573,109.742 C 65.666,109.334 66,108.527 66,107.95 L 66,68.0498 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=2}"/>
+              <Path Width="10" Height="49.1279" Canvas.Left="56" Canvas.Top="10.436" Stretch="Fill"
+                    Data="F1 M 66,53.9502 C 66,54.5273 65.666,55.334 65.2573,55.7422 L 61.7427,59.2578 C 61.334,59.666 60.666,59.666 60.2573,59.2578 L 56.7427,55.7422 C 56.334,55.334 56,54.5273 56,53.9502 L 56,18.0498 C 56,17.4728 56.334,16.666 56.7427,16.2578 L 62.2573,10.7422 C 62.666,10.334 63.334,10.334 63.7427,10.7422 L 65.2573,12.2578 C 65.666,12.666 66,13.4728 66,14.0498 L 66,53.9502 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=1}"/>
+              <Path Width="49.1277" Height="10" Canvas.Left="12.4362" Canvas.Top="6" Stretch="Fill"
+                    Data="F1 M 57.9502,6 C 58.5273,6 59.334,6.33398 59.7427,6.74219 L 61.2573,8.25781 C 61.666,8.66602 61.666,9.33398 61.2573,9.74219 L 55.7427,15.2578 C 55.334,15.666 54.5273,16 53.9502,16 L 20.0498,16 C 19.4728,16 18.666,15.666 18.2573,15.2578 L 12.7427,9.74219 C 12.334,9.33398 12.334,8.66602 12.7427,8.25781 L 14.2573,6.74219 C 14.666,6.33398 15.4728,6 16.0498,6 L 57.9502,6 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=0}"/>
+              <Path Width="10" Height="10" Canvas.Left="64" Canvas.Top="112" Stretch="Fill"
+                    Data="F1 M 74,117 C 74,119.761 71.7612,122 69,122 66.2388,122 64,119.761 64,117 64,114.239 66.2388,112 69,112 71.7612,112 74,114.239 74,117 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=7}"/>
+              <Path Width="10" Height="10" Canvas.Left="64" Canvas.Top="0" Stretch="Fill"
+                    Data="F1 M 74,5 C 74,7.76123 71.7612,10 69,10 66.2388,10 64,7.76123 64,5 64,2.23877 66.2388,0 69,0 71.7612,0 74,2.23877 74,5 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=9}"/>
+              <Path Width="10" Height="10" Canvas.Left="32" Canvas.Top="31" Stretch="Fill"
+                    Data="F1 M 42,36 C 42,38.7612 39.7612,41 37,41 34.2388,41 32,38.7612 32,36 32,33.2388 34.2388,31 37,31 39.7612,31 42,33.2388 42,36 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=8}"/>
+              <Path Width="10" Height="10" Canvas.Left="32" Canvas.Top="81" Stretch="Fill"
+                    Data="F1 M 42,86 C 42,88.7612 39.7612,91 37,91 34.2388,91 32,88.7612 32,86 32,83.2388 34.2388,81 37,81 39.7612,81 42,83.2388 42,86 Z"
+                    Fill="{Binding Path=Presentation, Converter={StaticResource BrushConverter}, ConverterParameter=Active}"
+                    Visibility="{Binding Path=SymbolState, Converter={StaticResource VisibilityConverter}, ConverterParameter=8}"/>
+            </Canvas>
+          </Viewbox>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

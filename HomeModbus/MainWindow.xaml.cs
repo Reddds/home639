@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,18 +13,15 @@ using System.Windows.Threading;
 using Chip45Programmer;
 using DevExpress.Xpf.Charts;
 using DevExpress.Xpf.Gauges;
-using DevExpress.Xpo.DB.Helpers;
-using DevExpress.XtraPrinting.Native.WebClientUIControl;
 using HomeModbus.Controls;
 using HomeModbus.Models;
 using HomeModbus.Models.Base;
-using HomeModbus.Objects;
-using HomeModbus.Properties;
 using HomeModbus.Tooltip;
-using log4net;using log4net.Config;
+using HomeServer;
+using log4net;
+using log4net.Config;
 using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Taskbar;
-using Newtonsoft.Json;
+using LayoutGroup = DevExpress.Xpf.Docking.LayoutGroup;
 using Visibility = HomeModbus.Models.Visibility;
 
 // Import log4net classes.
@@ -36,20 +31,23 @@ namespace HomeModbus
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : INotifyPropertyChanged
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindow));
+
+        private const string ServerName = "tor";
 
         private const string SettingsFileName = "HomeSettings.xml";
         private HomeSettings _homeSettings;
 
         private const string ValuesLogLogFileName = "ValuesLog.json";
-        private readonly ModbusMasterThread _modbusMasterThread;
+        //        private readonly ModbusMasterThread _modbusMasterThread;
 
         const double BrightStep = 100 / 15d;
 
         private readonly CollectionViewSource _demoView = new CollectionViewSource();
 
+        private readonly HsClient _client = null;
         /// <summary>
         /// Включён ли режим опроса
         /// </summary>
@@ -100,21 +98,6 @@ namespace HomeModbus
                 return
                     $@"СветодиодЫ № {(Led1 ? "1 " : "")} {(Led2 ? "2 " : "")} {(Led3 ? "3 " : "")} {(Led4 ? "4 " : "")} на {Brightnes * BrightStep:F1}% и пауза {(DelayInSec ? Delay : Delay * 10)} {(DelayInSec ? "с" : "мс")}";
             }
-        };
-
-        private readonly int[] _shortBaudrates =
-        {
-            230400,
-            115200,
-            76800,
-            57600,
-            38400,
-            28800,
-            19200,
-            14400,
-            9600,
-            4800,
-            2400
         };
 
         readonly List<DemoCommand> _demoCommands = new List<DemoCommand>();
@@ -176,35 +159,11 @@ namespace HomeModbus
             InitializeComponent();
 
 
-
-
-            LbBaudRates.ItemsSource = _shortBaudrates;
-            LbBaudRates.SelectedItem = Settings.Default.SelectedBaudrate;
-
-            FillPorts();
-
-            var comPortTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 5) };
-            comPortTimer.Tick += (sender, args) =>
-            {
-                FillPorts();
-            };
-            comPortTimer.Start();
-
-
-            LoadValuesLog();
+            //            LoadValuesLog();
 
 
             _balloonStack = new BalloonStack();
-            //            _moveDetectedBaloon = new FancyBalloon("Движение!", FancyBalloon.BaloonStyles.Alarm);
-            //_balloonStack.AddBaloon(_moveDetectedBaloon);
 
-            //            _callBalloon = new FancyBalloon("Вызов!", FancyBalloon.BaloonStyles.Exclamation);
-            //            _callBalloon.Closing += (sender, args) =>
-            //            {
-            //                _modbusMasterThread.ResetCall();
-            //
-            //            };
-            //_balloonStack.AddBaloon(_callBalloon);
 
             MyNotifyIcon.ShowCustomBalloon(_balloonStack, PopupAnimation.Slide, null);
 
@@ -224,58 +183,29 @@ namespace HomeModbus
 
             _demoView.Source = _demoCommands;
             LbDemoCommands.ItemsSource = _demoView.View;
-
-
-            _modbusMasterThread = new ModbusMasterThread();
-
+            _client = new HsClient(11000);
 
             if (LoadSettings())
                 ApplySettings();
 
+            ConnectToServer();
 
-
-/*
-            var corridor = new Corridor();
-            //            _modbusMasterThread.ControolerObjects.Add(corridor);
-            corridor.LightInCorridorChanged += (sender, lightState) =>
-            {
-                ExecDispatched(() =>
-                {
-                    if (lightState)
-                    {
-                        if (_moveDetectedBaloon.Parent == null)
-                            ShowBalloon(_moveDetectedBaloon);
-                        Background = Brushes.Crimson;
-                        // This will highlight the icon in red
-                        TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Error);
-                        // to highlight the entire icon
-                        TaskbarManager.Instance.SetProgressValue(100, 100);
-                    }
-                    else
-                    {
-                        if (_moveDetectedBaloon.Parent != null)
-                            _moveDetectedBaloon.Close();
-                        Background = Brushes.White;
-                        // This will highlight the icon in red
-                        TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress);
-                        // to highlight the entire icon
-                        //TaskbarManager.Instance.SetProgressValue(100, 100);
-                    }
-                });
-            };
-*/
-            _modbusMasterThread.PortChanged += (sender, args) =>
-            {
-                OnPropertyChanged("IsPortOpen");
-            };
-            _modbusMasterThread.ListeningChanged += (sender, isListening) =>
-            {
-                IsListening = isListening;
-            };
-            _modbusMasterThread.WriteToLog += (sender, msg) =>{
-                WriteToLog(msg);
-            };
+            SystemEvents.PowerModeChanged += OnPowerChanged;
         }
+
+        private void OnPowerChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            switch (e.Mode)
+            {
+                case PowerModes.Resume:
+                    ConnectToServer();
+                    break;
+                case PowerModes.Suspend:
+                    _client?.Disconnect();
+                    break;
+            }
+        }
+
 
         private void LoadValuesLog()
         {
@@ -328,28 +258,6 @@ namespace HomeModbus
 
         private void ApplySettings()
         {
-            var allControllers = new List<ShController>();
-
-            foreach (var controllerGroup in _homeSettings.ControllerGroups)
-            {
-                var controllerGroupObject = new ControllerGroup();
-                if (_modbusMasterThread.ControolerObjects == null)
-                    _modbusMasterThread.ControolerObjects = new List<ControllerGroup>();
-                _modbusMasterThread.ControolerObjects.Add(controllerGroupObject);
-
-                foreach (var controller in controllerGroup.Controllers)
-                {
-                    var controllerObject = new ShController(controller.Id, controller.ModbusAddress);
-                    if(controllerGroupObject.ShControllers == null)
-                        controllerGroupObject.ShControllers = new List<ShController>();
-                    controllerGroupObject.ShControllers.Add(controllerObject);
-                    allControllers.Add(controllerObject);
-                    //                    ProcessPararmeters(controller.Parameters, layoutGroupObject, controllerObject);
-                    //                    ProcessSetters(controller.Setters, layoutGroupObject, controllerObject);
-
-                }
-            }
-
             foreach (var room in _homeSettings.Rooms)
             {
                 var roomTab = new RoomTab { Header = room.Name };
@@ -357,862 +265,243 @@ namespace HomeModbus
 
                 foreach (var layoutGroup in room.Layout.LayoutGroup)
                 {
-                    ProcessLayoutGroup(roomTab.MainPanel, layoutGroup, allControllers, _homeSettings.ControllerGroups);
+                    ProcessLayoutGroup(roomTab.MainPanel, layoutGroup);
                 }
                 foreach (var visibility in room.Layout.Visibility)
                 {
-                    ProcessVisibility(roomTab.MainPanel, visibility, allControllers, _homeSettings.ControllerGroups);
-                }}
-
-
-/*
-            foreach (var room in _homeSettings.Rooms)
-            {
-                var roomTab = new RoomTab { Header = room.Name };
-                //                Closed += (sender, args) =>
-                //                {
-                //                    roomTab.DlmMainLayout.SaveLayoutToXml(Guid.NewGuid().ToString() + "_layout.xml");
-                //                };
-                MainTabs.Items.Add(roomTab);
-
-                var controllerGroupObject = new ControllerGroup();
-                if (_modbusMasterThread.ControolerObjects == null)
-                    _modbusMasterThread.ControolerObjects = new List<ControllerGroup>();
-                _modbusMasterThread.ControolerObjects.Add(controllerGroupObject);
-                controllerGroupObject.ShControllers = new List<ShController>();
-                foreach (var controller in room.Controllers)
-                {
-                    var controllerObject = new ShController(controller.Controller.ModbusAddress);
-                    controllerGroupObject.ShControllers.Add(controllerObject);
-                    ProcessPararmeters(controller.Controller.Parameters, layoutGroupObject, controllerObject);
-                    ProcessSetters(controller.Controller.Setters, layoutGroupObject, controllerObject);
-
+                    ProcessVisibility(roomTab.MainPanel, visibility);
                 }
             }
-*/
         }
 
-        private void ProcessVisibility(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, Visibility visibility, List<ShController> allControllers, List<HomeSettingsControllerGroup> controllerGroups)
+        private void ProcessVisibility(LayoutGroup layoutGroupObject, Visibility visibility)
         {
             // Ищем соответствующий параметр
             if (!string.IsNullOrEmpty(visibility.ParameterId))
             {
-                foreach (var controllerGroup in controllerGroups)
-                {
-                    foreach (var controller in controllerGroup.Controllers)
-                    {
-                        foreach (var parameter in controller.Parameters)
-                        {
-                            if (parameter.Id == visibility.ParameterId)
-                            {
-                                var controllerObject = allControllers.FirstOrDefault(c => c.Id == controller.Id);
-                                if (controllerObject == null)
-                                {
-                                    return;
-                                }
-                                CreateVisibilityParameter(layoutGroupObject, visibility, parameter, controllerObject);
-                                return;
-                            }
-                        }
-                    }
-                }
+                CreateVisibilityParameter(layoutGroupObject, visibility);
             }
+
+
             // Ищем соответствующий setter
             else if (!string.IsNullOrEmpty(visibility.SetterId))
             {
-                foreach (var controllerGroup in controllerGroups)
-                {
-                    foreach (var controller in controllerGroup.Controllers)
-                    {
-                        foreach (var setter in controller.Setters)
-                        {
-                            if (setter.Id == visibility.SetterId)
-                            {
-                                var controllerObject = allControllers.FirstOrDefault(c => c.Id == controller.Id);
-                                if (controllerObject == null)
-                                {
-                                    return;
-                                }
-                                CreateVisibilitySetter(layoutGroupObject, visibility, setter, controllerObject);
-                                return;
-                            }
-                        }
-                    }
-                }
+                CreateVisibilitySetter(layoutGroupObject, visibility);
             }
         }
 
-        private void CreateVisibilitySetter(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, Visibility visibility, HomeSettingsControllerGroupControllerSetter setter, ShController controllerObject)
+
+        private void CreateVisibilitySetter(LayoutGroup layoutGroupObject, Visibility visibility)
         {
             var setterControl = new IndicatorControl
             {
-                Caption = setter.Name
+                Caption = visibility.Name
             };
             layoutGroupObject.Add(setterControl);
-            switch (setter.Type)
+            if (visibility.CurrentTime != null)
             {
-                case SetterTypes.RealDateTime:
-                    var btn = new Button { Content = "Установить текущее время" };
-                    var setterObj = controllerObject.SetSetter(setter.ModbusIndex, SetterTypes.RealDateTime);
-                    btn.Click += (sender, args) =>
-                    {
-                        setterObj.PendingSet();
-                    };
-                    setterControl.SpMain.Children.Add(btn);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var btn = new Button { Content = "Установить текущее время" };
+                btn.Click += (sender, args) =>
+                {
+                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", DateTime.Now.ToString(HsEnvelope.DateTimeFormat));
+                };
+                setterControl.SpMain.Children.Add(btn);
             }
         }
 
-        private void CreateVisibilityParameter(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, Visibility visibility, HomeSettingsControllerGroupControllerParameter parameter, ShController controllerObject)
+
+        private void CreateVisibilityParameter(LayoutGroup layoutGroupObject,
+            Visibility visibility)
         {
             var indicatorControl = new IndicatorControl
             {
-                Caption = parameter.Name
+                Caption = visibility.Name
             };
             //                        roomTab.MainPanel.Items = new SerializableItemCollection();
             layoutGroupObject.Items.Add(indicatorControl);
-            if (parameter.Icon != null)
+            if (visibility.Icon != null)
             {
-                indicatorControl.CaptionImage = GetImageSource(parameter.Icon);
+                indicatorControl.CaptionImage = GetImageSource(visibility.Icon);
                 indicatorControl.ShowCaptionImage = true;
             }
-            switch (parameter.ModbusType)
+
+            ObjectButton binaryIndicator = null;
+            FancyBalloon dutyBalloon = null;
+            var showWhileParameterSet = false;
+
+            SimpleIndicator simpleIndicator = null;
+            AnalogIndicator analogControl = null;
+            LastTimeIndicator lastTimeControl = null;
+            Series chartSerie = null;// MainChartLog.Diagram.Series[0];
+
+
+            if (visibility.ShowBalloon != null)
             {
-                case ModbusTypes.Discrete:
-                case ModbusTypes.Coil:
-                    //                                var simpleCheckBox = new CheckBox() { Content = parameter.Name };
-                    ObjectButton binaryIndicator = null;
-                    //                                indicatorControl.SpMain.Children.Add(simpleCheckBox);
-                    var isCoil = parameter.ModbusType == ModbusTypes.Coil;
-                    FancyBalloon dutyBalloon = null;
-                    var showWhileParameterSet = false;
-                    {
-                        if (visibility.ShowBalloon != null)
-                        {
-                            var balloonSettings = visibility.ShowBalloon;
-                            if (balloonSettings.ShowWhileParameterSetSpecified && balloonSettings.ShowWhileParameterSet)
-                            {
-                                //                                            dutyBalloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
-                                showWhileParameterSet = true;
-                            }
-                        }
-                        var binaryIndicatorSettings = visibility.BinaryIndicator;
-                        if (binaryIndicatorSettings != null)
-                        {
-                            binaryIndicator = new ObjectButton();
-                            indicatorControl.SpMain.Children.Add(binaryIndicator);
-                            var onIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OnIcon)
-                                ? "DefaultChecked.png"
-                                : binaryIndicatorSettings.OnIcon;
-                            var offIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OffIcon)
-                                ? "DefaultUnChecked.png"
-                                : binaryIndicatorSettings.OffIcon;
-
-                            binaryIndicator.EnabledChecked = GetImageSource(onIcon, "DefaultChecked.png");
-
-                            binaryIndicator.EnabledUnchecked = GetImageSource(offIcon, "DefaultUnChecked.png");
-                        }
-                    }
-                    controllerObject.SetActionOnDiscreteOrCoil(isCoil,
-                        showWhileParameterSet ? ShController.CheckCoilStatus.OnBoth : ShController.CheckCoilStatus.OnTrue,
-                        parameter.ModbusIndex,
-                        (actionOn, state) =>
-                        {
-                            ExecDispatched(() =>
-                            {
-
-                                if (binaryIndicator != null)
-                                {
-                                    binaryIndicator.IsChecked = state;
-                                }
-                                if (visibility.ShowBalloon != null)
-                                {
-                                    if (state)
-                                    {
-                                        var balloonSettings = visibility.ShowBalloon;
-                                        var balloon = new FancyBalloon(balloonSettings.Text1,
-                                            GetBalloonStyle(balloonSettings.Type));
-                                        ShowBalloon(balloon);
-                                        if (balloonSettings.OnClose != null)
-                                        {
-                                            balloon.Closing += (sender, args) =>
-                                            {
-                                                if (balloonSettings.OnClose.ResetParameter != null)
-                                                {
-                                                    var actionOnCoil = actionOn as ShController.ActionOnCoil;
-                                                    actionOnCoil?.Reset();
-                                                }
-                                            };
-                                        }
-                                        if (showWhileParameterSet)
-                                            dutyBalloon = balloon;
-                                    }
-                                    else if (showWhileParameterSet && dutyBalloon != null)
-                                    {
-                                        dutyBalloon.Close();
-                                    }
-                                }
-
-
-                            });
-                        });
-                    break;
-                case ModbusTypes.InputRegister:
-                case ModbusTypes.HoldingRegister:
-                    SimpleIndicator simpleIndicator = null;
-                    AnalogIndicator analogControl = null;
-                    LastTimeIndicator lastTimeControl = null;
-                    Series chartSerie = null;// MainChartLog.Diagram.Series[0];
-
-                    var analogIndicator = visibility.AnalogIndicator;
-                    if (analogIndicator != null)
-                    {
-                        analogControl = new AnalogIndicator();
-                        indicatorControl.SpMain.Children.Add(analogControl);
-                        var scale = analogControl.MainGauge.Scales[0];
-                        scale.StartValue = analogIndicator.Scale.Min;
-                        scale.EndValue = analogIndicator.Scale.Max;
-                        if (analogIndicator.Scale.MajorCountSpecified)
-                            scale.MajorIntervalCount = analogIndicator.Scale.MajorCount;
-                        if (analogIndicator.Scale.MinorCountSpecified)
-                            scale.MinorIntervalCount = analogIndicator.Scale.MinorCount;
-
-                        if (analogIndicator.Scale.GoodValueSpecified)
-                            scale.Markers.Add(new ArcScaleMarker()
-                            {
-                                Value = analogIndicator.Scale.GoodValue
-                            });
-
-                        if (analogIndicator.Scale.Ranges != null)
-                        {
-                            foreach (var range in analogIndicator.Scale.Ranges)
-                            {
-                                scale.Ranges.Add(new ArcScaleRange()
-                                {
-                                    StartValue = new RangeValue(range.StartValue),
-                                    EndValue = new RangeValue(range.EndValue)
-                                });
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(analogIndicator.Icon))
-                        {
-                            analogControl.IIcon.Source = GetImageSource(analogIndicator.Icon);
-                        }
-                    }
-                    var digitalIndicatorSettings = visibility.DigitalIndicator;
-                    if (digitalIndicatorSettings != null)
-                    {
-                        simpleIndicator = new SimpleIndicator();
-                        indicatorControl.SpMain.Children.Add(simpleIndicator);
-                    }
-                    var lastTimeIndicator = visibility.LastTimeIndicator;
-                    if (lastTimeIndicator != null)
-                    {
-                        lastTimeControl = new LastTimeIndicator();
-                        indicatorControl.SpMain.Children.Add(lastTimeControl);
-                        if (!string.IsNullOrEmpty(lastTimeIndicator.Icon))
-                        {
-                            lastTimeControl.IIcon.Source = GetImageSource(lastTimeIndicator.Icon);
-                        }
-                    }
-                    var chartSettings = visibility.Chart;
-                    if (chartSettings != null)
-                    {
-                        chartSerie = new LineSeries2D();
-                        MainChartLog.Diagram.Series.Add(chartSerie);
-                        chartSerie.DisplayName = parameter.Name;
-                    }
-
-                    //                    else
-                    //                    {
-                    //                        simpleIndicator = new SimpleIndicator();
-                    //                        indicatorControl.SpMain.Children.Add(simpleIndicator);
-                    //                        //                                    simpleIndicator.LTitle.Content = parameter.Name;
-                    //                    }
-                    TimeSpan? interval = null;
-                    if (!string.IsNullOrEmpty(parameter.RefreshRate))
-                    {
-                        TimeSpan tmpVal;
-                        if (TimeSpan.TryParseExact(parameter.RefreshRate, "g", null, TimeSpanStyles.None, out tmpVal))
-                            interval = tmpVal;
-                    }
-                    switch (parameter.DataType)
-                    {
-                        case DataTypes.UInt16:
-                            controllerObject.SetActionOnRegister(false, parameter.ModbusIndex, value =>
-                            {
-                                ExecDispatched(() =>
-                                {
-                                    if (analogControl != null)
-                                    {
-                                        analogControl.Value = value;
-                                    }
-                                    if (lastTimeControl != null)
-                                    {
-                                        lastTimeControl.Value = DateTime.Now;
-                                    }
-                                    if (simpleIndicator != null)
-                                        simpleIndicator.Value = value;
-                                    if (chartSerie != null)
-                                    {
-                                        var curTime = DateTime.Now;
-
-                                        chartSerie.Points.Add(new SeriesPoint(curTime, value));
-
-                                    }
-
-                                });
-                            }, false, interval);
-                            break;
-                        case DataTypes.Float:
-                            break;
-                        case DataTypes.RdDateTime:
-                            controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
-                                value =>
-                                {
-                                    if (lastTimeControl != null)
-                                    {
-                                        lastTimeControl.Value = value;
-                                    }
-                                }, false, interval);
-                            break;
-                        case DataTypes.RdTime:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var balloonSettings = visibility.ShowBalloon;
+                if (balloonSettings.ShowWhileParameterSetSpecified && balloonSettings.ShowWhileParameterSet)
+                {
+                    //                                            dutyBalloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
+                    showWhileParameterSet = true;
+                }
             }
+            var binaryIndicatorSettings = visibility.BinaryIndicator;
+            if (binaryIndicatorSettings != null)
+            {
+                binaryIndicator = new ObjectButton();
+                indicatorControl.SpMain.Children.Add(binaryIndicator);
+                var onIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OnIcon)
+                    ? "DefaultChecked.png"
+                    : binaryIndicatorSettings.OnIcon;
+                var offIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OffIcon)
+                    ? "DefaultUnChecked.png"
+                    : binaryIndicatorSettings.OffIcon;
+
+                binaryIndicator.EnabledChecked = GetImageSource(onIcon, "DefaultChecked.png");
+
+                binaryIndicator.EnabledUnchecked = GetImageSource(offIcon, "DefaultUnChecked.png");
+            }
+
+            var analogIndicator = visibility.AnalogIndicator;
+            if (analogIndicator != null)
+            {
+                analogControl = new AnalogIndicator();
+                indicatorControl.SpMain.Children.Add(analogControl);
+                var scale = analogControl.MainGauge.Scales[0];
+                scale.StartValue = analogIndicator.Scale.Min;
+                scale.EndValue = analogIndicator.Scale.Max;
+                if (analogIndicator.Scale.MajorCountSpecified)
+                    scale.MajorIntervalCount = analogIndicator.Scale.MajorCount;
+                if (analogIndicator.Scale.MinorCountSpecified)
+                    scale.MinorIntervalCount = analogIndicator.Scale.MinorCount;
+
+                if (analogIndicator.Scale.GoodValueSpecified)
+                    scale.Markers.Add(new ArcScaleMarker()
+                    {
+                        Value = analogIndicator.Scale.GoodValue
+                    });
+
+                if (analogIndicator.Scale.Ranges != null)
+                {
+                    foreach (var range in analogIndicator.Scale.Ranges)
+                    {
+                        scale.Ranges.Add(new ArcScaleRange()
+                        {
+                            StartValue = new RangeValue(range.StartValue),
+                            EndValue = new RangeValue(range.EndValue)
+                        });
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(analogIndicator.Icon))
+                {
+                    analogControl.IIcon.Source = GetImageSource(analogIndicator.Icon);
+                }
+            }
+            var digitalIndicatorSettings = visibility.DigitalIndicator;
+            if (digitalIndicatorSettings != null)
+            {
+                simpleIndicator = new SimpleIndicator();
+                indicatorControl.SpMain.Children.Add(simpleIndicator);
+            }
+            var lastTimeIndicator = visibility.LastTimeIndicator;
+            if (lastTimeIndicator != null)
+            {
+                lastTimeControl = new LastTimeIndicator();
+                indicatorControl.SpMain.Children.Add(lastTimeControl);
+                if (!string.IsNullOrEmpty(lastTimeIndicator.Icon))
+                {
+                    lastTimeControl.IIcon.Source = GetImageSource(lastTimeIndicator.Icon);
+                }
+            }
+            var chartSettings = visibility.Chart;
+            if (chartSettings != null)
+            {
+                chartSerie = new LineSeries2D();
+                MainChartLog.Diagram.Series.Add(chartSerie);
+                chartSerie.DisplayName = visibility.Name;
+            }
+
+            _client.SetAction(visibility.ParameterId, (resetAction, value) =>
+            {
+                ExecDispatched(() =>
+                {
+                    if (binaryIndicator != null)
+                    {
+                        if (value.GetType().IsPrimitive)
+                            binaryIndicator.IsChecked = (bool)value;
+                    }
+                    if (visibility.ShowBalloon != null)
+                    {
+                        if (value.GetType().IsPrimitive)
+                            if ((bool)value)
+                            {
+                                var balloonSettings = visibility.ShowBalloon;
+                                var balloon = new FancyBalloon(balloonSettings.Text1,
+                                    GetBalloonStyle(balloonSettings.Type));
+                                ShowBalloon(balloon);
+                                if (balloonSettings.OnClose != null)
+                                {
+                                    balloon.Closing += (sender, args) =>
+                                    {
+                                        if (balloonSettings.OnClose.ResetParameter != null)
+                                        {
+                                            resetAction?.Invoke(false);
+                                        }
+                                    };
+                                }
+                                if (showWhileParameterSet)
+                                    dutyBalloon = balloon;
+                            }
+                            else if (showWhileParameterSet && dutyBalloon != null)
+                            {
+                                dutyBalloon.Close();
+                            }
+                    }
+
+
+                    if (analogControl != null)
+                    {
+                        if (value.GetType().IsPrimitive)
+                            analogControl.Value = (ushort)value;
+                    }
+                    if (lastTimeControl != null)
+                    {
+                        if (value is DateTime)
+                            lastTimeControl.Value = (DateTime)value;
+                    }
+                    if (simpleIndicator != null)
+                    {
+                        if (value.GetType().IsPrimitive)
+                            simpleIndicator.Value = (ushort)value;
+                    }
+                    if (chartSerie != null)
+                    {
+                        var curTime = DateTime.Now;
+                        if (value.GetType().IsPrimitive)
+                            chartSerie.Points.Add(new SeriesPoint(curTime, (ushort)value));
+
+                    }
+
+                });
+            });
         }
 
-        private void ProcessLayoutGroup(DevExpress.Xpf.Docking.LayoutGroup layoutGroupObject, LayoutGroup layoutGroup, List<ShController> allControllers, List<HomeSettingsControllerGroup> controllerGroups)
+        private void ProcessLayoutGroup(LayoutGroup layoutGroupObject, Models.LayoutGroup layoutGroup)
         {
-            var newLayoutGroupObject = new DevExpress.Xpf.Docking.LayoutGroup();
+            var newLayoutGroupObject = new LayoutGroup();
             layoutGroupObject.Items.Add(newLayoutGroupObject);
             newLayoutGroupObject.Orientation = layoutGroup.Orientation == Orientations.Horizontal
                 ? Orientation.Horizontal
-                : Orientation.Vertical;foreach (var layoutGroup1 in layoutGroup.LayoutGroup1)
+                : Orientation.Vertical; foreach (var layoutGroup1 in layoutGroup.LayoutGroup1)
             {
-                ProcessLayoutGroup(newLayoutGroupObject, layoutGroup1, allControllers, _homeSettings.ControllerGroups);
+                ProcessLayoutGroup(newLayoutGroupObject, layoutGroup1);
             }
             foreach (var visibility in layoutGroup.Visibility)
             {
-                ProcessVisibility(newLayoutGroupObject, visibility, allControllers, _homeSettings.ControllerGroups);
+                ProcessVisibility(newLayoutGroupObject, visibility);
             }
         }
 
-
-/*
-        private void ProcessSetters(List<HomeSettingsRoomControllersControllerSetter> setters, RoomTab layoutGroupObject,
-            ShController controllerObject)
-        {
-            foreach (var setter in setters)
-            {
-                var setterControl = new IndicatorControl
-                {
-                    Caption = setter.Name
-                };
-                roomTab.MainPanel.Items.Add(setterControl);
-                switch (setter.Type)
-                {
-                    case SetterTypes.RealDateTime:
-                        var btn = new Button { Content = "Установить текущее время" };
-                        var setterObj = controllerObject.SetSetter(setter.ModbusIndex, SetterTypes.RealDateTime);
-                        btn.Click += (sender, args) =>
-                        {
-                            setterObj.PendingSet();
-                        };
-                        setterControl.SpMain.Children.Add(btn);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-*/
-
-/*
-        private void ProcessPararmeters(List<HomeSettingsControllerGroupControllerParameter> parameters,
-    RoomTab roomTab, ShController controllerObject)
-        {
-            foreach (var parameter in parameters)
-            {
-                var indicatorControl = new IndicatorControl
-                {
-                    Caption = parameter.Name
-                };
-                //                        roomTab.MainPanel.Items = new SerializableItemCollection();
-                roomTab.MainPanel.Items.Add(indicatorControl);
-                if (parameter.Icon != null)
-                {
-                    indicatorControl.CaptionImage = GetImageSource(parameter.Icon);
-                    indicatorControl.ShowCaptionImage = true;
-                }
-                switch (parameter.ModbusType)
-                {
-                    case ModbusTypes.Discrete:
-                    case ModbusTypes.Coil:
-                        //                                var simpleCheckBox = new CheckBox() { Content = parameter.Name };
-                        ObjectButton binaryIndicator = null;
-                        //                                indicatorControl.SpMain.Children.Add(simpleCheckBox);
-                        var isCoil = parameter.ModbusType == ModbusTypes.Coil;
-                        FancyBalloon dutyBalloon = null;
-                        var showWhileParameterSet = false;
-                        if (parameter.Visibility != null)
-                        {
-                            if (parameter.Visibility.ShowBalloon != null)
-                            {
-                                var balloonSettings = parameter.Visibility.ShowBalloon;
-                                if (balloonSettings.ShowWhileParameterSetSpecified && balloonSettings.ShowWhileParameterSet)
-                                {
-                                    //                                            dutyBalloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
-                                    showWhileParameterSet = true;
-                                }
-                            }
-                            var binaryIndicatorSettings = parameter.Visibility.BinaryIndicator;
-                            if (binaryIndicatorSettings != null)
-                            {
-                                binaryIndicator = new ObjectButton();
-                                indicatorControl.SpMain.Children.Add(binaryIndicator);
-                                var onIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OnIcon)
-                                    ? "DefaultChecked.png"
-                                    : binaryIndicatorSettings.OnIcon;
-                                var offIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OffIcon)
-                                    ? "DefaultUnChecked.png"
-                                    : binaryIndicatorSettings.OffIcon;
-
-                                binaryIndicator.EnabledChecked = GetImageSource(onIcon, "DefaultChecked.png");
-
-                                binaryIndicator.EnabledUnchecked = GetImageSource(offIcon, "DefaultUnChecked.png");
-                            }
-                        }
-                        controllerObject.SetActionOnDiscreteOrCoil(isCoil,
-                            showWhileParameterSet ? ShController.CheckCoilStatus.OnBoth : ShController.CheckCoilStatus.OnTrue,
-                            parameter.ModbusIndex,
-                            (actionOn, state) =>
-                            {
-                                ExecDispatched(() =>
-                                {
-                                    if (parameter.Visibility != null)
-                                    {
-                                        if (binaryIndicator != null)
-                                        {
-                                            binaryIndicator.IsChecked = state;
-                                        }
-                                        if (parameter.Visibility.ShowBalloon != null)
-                                        {
-                                            if (state)
-                                            {
-                                                var balloonSettings = parameter.Visibility.ShowBalloon;
-                                                var balloon = new FancyBalloon(balloonSettings.Text1,
-                                                    GetBalloonStyle(balloonSettings.Type));
-                                                ShowBalloon(balloon);
-                                                if (balloonSettings.OnClose != null)
-                                                {
-                                                    balloon.Closing += (sender, args) =>
-                                                    {
-                                                        if (balloonSettings.OnClose.ResetParameter != null)
-                                                        {
-                                                            var actionOnCoil = actionOn as ShController.ActionOnCoil;
-                                                            actionOnCoil?.Reset();
-                                                        }
-                                                    };
-                                                }
-                                                if (showWhileParameterSet)
-                                                    dutyBalloon = balloon;
-                                            }
-                                            else if (showWhileParameterSet && dutyBalloon != null)
-                                            {
-                                                dutyBalloon.Close();
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        //                                                simpleCheckBox.IsChecked = state;
-                                    }
-                                });
-                            });
-                        break;
-                    case ModbusTypes.InputRegister:
-                    case ModbusTypes.HoldingRegister:
-                        SimpleIndicator simpleIndicator = null;
-                        AnalogIndicator analogControl = null;
-                        LastTimeIndicator lastTimeControl = null;
-                        Series chartSerie = null;// MainChartLog.Diagram.Series[0];
-                        if (parameter.Visibility != null)
-                        {
-                            var analogIndicator = parameter.Visibility.AnalogIndicator;
-                            if (analogIndicator != null)
-                            {
-                                analogControl = new AnalogIndicator();
-                                indicatorControl.SpMain.Children.Add(analogControl);
-                                var scale = analogControl.MainGauge.Scales[0];
-                                scale.StartValue = analogIndicator.Scale.Min;
-                                scale.EndValue = analogIndicator.Scale.Max;
-                                if (analogIndicator.Scale.MajorCountSpecified)
-                                    scale.MajorIntervalCount = analogIndicator.Scale.MajorCount;
-                                if (analogIndicator.Scale.MinorCountSpecified)
-                                    scale.MinorIntervalCount = analogIndicator.Scale.MinorCount;
-
-                                if (analogIndicator.Scale.GoodValueSpecified)
-                                    scale.Markers.Add(new ArcScaleMarker()
-                                    {
-                                        Value = analogIndicator.Scale.GoodValue
-                                    });
-
-                                if (analogIndicator.Scale.Ranges != null)
-                                {
-                                    foreach (var range in analogIndicator.Scale.Ranges)
-                                    {
-                                        scale.Ranges.Add(new ArcScaleRange()
-                                        {
-                                            StartValue = new RangeValue(range.StartValue),
-                                            EndValue = new RangeValue(range.EndValue)
-                                        });
-                                    }
-                                }
-
-                                if (!string.IsNullOrEmpty(analogIndicator.Icon))
-                                {
-                                    analogControl.IIcon.Source = GetImageSource(analogIndicator.Icon);
-                                }
-                            }
-                            var digitalIndicatorSettings = parameter.Visibility.DigitalIndicator;
-                            if (digitalIndicatorSettings != null)
-                            {
-                                simpleIndicator = new SimpleIndicator();
-                                indicatorControl.SpMain.Children.Add(simpleIndicator);
-                            }
-                            var lastTimeIndicator = parameter.Visibility.LastTimeIndicator;
-                            if (lastTimeIndicator != null)
-                            {
-                                lastTimeControl = new LastTimeIndicator();
-                                indicatorControl.SpMain.Children.Add(lastTimeControl);
-                                if (!string.IsNullOrEmpty(lastTimeIndicator.Icon))
-                                {
-                                    lastTimeControl.IIcon.Source = GetImageSource(lastTimeIndicator.Icon);
-                                }
-                            }
-                            var chartSettings = parameter.Visibility.Chart;
-                            if (chartSettings != null)
-                            {
-                                chartSerie = new LineSeries2D();
-                                MainChartLog.Diagram.Series.Add(chartSerie);
-                                chartSerie.DisplayName = parameter.Name;
-                            }
-                        }
-                        else
-                        {
-                            simpleIndicator = new SimpleIndicator();
-                            indicatorControl.SpMain.Children.Add(simpleIndicator);
-                            //                                    simpleIndicator.LTitle.Content = parameter.Name;
-                        }
-                        TimeSpan? interval = null;
-                        if (!string.IsNullOrEmpty(parameter.RefreshRate))
-                        {
-                            TimeSpan tmpVal;
-                            if (TimeSpan.TryParseExact(parameter.RefreshRate, "g", null, TimeSpanStyles.None, out tmpVal))
-                                interval = tmpVal;
-                        }
-                        switch (parameter.DataType)
-                        {
-                            case DataTypes.UInt16:
-                                controllerObject.SetActionOnRegister(false, parameter.ModbusIndex, value =>
-                                {
-                                    ExecDispatched(() =>
-                                    {
-                                        if (analogControl != null)
-                                        {
-                                            analogControl.Value = value;
-                                        }
-                                        if (lastTimeControl != null)
-                                        {
-                                            lastTimeControl.Value = DateTime.Now;
-                                        }
-                                        if (simpleIndicator != null)
-                                            simpleIndicator.Value = value;
-                                        if (chartSerie != null)
-                                        {
-                                            var curTime = DateTime.Now;
-
-                                            chartSerie.Points.Add(new SeriesPoint(curTime, value));
-
-                                        }
-
-                                    });
-                                }, false, interval);
-                                break;
-                            case DataTypes.Float:
-                                break;
-                            case DataTypes.RdDateTime:
-                                controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
-                                    value =>
-                                    {
-                                        if (lastTimeControl != null)
-                                        {
-                                            lastTimeControl.Value = value;
-                                        }
-                                    }, false, interval);
-                                break;
-                            case DataTypes.RdTime:
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-*/
-
-
-        /*
-                private void ProcessPararmeters(List<HomeSettingsRoomControllersControllerParameter> parameters,
-                    RoomTab roomTab, ShController controllerObject)
-                {
-                    foreach (var parameter in parameters)
-                    {
-                        var indicatorControl = new IndicatorControl
-                        {
-                            Caption = parameter.Name
-                        };
-                        //                        roomTab.MainPanel.Items = new SerializableItemCollection();
-                        roomTab.MainPanel.Items.Add(indicatorControl);
-                        if (parameter.Icon != null)
-                        {
-                            indicatorControl.CaptionImage = GetImageSource(parameter.Icon);
-                            indicatorControl.ShowCaptionImage = true;
-                        }
-                        switch (parameter.ModbusType)
-                        {
-                            case ModbusTypes.Discrete:
-                            case ModbusTypes.Coil:
-                                //                                var simpleCheckBox = new CheckBox() { Content = parameter.Name };
-                                ObjectButton binaryIndicator = null;
-                                //                                indicatorControl.SpMain.Children.Add(simpleCheckBox);
-                                var isCoil = parameter.ModbusType == ModbusTypes.Coil;
-                                FancyBalloon dutyBalloon = null;
-                                var showWhileParameterSet = false;
-                                if (parameter.Visibility != null)
-                                {
-                                    if (parameter.Visibility.ShowBalloon != null)
-                                    {
-                                        var balloonSettings = parameter.Visibility.ShowBalloon;
-                                        if (balloonSettings.ShowWhileParameterSetSpecified && balloonSettings.ShowWhileParameterSet)
-                                        {
-                                            //                                            dutyBalloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
-                                            showWhileParameterSet = true;
-                                        }
-                                    }
-                                    var binaryIndicatorSettings = parameter.Visibility.BinaryIndicator;
-                                    if (binaryIndicatorSettings != null)
-                                    {
-                                        binaryIndicator = new ObjectButton();
-                                        indicatorControl.SpMain.Children.Add(binaryIndicator);
-                                        var onIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OnIcon)
-                                            ? "DefaultChecked.png"
-                                            : binaryIndicatorSettings.OnIcon;
-                                        var offIcon = string.IsNullOrEmpty(binaryIndicatorSettings.OffIcon)
-                                            ? "DefaultUnChecked.png"
-                                            : binaryIndicatorSettings.OffIcon;
-
-                                        binaryIndicator.EnabledChecked = GetImageSource(onIcon, "DefaultChecked.png");
-
-                                        binaryIndicator.EnabledUnchecked = GetImageSource(offIcon, "DefaultUnChecked.png");
-                                    }
-                                }
-                                controllerObject.SetActionOnDiscreteOrCoil(isCoil,
-                                    showWhileParameterSet ? ShController.CheckCoilStatus.OnBoth : ShController.CheckCoilStatus.OnTrue,
-                                    parameter.ModbusIndex,
-                                    (actionOn, state) =>
-                                    {
-                                        ExecDispatched(() =>
-                                        {
-                                            if (parameter.Visibility != null)
-                                            {
-                                                if (binaryIndicator != null)
-                                                {
-                                                    binaryIndicator.IsChecked = state;
-                                                }
-                                                if (parameter.Visibility.ShowBalloon != null)
-                                                {
-                                                    if (state)
-                                                    {
-                                                        var balloonSettings = parameter.Visibility.ShowBalloon;
-                                                        var balloon = new FancyBalloon(balloonSettings.Text1,
-                                                            GetBalloonStyle(balloonSettings.Type));
-                                                        ShowBalloon(balloon);
-                                                        if (balloonSettings.OnClose != null)
-                                                        {
-                                                            balloon.Closing += (sender, args) =>
-                                                            {
-                                                                if (balloonSettings.OnClose.ResetParameter != null)
-                                                                {
-                                                                    var actionOnCoil = actionOn as ShController.ActionOnCoil;
-                                                                    actionOnCoil?.Reset();
-                                                                }
-                                                            };
-                                                        }
-                                                        if (showWhileParameterSet)
-                                                            dutyBalloon = balloon;
-                                                    }
-                                                    else if (showWhileParameterSet && dutyBalloon != null)
-                                                    {
-                                                        dutyBalloon.Close();
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //                                                simpleCheckBox.IsChecked = state;
-                                            }
-                                        });
-                                    });
-                                break;
-                            case ModbusTypes.InputRegister:
-                            case ModbusTypes.HoldingRegister:
-                                SimpleIndicator simpleIndicator = null;
-                                AnalogIndicator analogControl = null;
-                                LastTimeIndicator lastTimeControl = null;
-                                Series chartSerie = null;// MainChartLog.Diagram.Series[0];
-                                if (parameter.Visibility != null)
-                                {
-                                    var analogIndicator = parameter.Visibility.AnalogIndicator;
-                                    if (analogIndicator != null)
-                                    {
-                                        analogControl = new AnalogIndicator();
-                                        indicatorControl.SpMain.Children.Add(analogControl);
-                                        var scale = analogControl.MainGauge.Scales[0];
-                                        scale.StartValue = analogIndicator.Scale.Min;
-                                        scale.EndValue = analogIndicator.Scale.Max;
-                                        if (analogIndicator.Scale.MajorCountSpecified)
-                                            scale.MajorIntervalCount = analogIndicator.Scale.MajorCount;
-                                        if (analogIndicator.Scale.MinorCountSpecified)
-                                            scale.MinorIntervalCount = analogIndicator.Scale.MinorCount;
-
-                                        if (analogIndicator.Scale.GoodValueSpecified)
-                                            scale.Markers.Add(new ArcScaleMarker()
-                                            {
-                                                Value = analogIndicator.Scale.GoodValue
-                                            });
-
-                                        if (analogIndicator.Scale.Ranges != null)
-                                        {
-                                            foreach (var range in analogIndicator.Scale.Ranges)
-                                            {
-                                                scale.Ranges.Add(new ArcScaleRange()
-                                                {
-                                                    StartValue = new RangeValue(range.StartValue),
-                                                    EndValue = new RangeValue(range.EndValue)
-                                                });
-                                            }
-                                        }
-
-                                        if (!string.IsNullOrEmpty(analogIndicator.Icon))
-                                        {
-                                            analogControl.IIcon.Source = GetImageSource(analogIndicator.Icon);
-                                        }
-                                    }
-                                    var digitalIndicatorSettings = parameter.Visibility.DigitalIndicator;
-                                    if (digitalIndicatorSettings != null)
-                                    {
-                                        simpleIndicator = new SimpleIndicator();
-                                        indicatorControl.SpMain.Children.Add(simpleIndicator);
-                                    }
-                                    var lastTimeIndicator = parameter.Visibility.LastTimeIndicator;
-                                    if (lastTimeIndicator != null)
-                                    {
-                                        lastTimeControl = new LastTimeIndicator();
-                                        indicatorControl.SpMain.Children.Add(lastTimeControl);
-                                        if (!string.IsNullOrEmpty(lastTimeIndicator.Icon))
-                                        {
-                                            lastTimeControl.IIcon.Source = GetImageSource(lastTimeIndicator.Icon);
-                                        }
-                                    }
-                                    var chartSettings = parameter.Visibility.Chart;
-                                    if (chartSettings != null)
-                                    {
-                                        chartSerie = new LineSeries2D();
-                                        MainChartLog.Diagram.Series.Add(chartSerie);
-                                        chartSerie.DisplayName = parameter.Name;
-                                    }
-                                }
-                                else
-                                {
-                                    simpleIndicator = new SimpleIndicator();
-                                    indicatorControl.SpMain.Children.Add(simpleIndicator);
-                                    //                                    simpleIndicator.LTitle.Content = parameter.Name;
-                                }
-                                TimeSpan? interval = null;
-                                if (!string.IsNullOrEmpty(parameter.RefreshRate))
-                                {
-                                    TimeSpan tmpVal;
-                                    if (TimeSpan.TryParseExact(parameter.RefreshRate, "g", null, TimeSpanStyles.None, out tmpVal))
-                                        interval = tmpVal;
-                                }
-                                switch (parameter.DataType)
-                                {
-                                    case DataTypes.UInt16:
-                                        controllerObject.SetActionOnRegister(false, parameter.ModbusIndex, value =>
-                                        {
-                                            ExecDispatched(() =>
-                                            {
-                                                if (analogControl != null)
-                                                {
-                                                    analogControl.Value = value;
-                                                }
-                                                if (lastTimeControl != null)
-                                                {
-                                                    lastTimeControl.Value = DateTime.Now;
-                                                }
-                                                if (simpleIndicator != null)
-                                                    simpleIndicator.Value = value;
-                                                if (chartSerie != null)
-                                                {
-                                                    var curTime = DateTime.Now;
-
-                                                    chartSerie.Points.Add(new SeriesPoint(curTime, value));
-
-                                                }
-
-                                            });
-                                        }, false, interval);
-                                        break;
-                                    case DataTypes.Float:
-                                        break;
-                                    case DataTypes.RdDateTime:
-                                        controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
-                                            value =>
-                                            {
-                                                if (lastTimeControl != null)
-                                                {
-                                                    lastTimeControl.Value = value;
-                                                }
-                                            }, false, interval);
-                                        break;
-                                    case DataTypes.RdTime:
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                }
-        */
 
         private FancyBalloon.BaloonStyles GetBalloonStyle(BalloonTypes balloonType)
         {
@@ -1254,66 +543,25 @@ namespace HomeModbus
             }
         }
 
-
-        private void FillPorts()
-        {
-            var ports = SerialPort.GetPortNames();
-            LbPorts.ItemsSource = ports;
-            if (!string.IsNullOrEmpty(Settings.Default.SelectedCom))
-                LbPorts.SelectedItem = Settings.Default.SelectedCom;
-        }
-
-
         private void StartWatchingClick(object sender, RoutedEventArgs e)
         {
-            _modbusMasterThread.StartListening();
+            _client.SendMessage($"{HsEnvelope.HomeServerCommands}", HsEnvelope.StartListening);
         }
 
+        private void ConnectToServer()
+        {
+            //AsynchronousClient.Start();
+            _client.ConnectToServer(ServerName);
 
-        public bool IsPortOpen => _modbusMasterThread != null && _modbusMasterThread.IsPortOpen;
+
+        }
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            _modbusMasterThread.StopListening();
-            _modbusMasterThread.Close();
+            //            _modbusMasterThread.StopListening();
+            //            _modbusMasterThread.Close();
+            _client?.Disconnect();
         }
-
-        private void SelectPort(object sender, SelectionChangedEventArgs e)
-        {
-            var lb = (ListBox)sender;
-
-            var selectedPort = lb.SelectedItem as string;
-            if (selectedPort == null)
-                return;
-
-            Settings.Default.SelectedCom = selectedPort;
-            Settings.Default.Save();
-        }
-
-        private void SelectBaudrate(object sender, SelectionChangedEventArgs e)
-        {
-            var lb = (ListBox)sender;
-
-            if (lb.SelectedItem == null)
-                return;
-
-            Settings.Default.SelectedBaudrate = (int)lb.SelectedItem;
-            Settings.Default.Save();
-        }
-        /*
-                private void TogglePortClick(object sender, RoutedEventArgs e)
-                {
-                    if (IsPortOpen)
-                    {
-                        ClosePort();
-                    }
-                    else
-                    {
-                        CreatePort();
-                    }
-                }
-        */
-
 
         /// <summary>
         /// Включён ли режим опроса
@@ -1478,7 +726,7 @@ namespace HomeModbus
             //            ShowBaloon("Установка времени", FancyBalloon.BaloonStyles.Exclamation);
             //            return;
 
-            _modbusMasterThread.SetCurrentTime();
+            //            _modbusMasterThread.SetCurrentTime();
 
             /*
                         CreatePort();
@@ -1511,8 +759,10 @@ namespace HomeModbus
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (Tag == null)
+            {
                 e.Cancel = true;
-            Hide();
+                Hide();
+            }
         }
 
         private void ShowBalloon(FancyBalloon balloon)
@@ -1531,13 +781,13 @@ namespace HomeModbus
         private void BStop_Click(object sender, RoutedEventArgs e)
         {
             IsListening = false;
-            _modbusMasterThread.StopListening();
+            //            _modbusMasterThread.StopListening();
             //StopListening();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            _modbusMasterThread.GetTempAndHym();
+            //            _modbusMasterThread.GetTempAndHym();
 
         }
 

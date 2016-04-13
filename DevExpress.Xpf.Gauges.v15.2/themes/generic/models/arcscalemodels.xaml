@@ -1,0 +1,415 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:DevExpress.Xpf.Gauges"
+                    xmlns:core="http://schemas.devexpress.com/winfx/2008/xaml/core">
+  <Style TargetType="{x:Type local:DefaultMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:DefaultMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Width="10" Height="2" Grid.Column="1"
+                     Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:DefaultMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:DefaultMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" HorizontalAlignment="Right" Height="1"
+                     Margin="0,0,2,0" VerticalAlignment="Center" Width="6" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:DefaultScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:DefaultScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF434343"
+                     FontSize="13.333" Margin="0,0,5,0" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:CleanWhiteMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CleanWhiteMajorTickmarkControl}">
+          <Path RenderTransformOrigin="1, 0.5" Stretch="Fill"
+                Data="F1 M 605.258,326.626 L 605.258,330.626 587.927,329.292 587.927,327.959 605.258,326.626 Z"
+                Grid.Column="1" Height="3" Margin="0" UseLayoutRounding="false" VerticalAlignment="Center"
+                Width="13" Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:CleanWhiteMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CleanWhiteMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" HorizontalAlignment="Right" Height="1" Margin="0"
+                     VerticalAlignment="Center" Width="7" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:CleanWhiteScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CleanWhiteScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF484E5A"
+                     FontSize="13.333" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:CosmicMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CosmicMajorTickmarkControl}">
+          <Grid RenderTransformOrigin="1, 0.5" Margin="0" VerticalAlignment="Center">
+            <Ellipse Fill="#FF058897" Width="7" Height="7" StrokeThickness="0" VerticalAlignment="Center"
+                     HorizontalAlignment="Right" Margin="0"/>
+            <Path Stretch="Fill"
+                  Data="F1 M 544.598,137.316 C 542.986,137.316 541.641,138.461 541.332,139.983 L 529.267,139.983 529.267,141.316 541.332,141.316 C 541.641,142.837 542.986,143.982 544.598,143.982 546.439,143.982 547.931,142.49 547.931,140.649 547.931,138.808 546.439,137.316 544.598,137.316 Z"
+                  HorizontalAlignment="Right" Height="5" Margin="0,0,1,0" UseLayoutRounding="false"
+                  VerticalAlignment="Center" Width="14" Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:CosmicMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CosmicMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" HorizontalAlignment="Right" Height="1"
+                     Margin="0,0,2,0" VerticalAlignment="Center" Width="7" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:CosmicScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:CosmicScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF00FAFD"
+                     FontSize="13.333" Margin="0,0,3,0" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:SmartMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:SmartMajorTickmarkControl}">
+          <Ellipse RenderTransformOrigin="0.5, 0.5" Width="5" Height="5" HorizontalAlignment="Center"
+                   VerticalAlignment="Center" Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:SmartMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:SmartMinorTickmarkControl}">
+          <Ellipse RenderTransformOrigin="0.5, 0.5" Width="3" Height="3"
+                   Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:SmartScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:SmartScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" Foreground="#FF0B0E0F" FontSize="13.333" Margin="0,0,5,0"
+                     VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:ProgressiveMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:ProgressiveMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Width="16" Height="3"
+                     Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:ProgressiveMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:ProgressiveMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" Height="1" Width="16" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:ProgressiveScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:ProgressiveScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" Foreground="#FF9BE2FF" FontSize="13.333" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:EcoMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:EcoMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" Height="1" Margin="0" Width="10" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:EcoMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:EcoMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" Height="1" Margin="0" Width="6" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:EcoScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:EcoScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" Foreground="#FF3A3832" FontSize="13.333" Margin="0,0,5,0"
+                     Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FutureMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FutureMajorTickmarkControl}">
+          <Path RenderTransformOrigin="1, 0.5" Stretch="Fill"
+                Data="F1 M 309.295,462.609 L 317.294,458.609 317.294,466.608 309.295,462.609 Z" Height="7"
+                Margin="0" UseLayoutRounding="false" Width="6"
+                Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FutureMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FutureMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" Height="1" Margin="0" Width="6" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FutureScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FutureScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" Foreground="#FFACA5C7" FontSize="13.333" Margin="3,0,0,0"
+                     Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:ClassicMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:ClassicMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" Height="1" Margin="0" Width="12" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:ClassicMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:ClassicMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" HorizontalAlignment="Right" Height="1"
+                     Margin="0,0,2,0" VerticalAlignment="Center" Width="6" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:ClassicScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:ClassicScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="White" FontSize="13.333"
+                     Margin="0,0,5,0" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:IStyleMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:IStyleMajorTickmarkControl}">
+          <Ellipse RenderTransformOrigin="1, 0.5" Width="5" Height="5" HorizontalAlignment="Right"
+                   Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:IStyleMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:IStyleMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Stretch="Fill" HorizontalAlignment="Right" Height="1" Margin="0"
+                     VerticalAlignment="Center" Width="5" StrokeThickness="0"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:IStyleScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:IStyleScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF393939"
+                     FontSize="13.333" Margin="2,0,0,0" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:YellowSubmarineMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:YellowSubmarineMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" StrokeThickness="0" Width="9" Height="3" HorizontalAlignment="Right"
+                     VerticalAlignment="Center" Grid.Column="1" Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:YellowSubmarineMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:YellowSubmarineMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" StrokeThickness="0" Width="6" Height="1" HorizontalAlignment="Right"
+                     VerticalAlignment="Center" Grid.Column="1" Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:YellowSubmarineScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:YellowSubmarineScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF353B4A"
+                     FontSize="13.333" Margin="0,0,3,0" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:MagicLightMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:MagicLightMajorTickmarkControl}">
+          <Ellipse RenderTransformOrigin="1, 0.5" Margin="0" StrokeThickness="0" HorizontalAlignment="Right"
+                   VerticalAlignment="Center" Width="9" Height="9" Grid.Column="1"
+                   Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:MagicLightMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:MagicLightMinorTickmarkControl}">
+          <Ellipse RenderTransformOrigin="1, 0.5" Margin="0,0,3,0" StrokeThickness="0" HorizontalAlignment="Right"
+                   VerticalAlignment="Center" Width="3" Height="3" Grid.Column="1"
+                   Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:MagicLightScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:MagicLightScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF62D7E7"
+                     FontSize="13.333" Margin="0,0,3,0" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FlatLightMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FlatLightMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Margin="0" StrokeThickness="0" HorizontalAlignment="Right"
+                     VerticalAlignment="Center" Width="6" Height="2" Grid.Column="1"
+                     Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FlatLightMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FlatLightMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" StrokeThickness="0" HorizontalAlignment="Right"
+                     VerticalAlignment="Center" Width="4" Height="2" Grid.Column="1"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FlatLightScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FlatLightScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF999999"
+                     FontSize="13.333" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FlatDarkMajorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FlatDarkMajorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" Margin="0" StrokeThickness="0" HorizontalAlignment="Right"
+                     VerticalAlignment="Center" Width="6" Height="2" Grid.Column="1"
+                     Fill="{Binding Path=Presentation.ActualMajorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FlatDarkMinorTickmarkControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FlatDarkMinorTickmarkControl}">
+          <Rectangle RenderTransformOrigin="1, 0.5" StrokeThickness="0" HorizontalAlignment="Right"
+                     VerticalAlignment="Center" Width="4" Height="2" Grid.Column="1"
+                     Fill="{Binding Path=Presentation.ActualMinorTickBrush}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type local:FlatDarkScaleLabelControl}">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FlatDarkScaleLabelControl}">
+          <TextBlock RenderTransformOrigin="0.5, 0.5" HorizontalAlignment="Right" Foreground="#FF4D4D4D"
+                     FontSize="13.333" VerticalAlignment="Center" Text="{Binding Text}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

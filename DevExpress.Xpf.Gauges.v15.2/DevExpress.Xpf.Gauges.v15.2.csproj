@@ -1,0 +1,1257 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Project was exported from assembly: C:\Program Files (x86)\DevExpress 15.2\Components\Bin\Framework\DevExpress.Xpf.Gauges.v15.2.dll-->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D56C7352-E1C8-41C5-97CC-499EBC0516BB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>DevExpress.Xpf.Gauges.v15.2</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <ApplicationVersion>15.2.7.0</ApplicationVersion>
+    <FileAlignment>512</FileAlignment>
+    <RootNamespace>DevExpress.Xpf.Gauges</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="WindowsBase" />
+    <Reference Include="System" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="DevExpress.Data.v15.2">
+      <HintPath>lib\DevExpress.Data.v15.2.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xaml" />
+    <Reference Include="DevExpress.Xpf.Core.v15.2">
+      <HintPath>lib\DevExpress.Xpf.Core.v15.2.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DevExpressXpfGaugesLocalizedDescriptionAttribute.cs" />
+    <Compile Include="GaugeDependencyObject.cs" />
+    <Compile Include="AnimationBase.cs" />
+    <Compile Include="IndicatorAnimation.cs" />
+    <Compile Include="SymbolsAnimation.cs" />
+    <Compile Include="CreepingLineDirection.cs" />
+    <Compile Include="CreepingLineAnimation.cs" />
+    <Compile Include="BlinkingAnimation.cs" />
+    <Compile Include="TextHorizontalAlignment.cs" />
+    <Compile Include="TextVerticalAlignment.cs" />
+    <Compile Include="TextDirection.cs" />
+    <Compile Include="GaugeControlBase.cs" />
+    <Compile Include="DigitalGaugeControl.cs" />
+    <Compile Include="DigitalGaugeControlAutomationPeer.cs" />
+    <Compile Include="ElementInfoPanel.cs" />
+    <Compile Include="ElementInfoContainer.cs" />
+    <Compile Include="AnalogGaugeControl.cs" />
+    <Compile Include="GaugeElement.cs" />
+    <Compile Include="GaugeElementsPanel.cs" />
+    <Compile Include="DigitalGaugeElementsPanel.cs" />
+    <Compile Include="ElementInfoBase.cs" />
+    <Compile Include="ElementLayout.cs" />
+    <Compile Include="GaugeItemsControl.cs" />
+    <Compile Include="GaugeBaseLayoutElement.cs" />
+    <Compile Include="GaugeHitInfoBase.cs" />
+    <Compile Include="CircularGaugeHitInfo.cs" />
+    <Compile Include="LinearGaugeHitInfo.cs" />
+    <Compile Include="ValueIndicatorBase.cs" />
+    <Compile Include="ArcScaleIndicator.cs" />
+    <Compile Include="GaugeDependencyObjectCollectionBase`1.cs" />
+    <Compile Include="GaugeDependencyObjectCollection`1.cs" />
+    <Compile Include="ValueIndicatorCollection`1.cs" />
+    <Compile Include="ArcScaleIndicatorCollection`1.cs" />
+    <Compile Include="LinearScaleLevelBarOptions.cs" />
+    <Compile Include="LinearScaleIndicator.cs" />
+    <Compile Include="LinearScaleLevelBar.cs" />
+    <Compile Include="LinearScaleIndicatorCollection`1.cs" />
+    <Compile Include="LinearScaleLevelBarCollection.cs" />
+    <Compile Include="ArcScaleMarkerOrientation.cs" />
+    <Compile Include="MarkerOptionsBase.cs" />
+    <Compile Include="ArcScaleMarkerOptions.cs" />
+    <Compile Include="ArcScaleMarker.cs" />
+    <Compile Include="ArcScaleMarkerCollection.cs" />
+    <Compile Include="LinearScaleMarkerOrientation.cs" />
+    <Compile Include="LinearScaleMarkerOptions.cs" />
+    <Compile Include="LinearScaleMarker.cs" />
+    <Compile Include="LinearScaleMarkerCollection.cs" />
+    <Compile Include="ArcScaleNeedleOptions.cs" />
+    <Compile Include="ArcScaleNeedle.cs" />
+    <Compile Include="ArcScaleNeedleCollection.cs" />
+    <Compile Include="RangeBarOptionsBase.cs" />
+    <Compile Include="ArcScaleRangeBarOptions.cs" />
+    <Compile Include="ArcScaleRangeBar.cs" />
+    <Compile Include="ArcScaleRangeBarCollection.cs" />
+    <Compile Include="LinearScaleRangeBarOptions.cs" />
+    <Compile Include="LinearScaleRangeBar.cs" />
+    <Compile Include="LinearScaleRangeBarCollection.cs" />
+    <Compile Include="ValueIndicatorAutomationPeer.cs" />
+    <Compile Include="ValueIndicatorInfo.cs" />
+    <Compile Include="LayerBase.cs" />
+    <Compile Include="ScaleLayerBase.cs" />
+    <Compile Include="ArcScaleLayer.cs" />
+    <Compile Include="LayerCollection`1.cs" />
+    <Compile Include="ArcScaleLayerCollection.cs" />
+    <Compile Include="GaugeLayerBase.cs" />
+    <Compile Include="CircularGaugeLayer.cs" />
+    <Compile Include="GaugeLayerCollection`1.cs" />
+    <Compile Include="CircularGaugeLayerCollection.cs" />
+    <Compile Include="DigitalGaugeLayer.cs" />
+    <Compile Include="DigitalGaugeLayerCollection.cs" />
+    <Compile Include="LayerOptions.cs" />
+    <Compile Include="LayerInfo.cs" />
+    <Compile Include="LinearGaugeLayer.cs" />
+    <Compile Include="LinearGaugeLayerCollection.cs" />
+    <Compile Include="LinearScaleLayer.cs" />
+    <Compile Include="LinearScaleLayerCollection.cs" />
+    <Compile Include="PresentationBase.cs" />
+    <Compile Include="LayerPresentation.cs" />
+    <Compile Include="CircularGaugeLayerPresentation.cs" />
+    <Compile Include="PredefinedCircularGaugeLayerPresentation.cs" />
+    <Compile Include="DefaultCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CleanWhiteCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CosmicCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="SmartCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveCircularGaugeBackgroundLayerPresentatio.cs" />
+    <Compile Include="EcoCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="FutureCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="ClassicCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="IStyleCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="YellowSubmarineCircularGaugeBackgroundLayerPresent.cs" />
+    <Compile Include="MagicLightCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="RedClockCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatLightCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatDarkCircularGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CustomCircularGaugeLayerPresentation.cs" />
+    <Compile Include="ArcScaleLayerPresentation.cs" />
+    <Compile Include="PredefinedArcScaleLayerPresentation.cs" />
+    <Compile Include="DefaultArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="DefaultHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="DefaultQuarterTopLeftArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="DefaultQuarterTopRightArcScaleBackgroundLayerPrese.cs" />
+    <Compile Include="DefaultThreeQuartersArcScaleBackgroundLayerPresent.cs" />
+    <Compile Include="CleanWhiteArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="CleanWhiteHalfTopArcScaleBackgroundLayerPresentati.cs" />
+    <Compile Include="CleanWhiteQuarterTopRightArcScaleBackgroundLayerPr.cs" />
+    <Compile Include="CleanWhiteQuarterTopLeftArcScaleBackgroundLayerPre.cs" />
+    <Compile Include="CleanWhiteThreeQuartersArcScaleBackgroundLayerPres.cs" />
+    <Compile Include="CosmicArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="CosmicHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="CosmicQuarterTopRightArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="CosmicQuarterTopLeftArcScaleBackgroundLayerPresent.cs" />
+    <Compile Include="CosmicThreeQuartersArcScaleBackgroundLayerPresenta.cs" />
+    <Compile Include="SmartArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="SmartHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="SmartQuarterTopRightArcScaleBackgroundLayerPresent.cs" />
+    <Compile Include="SmartQuarterTopLeftArcScaleBackgroundLayerPresenta.cs" />
+    <Compile Include="SmartThreeQuartersArcScaleBackgroundLayerPresentat.cs" />
+    <Compile Include="RedClockArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="RedClockHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="RedClockQuarterTopRightArcScaleBackgroundLayerPres.cs" />
+    <Compile Include="RedClockQuarterTopLeftArcScaleBackgroundLayerPrese.cs" />
+    <Compile Include="RedClockThreeQuartersArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="ProgressiveArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveHalfTopArcScaleBackgroundLayerPresentat.cs" />
+    <Compile Include="ProgressiveQuarterTopRightArcScaleBackgroundLayerP.cs" />
+    <Compile Include="ProgressiveQuarterTopLeftArcScaleBackgroundLayerPr.cs" />
+    <Compile Include="ProgressiveThreeQuartersArcScaleBackgroundLayerPre.cs" />
+    <Compile Include="EcoArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="EcoHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="EcoQuarterTopRightArcScaleBackgroundLayerPresentat.cs" />
+    <Compile Include="EcoQuarterTopLeftArcScaleBackgroundLayerPresentati.cs" />
+    <Compile Include="EcoThreeQuartersArcScaleBackgroundLayerPresentatio.cs" />
+    <Compile Include="FutureArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FutureHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FutureQuarterTopRightArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="FutureQuarterTopLeftArcScaleBackgroundLayerPresent.cs" />
+    <Compile Include="FutureThreeQuartersArcScaleBackgroundLayerPresenta.cs" />
+    <Compile Include="ClassicArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="ClassicHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="ClassicQuarterTopRightArcScaleBackgroundLayerPrese.cs" />
+    <Compile Include="ClassicQuarterTopLeftArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="ClassicThreeQuartersArcScaleBackgroundLayerPresent.cs" />
+    <Compile Include="IStyleArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="IStyleHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="IStyleQuarterTopRightArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="IStyleQuarterTopLeftArcScaleBackgroundLayerPresent.cs" />
+    <Compile Include="IStyleThreeQuartersArcScaleBackgroundLayerPresenta.cs" />
+    <Compile Include="YellowSubmarineArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="YellowSubmarineHalfTopArcScaleBackgroundLayerPrese.cs" />
+    <Compile Include="YellowSubmarineQuarterTopRightArcScaleBackgroundLa.cs" />
+    <Compile Include="YellowSubmarineQuarterTopLeftArcScaleBackgroundLay.cs" />
+    <Compile Include="YellowSubmarineThreeQuartersArcScaleBackgroundLaye.cs" />
+    <Compile Include="MagicLightArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="MagicLightHalfTopArcScaleBackgroundLayerPresentati.cs" />
+    <Compile Include="MagicLightQuarterTopRightArcScaleBackgroundLayerPr.cs" />
+    <Compile Include="MagicLightQuarterTopLeftArcScaleBackgroundLayerPre.cs" />
+    <Compile Include="MagicLightThreeQuartersArcScaleBackgroundLayerPres.cs" />
+    <Compile Include="FlatLightArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatLightHalfTopArcScaleBackgroundLayerPresentatio.cs" />
+    <Compile Include="FlatLightQuarterTopRightArcScaleBackgroundLayerPre.cs" />
+    <Compile Include="FlatLightQuarterTopLeftArcScaleBackgroundLayerPres.cs" />
+    <Compile Include="FlatLightThreeQuartersArcScaleBackgroundLayerPrese.cs" />
+    <Compile Include="FlatDarkArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatDarkHalfTopArcScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatDarkQuarterTopRightArcScaleBackgroundLayerPres.cs" />
+    <Compile Include="FlatDarkQuarterTopLeftArcScaleBackgroundLayerPrese.cs" />
+    <Compile Include="FlatDarkThreeQuartersArcScaleBackgroundLayerPresen.cs" />
+    <Compile Include="CustomArcScaleLayerPresentation.cs" />
+    <Compile Include="DigitalGaugeLayerPresentation.cs" />
+    <Compile Include="PredefinedDigitalGaugeLayerPresentation.cs" />
+    <Compile Include="DefaultDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CleanWhiteDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CosmicDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="SmartDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="EcoDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="FutureDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="ClassicDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="IStyleDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="YellowSubmarineDigitalGaugeBackgroundLayerPresenta.cs" />
+    <Compile Include="MagicLightDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="RedClockDigitalGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CustomDigitalGaugeLayerPresentation.cs" />
+    <Compile Include="PresentationControl.cs" />
+    <Compile Include="DefaultDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="CleanWhiteDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="CosmicDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="SmartDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="RedClockDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="ProgressiveDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="EcoDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="FutureDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="ClassicDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="IStyleDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="YellowSubmarineDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="MagicLightDigitalGaugeBackgroundLayerControl.cs" />
+    <Compile Include="LinearScaleLayerPresentation.cs" />
+    <Compile Include="PredefinedLinearScaleLayerPresentation.cs" />
+    <Compile Include="DefaultLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="CleanWhiteLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="CosmicLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="SmartLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="EcoLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FutureLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="ClassicLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="IStyleLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="YellowSubmarineLinearScaleBackgroundLayerPresentat.cs" />
+    <Compile Include="MagicLightLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="RedThermometerLinearScaleBackgroundLayerPresentati.cs" />
+    <Compile Include="FlatLightLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatDarkLinearScaleBackgroundLayerPresentation.cs" />
+    <Compile Include="CustomLinearScaleLayerPresentation.cs" />
+    <Compile Include="LinearGaugeLayerPresentation.cs" />
+    <Compile Include="PredefinedLinearGaugeLayerPresentation.cs" />
+    <Compile Include="DefaultLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CleanWhiteLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CosmicLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="SmartLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="EcoLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="FutureLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="ClassicLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="IStyleLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="YellowSubmarineLinearGaugeBackgroundLayerPresentat.cs" />
+    <Compile Include="MagicLightLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="RedThermometerLinearGaugeBackgroundLayerPresentati.cs" />
+    <Compile Include="FlatLightLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="FlatDarkLinearGaugeBackgroundLayerPresentation.cs" />
+    <Compile Include="CustomLinearGaugeLayerPresentation.cs" />
+    <Compile Include="DefaultLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="CleanWhiteLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="CosmicLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="SmartLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="ProgressiveLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="EcoLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="FutureLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="ClassicLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="IStyleLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="YellowSubmarineLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="MagicLightLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="RedThermometerLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="FlatLightLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="FlatDarkLinearScaleBackgroundLayerControl.cs" />
+    <Compile Include="DefaultGaugeBackgroundLayerControl.cs" />
+    <Compile Include="CleanWhiteGaugeBackgroundLayerControl.cs" />
+    <Compile Include="CosmicGaugeBackgroundLayerControl.cs" />
+    <Compile Include="SmartGaugeBackgroundLayerControl.cs" />
+    <Compile Include="RedThermometerGaugeBackgroundLayerControl.cs" />
+    <Compile Include="ProgressiveGaugeBackgroundLayerControl.cs" />
+    <Compile Include="EcoGaugeBackgroundLayerControl.cs" />
+    <Compile Include="FutureGaugeBackgroundLayerControl.cs" />
+    <Compile Include="ClassicGaugeBackgroundLayerControl.cs" />
+    <Compile Include="IStyleGaugeBackgroundLayerControl.cs" />
+    <Compile Include="YellowSubmarineGaugeBackgroundLayerControl.cs" />
+    <Compile Include="MagicLightGaugeBackgroundLayerControl.cs" />
+    <Compile Include="FlatLightGaugeBackgroundLayerControl.cs" />
+    <Compile Include="FlatDarkGaugeBackgroundLayerControl.cs" />
+    <Compile Include="DefaultArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="DefaultHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="DefaultQuarterTopLeftArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="DefaultQuarterTopRightArcScaleBackgroundLayerContr.cs" />
+    <Compile Include="DefaultThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="CleanWhiteArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="CleanWhiteHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="CleanWhiteQuarterTopLeftArcScaleBackgroundLayerCon.cs" />
+    <Compile Include="CleanWhiteQuarterTopRightArcScaleBackgroundLayerCo.cs" />
+    <Compile Include="CleanWhiteThreeQuartersArcScaleBackgroundLayerCont.cs" />
+    <Compile Include="CosmicArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="CosmicHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="CosmicQuarterTopLeftArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="CosmicQuarterTopRightArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="CosmicThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="SmartArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="SmartHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="SmartQuarterTopLeftArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="SmartQuarterTopRightArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="SmartThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="RedClockArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="RedClockHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="RedClockQuarterTopLeftArcScaleBackgroundLayerContr.cs" />
+    <Compile Include="RedClockQuarterTopRightArcScaleBackgroundLayerCont.cs" />
+    <Compile Include="RedClockThreeQuartersArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="ProgressiveArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="ProgressiveHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="ProgressiveQuarterTopLeftArcScaleBackgroundLayerCo.cs" />
+    <Compile Include="ProgressiveQuarterTopRightArcScaleBackgroundLayerC.cs" />
+    <Compile Include="ProgressiveThreeQuartersArcScaleBackgroundLayerCon.cs" />
+    <Compile Include="EcoArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="EcoHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="EcoQuarterTopLeftArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="EcoQuarterTopRightArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="EcoThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FutureArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FutureHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FutureQuarterTopLeftArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FutureQuarterTopRightArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="FutureThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="ClassicArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="ClassicHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="ClassicQuarterTopLeftArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="ClassicQuarterTopRightArcScaleBackgroundLayerContr.cs" />
+    <Compile Include="ClassicThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="IStyleArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="IStyleHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="IStyleQuarterTopLeftArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="IStyleQuarterTopRightArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="IStyleThreeQuartersArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="YellowSubmarineArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="YellowSubmarineHalfTopArcScaleBackgroundLayerContr.cs" />
+    <Compile Include="1YellowSubmarineQuarterTopLeftArcScaleBackgroundLay.cs" />
+    <Compile Include="1YellowSubmarineQuarterTopRightArcScaleBackgroundLa.cs" />
+    <Compile Include="1YellowSubmarineThreeQuartersArcScaleBackgroundLaye.cs" />
+    <Compile Include="MagicLightArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="MagicLightHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="MagicLightQuarterTopLeftArcScaleBackgroundLayerCon.cs" />
+    <Compile Include="MagicLightQuarterTopRightArcScaleBackgroundLayerCo.cs" />
+    <Compile Include="MagicLightThreeQuartersArcScaleBackgroundLayerCont.cs" />
+    <Compile Include="FlatLightArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FlatLightHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FlatLightQuarterTopLeftArcScaleBackgroundLayerCont.cs" />
+    <Compile Include="FlatLightQuarterTopRightArcScaleBackgroundLayerCon.cs" />
+    <Compile Include="FlatLightThreeQuartersArcScaleBackgroundLayerContr.cs" />
+    <Compile Include="FlatDarkArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FlatDarkHalfTopArcScaleBackgroundLayerControl.cs" />
+    <Compile Include="FlatDarkQuarterTopLeftArcScaleBackgroundLayerContr.cs" />
+    <Compile Include="FlatDarkQuarterTopRightArcScaleBackgroundLayerCont.cs" />
+    <Compile Include="FlatDarkThreeQuartersArcScaleBackgroundLayerContro.cs" />
+    <Compile Include="GaugeModelBase.cs" />
+    <Compile Include="DigitalGaugeModel.cs" />
+    <Compile Include="DigitalDefaultModel.cs" />
+    <Compile Include="DigitalCleanWhiteModel.cs" />
+    <Compile Include="DigitalCosmicModel.cs" />
+    <Compile Include="DigitalSmartModel.cs" />
+    <Compile Include="DigitalRedClockModel.cs" />
+    <Compile Include="DigitalProgressiveModel.cs" />
+    <Compile Include="DigitalEcoModel.cs" />
+    <Compile Include="DigitalFutureModel.cs" />
+    <Compile Include="DigitalClassicModel.cs" />
+    <Compile Include="DigitalIStyleModel.cs" />
+    <Compile Include="DigitalYellowSubmarineModel.cs" />
+    <Compile Include="DigitalMagicLightModel.cs" />
+    <Compile Include="ProgressiveArcScaleForegroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveHalfTopArcScaleForegroundLayerPresentat.cs" />
+    <Compile Include="ProgressiveQuarterTopLeftArcScaleForegroundLayerPr.cs" />
+    <Compile Include="ProgressiveQuarterTopRightArcScaleForegroundLayerP.cs" />
+    <Compile Include="ProgressiveThreeQuartersArcScaleForegroundLayerPre.cs" />
+    <Compile Include="FutureArcScaleForegroundLayerPresentation.cs" />
+    <Compile Include="FutureHalfTopArcScaleForegroundLayerPresentation.cs" />
+    <Compile Include="FutureQuarterTopLeftArcScaleForegroundLayerPresent.cs" />
+    <Compile Include="FutureQuarterTopRightArcScaleForegroundLayerPresen.cs" />
+    <Compile Include="FutureThreeQuartersArcScaleForegroundLayerPresenta.cs" />
+    <Compile Include="MagicLightArcScaleForegroundLayerPresentation.cs" />
+    <Compile Include="MagicLightHalfTopArcScaleForegroundLayerPresentati.cs" />
+    <Compile Include="MagicLightQuarterTopLeftArcScaleForegroundLayerPre.cs" />
+    <Compile Include="MagicLightQuarterTopRightArcScaleForegroundLayerPr.cs" />
+    <Compile Include="MagicLightThreeQuartersArcScaleForegroundLayerPres.cs" />
+    <Compile Include="ProgressiveArcScaleForegroundLayerControl.cs" />
+    <Compile Include="ProgressiveHalfTopArcScaleForegroundLayerControl.cs" />
+    <Compile Include="ProgressiveQuarterTopLeftArcScaleForegroundLayerCo.cs" />
+    <Compile Include="ProgressiveQuarterTopRightArcScaleForegroundLayerC.cs" />
+    <Compile Include="ProgressiveThreeQuartersArcScaleForegroundLayerCon.cs" />
+    <Compile Include="FutureArcScaleForegroundLayerControl.cs" />
+    <Compile Include="FutureHalfTopArcScaleForegroundLayerControl.cs" />
+    <Compile Include="FutureQuarterTopLeftArcScaleForegroundLayerControl.cs" />
+    <Compile Include="FutureQuarterTopRightArcScaleForegroundLayerContro.cs" />
+    <Compile Include="FutureThreeQuartersArcScaleForegroundLayerControl.cs" />
+    <Compile Include="MagicLightArcScaleForegroundLayerControl.cs" />
+    <Compile Include="MagicLightHalfTopArcScaleForegroundLayerControl.cs" />
+    <Compile Include="MagicLightQuarterTopLeftArcScaleForegroundLayerCon.cs" />
+    <Compile Include="MagicLightQuarterTopRightArcScaleForegroundLayerCo.cs" />
+    <Compile Include="MagicLightThreeQuartersArcScaleForegroundLayerCont.cs" />
+    <Compile Include="ClassicLinearScaleForegroundLayerPresentation.cs" />
+    <Compile Include="ProgressiveLinearScaleForegroundLayerPresentation.cs" />
+    <Compile Include="ClassicLinearScaleForegroundLayerControl.cs" />
+    <Compile Include="ProgressiveLinearScaleForegroundLayerControl.cs" />
+    <Compile Include="StatePresentation.cs" />
+    <Compile Include="PredefinedStatePresentation.cs" />
+    <Compile Include="TrafficLightsOffStatePresentation.cs" />
+    <Compile Include="TrafficLightsRedStatePresentation.cs" />
+    <Compile Include="TrafficLightsYellowStatePresentation.cs" />
+    <Compile Include="TrafficLightsGreenStatePresentation.cs" />
+    <Compile Include="TrafficLightsDefaultStatePresentation.cs" />
+    <Compile Include="ArrowUpStatePresentation.cs" />
+    <Compile Include="ArrowDownStatePresentation.cs" />
+    <Compile Include="ArrowLeftStatePresentation.cs" />
+    <Compile Include="ArrowRightStatePresentation.cs" />
+    <Compile Include="ArrowLeftUpStatePresentation.cs" />
+    <Compile Include="ArrowRightUpStatePresentation.cs" />
+    <Compile Include="ArrowRightDownStatePresentation.cs" />
+    <Compile Include="ArrowLeftDownStatePresentation.cs" />
+    <Compile Include="ArrowDefaultStatePresentation.cs" />
+    <Compile Include="LampOffStatePresentation.cs" />
+    <Compile Include="LampRedStatePresentation.cs" />
+    <Compile Include="LampYellowStatePresentation.cs" />
+    <Compile Include="LampGreenStatePresentation.cs" />
+    <Compile Include="LampDefaultStatePresentation.cs" />
+    <Compile Include="SmileHappyStatePresentation.cs" />
+    <Compile Include="SmileGladStatePresentation.cs" />
+    <Compile Include="SmileIndifferentStatePresentation.cs" />
+    <Compile Include="SmileSadStatePresentation.cs" />
+    <Compile Include="SmileDefaultStatePresentation.cs" />
+    <Compile Include="DefaultStatePresentation.cs" />
+    <Compile Include="CustomStatePresentation.cs" />
+    <Compile Include="TrafficLightsOffStatePresentationControl.cs" />
+    <Compile Include="TrafficLightsRedStatePresentationControl.cs" />
+    <Compile Include="TrafficLightsYellowStatePresentationControl.cs" />
+    <Compile Include="TrafficLightsGreenStatePresentationControl.cs" />
+    <Compile Include="TrafficLightsDefaultStatePresentationControl.cs" />
+    <Compile Include="ArrowUpStatePresentationControl.cs" />
+    <Compile Include="ArrowDownStatePresentationControl.cs" />
+    <Compile Include="ArrowLeftStatePresentationControl.cs" />
+    <Compile Include="ArrowRightStatePresentationControl.cs" />
+    <Compile Include="ArrowLeftUpStatePresentationControl.cs" />
+    <Compile Include="ArrowRightUpStatePresentationControl.cs" />
+    <Compile Include="ArrowRightDownStatePresentationControl.cs" />
+    <Compile Include="ArrowLeftDownStatePresentationControl.cs" />
+    <Compile Include="ArrowDefaultStatePresentationControl.cs" />
+    <Compile Include="LampOffStatePresentationControl.cs" />
+    <Compile Include="LampRedStatePresentationControl.cs" />
+    <Compile Include="LampYellowStatePresentationControl.cs" />
+    <Compile Include="LampGreenStatePresentationControl.cs" />
+    <Compile Include="LampDefaultStatePresentationControl.cs" />
+    <Compile Include="SmileHappyStatePresentationControl.cs" />
+    <Compile Include="SmileGladStatePresentationControl.cs" />
+    <Compile Include="SmileIndifferentStatePresentationControl.cs" />
+    <Compile Include="SmileSadStatePresentationControl.cs" />
+    <Compile Include="SmileDefaultStatePresentationControl.cs" />
+    <Compile Include="DefaultStatePresentationControl.cs" />
+    <Compile Include="PartialCircularGaugeModel.cs" />
+    <Compile Include="CircularDefaultFullModel.cs" />
+    <Compile Include="CircularDefaultHalfTopModel.cs" />
+    <Compile Include="CircularDefaultQuarterTopLeftModel.cs" />
+    <Compile Include="CircularDefaultQuarterTopRightModel.cs" />
+    <Compile Include="CircularDefaultThreeQuartersModel.cs" />
+    <Compile Include="CircularCleanWhiteFullModel.cs" />
+    <Compile Include="CircularCleanWhiteHalfTopModel.cs" />
+    <Compile Include="CircularCleanWhiteQuarterTopLeftModel.cs" />
+    <Compile Include="CircularCleanWhiteQuarterTopRightModel.cs" />
+    <Compile Include="CircularCleanWhiteThreeQuartersModel.cs" />
+    <Compile Include="CircularCosmicFullModel.cs" />
+    <Compile Include="CircularCosmicHalfTopModel.cs" />
+    <Compile Include="CircularCosmicQuarterTopLeftModel.cs" />
+    <Compile Include="CircularCosmicQuarterTopRightModel.cs" />
+    <Compile Include="CircularCosmicThreeQuartersModel.cs" />
+    <Compile Include="CircularSmartFullModel.cs" />
+    <Compile Include="CircularSmartHalfTopModel.cs" />
+    <Compile Include="CircularSmartQuarterTopLeftModel.cs" />
+    <Compile Include="CircularSmartQuarterTopRightModel.cs" />
+    <Compile Include="CircularSmartThreeQuartersModel.cs" />
+    <Compile Include="CircularRedClockFullModel.cs" />
+    <Compile Include="CircularRedClockHalfTopModel.cs" />
+    <Compile Include="CircularRedClockQuarterTopLeftModel.cs" />
+    <Compile Include="CircularRedClockQuarterTopRightModel.cs" />
+    <Compile Include="CircularRedClockThreeQuartersModel.cs" />
+    <Compile Include="CircularProgressiveFullModel.cs" />
+    <Compile Include="CircularProgressiveHalfTopModel.cs" />
+    <Compile Include="CircularProgressiveQuarterTopLeftModel.cs" />
+    <Compile Include="CircularProgressiveQuarterTopRightModel.cs" />
+    <Compile Include="CircularProgressiveThreeQuartersModel.cs" />
+    <Compile Include="CircularEcoFullModel.cs" />
+    <Compile Include="CircularEcoHalfTopModel.cs" />
+    <Compile Include="CircularEcoQuarterTopLeftModel.cs" />
+    <Compile Include="CircularEcoQuarterTopRightModel.cs" />
+    <Compile Include="CircularEcoThreeQuartersModel.cs" />
+    <Compile Include="CircularFutureFullModel.cs" />
+    <Compile Include="CircularFutureHalfTopModel.cs" />
+    <Compile Include="CircularFutureQuarterTopLeftModel.cs" />
+    <Compile Include="CircularFutureQuarterTopRightModel.cs" />
+    <Compile Include="CircularFutureThreeQuartersModel.cs" />
+    <Compile Include="CircularClassicFullModel.cs" />
+    <Compile Include="CircularClassicHalfTopModel.cs" />
+    <Compile Include="CircularClassicQuarterTopLeftModel.cs" />
+    <Compile Include="CircularClassicQuarterTopRightModel.cs" />
+    <Compile Include="CircularClassicThreeQuartersModel.cs" />
+    <Compile Include="CircularIStyleFullModel.cs" />
+    <Compile Include="CircularIStyleHalfTopModel.cs" />
+    <Compile Include="CircularIStyleQuarterTopLeftModel.cs" />
+    <Compile Include="CircularIStyleQuarterTopRightModel.cs" />
+    <Compile Include="CircularIStyleThreeQuartersModel.cs" />
+    <Compile Include="CircularYellowSubmarineFullModel.cs" />
+    <Compile Include="CircularYellowSubmarineHalfTopModel.cs" />
+    <Compile Include="CircularYellowSubmarineQuarterTopLeftModel.cs" />
+    <Compile Include="CircularYellowSubmarineQuarterTopRightModel.cs" />
+    <Compile Include="CircularYellowSubmarineThreeQuartersModel.cs" />
+    <Compile Include="CircularMagicLightFullModel.cs" />
+    <Compile Include="CircularMagicLightHalfTopModel.cs" />
+    <Compile Include="CircularMagicLightQuarterTopLeftModel.cs" />
+    <Compile Include="CircularMagicLightQuarterTopRightModel.cs" />
+    <Compile Include="CircularMagicLightThreeQuartersModel.cs" />
+    <Compile Include="CircularFlatLightFullModel.cs" />
+    <Compile Include="CircularFlatLightHalfTopModel.cs" />
+    <Compile Include="CircularFlatLightQuarterTopLeftModel.cs" />
+    <Compile Include="CircularFlatLightQuarterTopRightModel.cs" />
+    <Compile Include="CircularFlatLightThreeQuartersModel.cs" />
+    <Compile Include="CircularFlatDarkFullModel.cs" />
+    <Compile Include="CircularFlatDarkHalfTopModel.cs" />
+    <Compile Include="CircularFlatDarkQuarterTopLeftModel.cs" />
+    <Compile Include="CircularFlatDarkQuarterTopRightModel.cs" />
+    <Compile Include="CircularFlatDarkThreeQuartersModel.cs" />
+    <Compile Include="ScaleLabelPresentation.cs" />
+    <Compile Include="PredefinedScaleLabelPresentation.cs" />
+    <Compile Include="DefaultScaleLabelPresentation.cs" />
+    <Compile Include="CleanWhiteScaleLabelPresentation.cs" />
+    <Compile Include="CosmicScaleLabelPresentation.cs" />
+    <Compile Include="SmartScaleLabelPresentation.cs" />
+    <Compile Include="ProgressiveScaleLabelPresentation.cs" />
+    <Compile Include="EcoScaleLabelPresentation.cs" />
+    <Compile Include="FutureScaleLabelPresentation.cs" />
+    <Compile Include="ClassicScaleLabelPresentation.cs" />
+    <Compile Include="IStyleScaleLabelPresentation.cs" />
+    <Compile Include="YellowSubmarineScaleLabelPresentation.cs" />
+    <Compile Include="MagicLightScaleLabelPresentation.cs" />
+    <Compile Include="FlatLightScaleLabelPresentation.cs" />
+    <Compile Include="FlatDarkScaleLabelPresentation.cs" />
+    <Compile Include="CustomScaleLabelPresentation.cs" />
+    <Compile Include="DefaultScaleLabelControl.cs" />
+    <Compile Include="CleanWhiteScaleLabelControl.cs" />
+    <Compile Include="CosmicScaleLabelControl.cs" />
+    <Compile Include="SmartScaleLabelControl.cs" />
+    <Compile Include="ProgressiveScaleLabelControl.cs" />
+    <Compile Include="EcoScaleLabelControl.cs" />
+    <Compile Include="FutureScaleLabelControl.cs" />
+    <Compile Include="ClassicScaleLabelControl.cs" />
+    <Compile Include="IStyleScaleLabelControl.cs" />
+    <Compile Include="YellowSubmarineScaleLabelControl.cs" />
+    <Compile Include="MagicLightScaleLabelControl.cs" />
+    <Compile Include="FlatLightScaleLabelControl.cs" />
+    <Compile Include="FlatDarkScaleLabelControl.cs" />
+    <Compile Include="ScaleLinePresentation.cs" />
+    <Compile Include="ArcScaleLinePresentation.cs" />
+    <Compile Include="PredefinedArcScaleLinePresentation.cs" />
+    <Compile Include="DefaultArcScaleLinePresentation.cs" />
+    <Compile Include="CleanWhiteArcScaleLinePresentation.cs" />
+    <Compile Include="CosmicArcScaleLinePresentation.cs" />
+    <Compile Include="SmartArcScaleLinePresentation.cs" />
+    <Compile Include="ProgressiveArcScaleLinePresentation.cs" />
+    <Compile Include="EcoArcScaleLinePresentation.cs" />
+    <Compile Include="FutureArcScaleLinePresentation.cs" />
+    <Compile Include="ClassicArcScaleLinePresentation.cs" />
+    <Compile Include="IStyleArcScaleLinePresentation.cs" />
+    <Compile Include="YellowSubmarineArcScaleLinePresentation.cs" />
+    <Compile Include="MagicLightArcScaleLinePresentation.cs" />
+    <Compile Include="FlatLightArcScaleLinePresentation.cs" />
+    <Compile Include="FlatDarkArcScaleLinePresentation.cs" />
+    <Compile Include="CustomArcScaleLinePresentation.cs" />
+    <Compile Include="DefaultArcScaleLineControl.cs" />
+    <Compile Include="CleanWhiteArcScaleLineControl.cs" />
+    <Compile Include="CosmicArcScaleLineControl.cs" />
+    <Compile Include="SmartArcScaleLineControl.cs" />
+    <Compile Include="ProgressiveArcScaleLineControl.cs" />
+    <Compile Include="EcoArcScaleLineControl.cs" />
+    <Compile Include="FutureArcScaleLineControl.cs" />
+    <Compile Include="ClassicArcScaleLineControl.cs" />
+    <Compile Include="IStyleArcScaleLineControl.cs" />
+    <Compile Include="YellowSubmarineArcScaleLineControl.cs" />
+    <Compile Include="MagicLightArcScaleLineControl.cs" />
+    <Compile Include="FlatLightArcScaleLineControl.cs" />
+    <Compile Include="FlatDarkArcScaleLineControl.cs" />
+    <Compile Include="LinearScaleLinePresentation.cs" />
+    <Compile Include="PredefinedLinearScaleLinePresentation.cs" />
+    <Compile Include="DefaultLinearScaleLinePresentation.cs" />
+    <Compile Include="CleanWhiteLinearScaleLinePresentation.cs" />
+    <Compile Include="CosmicLinearScaleLinePresentation.cs" />
+    <Compile Include="SmartLinearScaleLinePresentation.cs" />
+    <Compile Include="ProgressiveLinearScaleLinePresentation.cs" />
+    <Compile Include="EcoLinearScaleLinePresentation.cs" />
+    <Compile Include="FutureLinearScaleLinePresentation.cs" />
+    <Compile Include="ClassicLinearScaleLinePresentation.cs" />
+    <Compile Include="IStyleLinearScaleLinePresentation.cs" />
+    <Compile Include="YellowSubmarineLinearScaleLinePresentation.cs" />
+    <Compile Include="MagicLightLinearScaleLinePresentation.cs" />
+    <Compile Include="RedThermometerLinearScaleLinePresentation.cs" />
+    <Compile Include="FlatLightLinearScaleLinePresentation.cs" />
+    <Compile Include="FlatDarkLinearScaleLinePresentation.cs" />
+    <Compile Include="CustomLinearScaleLinePresentation.cs" />
+    <Compile Include="DefaultLinearScaleLineControl.cs" />
+    <Compile Include="CleanWhiteLinearScaleLineControl.cs" />
+    <Compile Include="CosmicLinearScaleLineControl.cs" />
+    <Compile Include="SmartLinearScaleLineControl.cs" />
+    <Compile Include="ProgressiveLinearScaleLineControl.cs" />
+    <Compile Include="EcoLinearScaleLineControl.cs" />
+    <Compile Include="FutureLinearScaleLineControl.cs" />
+    <Compile Include="ClassicLinearScaleLineControl.cs" />
+    <Compile Include="IStyleLinearScaleLineControl.cs" />
+    <Compile Include="YellowSubmarineLinearScaleLineControl.cs" />
+    <Compile Include="MagicLightLinearScaleLineControl.cs" />
+    <Compile Include="RedThermometerLinearScaleLineControl.cs" />
+    <Compile Include="FlatLightLinearScaleLineControl.cs" />
+    <Compile Include="FlatDarkLinearScaleLineControl.cs" />
+    <Compile Include="ModelBase.cs" />
+    <Compile Include="ScaleModel.cs" />
+    <Compile Include="SpindleCapPresentation.cs" />
+    <Compile Include="PredefinedSpindleCapPresentation.cs" />
+    <Compile Include="DefaultSpindleCapPresentation.cs" />
+    <Compile Include="CleanWhiteSpindleCapPresentation.cs" />
+    <Compile Include="CosmicSpindleCapPresentation.cs" />
+    <Compile Include="SmartSpindleCapPresentation.cs" />
+    <Compile Include="RedClockSpindleCapPresentation.cs" />
+    <Compile Include="ProgressiveSpindleCapPresentation.cs" />
+    <Compile Include="EcoSpindleCapPresentation.cs" />
+    <Compile Include="FutureSpindleCapPresentation.cs" />
+    <Compile Include="ClassicSpindleCapPresentation.cs" />
+    <Compile Include="IStyleSpindleCapPresentation.cs" />
+    <Compile Include="YellowSubmarineSpindleCapPresentation.cs" />
+    <Compile Include="MagicLightSpindleCapPresentation.cs" />
+    <Compile Include="FlatLightSpindleCapPresentation.cs" />
+    <Compile Include="FlatDarkSpindleCapPresentation.cs" />
+    <Compile Include="CustomSpindleCapPresentation.cs" />
+    <Compile Include="StateIndicatorModel.cs" />
+    <Compile Include="EmptyStateIndicatorModel.cs" />
+    <Compile Include="TrafficLightsStateIndicatorModel.cs" />
+    <Compile Include="LampStateIndicatorModel.cs" />
+    <Compile Include="SmileStateIndicatorModel.cs" />
+    <Compile Include="ArrowStateIndicatorModel.cs" />
+    <Compile Include="SymbolsModelBase.cs" />
+    <Compile Include="FourteenSegmentsModel.cs" />
+    <Compile Include="SymbolPresentation.cs" />
+    <Compile Include="FourteenSegmentsPresentation.cs" />
+    <Compile Include="DefaultFourteenSegmentsPresentation.cs" />
+    <Compile Include="CustomFourteenSegmentsPresentation.cs" />
+    <Compile Include="SymbolPresentationControl.cs" />
+    <Compile Include="DefaultFourteenSegmentsControl.cs" />
+    <Compile Include="Matrix5x8Model.cs" />
+    <Compile Include="Matrix5x8Presentation.cs" />
+    <Compile Include="DefaultMatrix5x8Presentation.cs" />
+    <Compile Include="CustomMatrix5x8Presentation.cs" />
+    <Compile Include="DefaultMatrix5x8Control.cs" />
+    <Compile Include="CustomMatrix5x8Control.cs" />
+    <Compile Include="Matrix8x14Model.cs" />
+    <Compile Include="Matrix8x14Presentation.cs" />
+    <Compile Include="DefaultMatrix8x14Presentation.cs" />
+    <Compile Include="CustomMatrix8x14Presentation.cs" />
+    <Compile Include="DefaultMatrix8x14Control.cs" />
+    <Compile Include="CustomMatrix8x14Control.cs" />
+    <Compile Include="SevenSegmentsModel.cs" />
+    <Compile Include="SevenSegmentsPresentation.cs" />
+    <Compile Include="DefaultSevenSegmentsPresentation.cs" />
+    <Compile Include="CustomSevenSegmentsPresentation.cs" />
+    <Compile Include="DefaultSevenSegmentsControl.cs" />
+    <Compile Include="RangeValueType.cs" />
+    <Compile Include="RangeValue.cs" />
+    <Compile Include="RangeValueConverter.cs" />
+    <Compile Include="ObjectToRangeValueConverter.cs" />
+    <Compile Include="RangeOptions.cs" />
+    <Compile Include="RangeBase.cs" />
+    <Compile Include="RangeInfo.cs" />
+    <Compile Include="ScaleCustomElement.cs" />
+    <Compile Include="GaugeElementCollection`1.cs" />
+    <Compile Include="ScaleCustomElementCollection.cs" />
+    <Compile Include="SpindleCapOptions.cs" />
+    <Compile Include="LinearGaugeControl.cs" />
+    <Compile Include="LinearGaugeControlAutomationPeer.cs" />
+    <Compile Include="ArcScaleNeedleModel.cs" />
+    <Compile Include="ModelCollection`1.cs" />
+    <Compile Include="ArcScaleNeedleModelCollection.cs" />
+    <Compile Include="ValueIndicatorPresentation.cs" />
+    <Compile Include="ArcScaleNeedlePresentation.cs" />
+    <Compile Include="PredefinedArcScaleNeedlePresentation.cs" />
+    <Compile Include="DefaultArcScaleNeedlePresentation.cs" />
+    <Compile Include="CleanWhiteArcScaleNeedlePresentation.cs" />
+    <Compile Include="CosmicArcScaleNeedlePresentation.cs" />
+    <Compile Include="SmartArcScaleNeedlePresentation.cs" />
+    <Compile Include="RedClockSecondArcScaleNeedlePresentation.cs" />
+    <Compile Include="ProgressiveArcScaleNeedlePresentation.cs" />
+    <Compile Include="EcoArcScaleNeedlePresentation.cs" />
+    <Compile Include="FutureArcScaleNeedlePresentation.cs" />
+    <Compile Include="ClassicArcScaleNeedlePresentation.cs" />
+    <Compile Include="IStyleArcScaleNeedlePresentation.cs" />
+    <Compile Include="YellowSubmarineArcScaleNeedlePresentation.cs" />
+    <Compile Include="MagicLightArcScaleNeedlePresentation.cs" />
+    <Compile Include="FlatLightArcScaleNeedlePresentation.cs" />
+    <Compile Include="FlatDarkArcScaleNeedlePresentation.cs" />
+    <Compile Include="CustomArcScaleNeedlePresentation.cs" />
+    <Compile Include="ValueIndicatorPresentationControl.cs" />
+    <Compile Include="DefaultArcScaleNeedleControl.cs" />
+    <Compile Include="CleanWhiteArcScaleNeedleControl.cs" />
+    <Compile Include="CosmicArcScaleNeedleControl.cs" />
+    <Compile Include="SmartArcScaleNeedleControl.cs" />
+    <Compile Include="RedClockSecondArcScaleNeedleControl.cs" />
+    <Compile Include="ProgressiveArcScaleNeedleControl.cs" />
+    <Compile Include="EcoArcScaleNeedleControl.cs" />
+    <Compile Include="FutureArcScaleNeedleControl.cs" />
+    <Compile Include="ClassicArcScaleNeedleControl.cs" />
+    <Compile Include="IStyleArcScaleNeedleControl.cs" />
+    <Compile Include="YellowSubmarineArcScaleNeedleControl.cs" />
+    <Compile Include="MagicLightArcScaleNeedleControl.cs" />
+    <Compile Include="FlatLightArcScaleNeedleControl.cs" />
+    <Compile Include="FlatDarkArcScaleNeedleControl.cs" />
+    <Compile Include="ArcScaleModel.cs" />
+    <Compile Include="ArcScaleModelCollection.cs" />
+    <Compile Include="TickmarksPresentation.cs" />
+    <Compile Include="PredefinedTickmarksPresentation.cs" />
+    <Compile Include="DefaultTickmarksPresentation.cs" />
+    <Compile Include="CleanWhiteTickmarksPresentation.cs" />
+    <Compile Include="CosmicTickmarksPresentation.cs" />
+    <Compile Include="SmartTickmarksPresentation.cs" />
+    <Compile Include="ProgressiveTickmarksPresentation.cs" />
+    <Compile Include="EcoTickmarksPresentation.cs" />
+    <Compile Include="FutureTickmarksPresentation.cs" />
+    <Compile Include="ClassicTickmarksPresentation.cs" />
+    <Compile Include="IStyleTickmarksPresentation.cs" />
+    <Compile Include="YellowSubmarineTickmarksPresentation.cs" />
+    <Compile Include="MagicLightTickmarksPresentation.cs" />
+    <Compile Include="FlatLightTickmarksPresentation.cs" />
+    <Compile Include="FlatDarkTickmarksPresentation.cs" />
+    <Compile Include="CustomTickmarksPresentation.cs" />
+    <Compile Include="DefaultMinorTickmarkControl.cs" />
+    <Compile Include="DefaultMajorTickmarkControl.cs" />
+    <Compile Include="CleanWhiteMinorTickmarkControl.cs" />
+    <Compile Include="CleanWhiteMajorTickmarkControl.cs" />
+    <Compile Include="CosmicMinorTickmarkControl.cs" />
+    <Compile Include="CosmicMajorTickmarkControl.cs" />
+    <Compile Include="SmartMinorTickmarkControl.cs" />
+    <Compile Include="SmartMajorTickmarkControl.cs" />
+    <Compile Include="ProgressiveMinorTickmarkControl.cs" />
+    <Compile Include="ProgressiveMajorTickmarkControl.cs" />
+    <Compile Include="EcoMinorTickmarkControl.cs" />
+    <Compile Include="EcoMajorTickmarkControl.cs" />
+    <Compile Include="FutureMinorTickmarkControl.cs" />
+    <Compile Include="FutureMajorTickmarkControl.cs" />
+    <Compile Include="ClassicMinorTickmarkControl.cs" />
+    <Compile Include="ClassicMajorTickmarkControl.cs" />
+    <Compile Include="IStyleMinorTickmarkControl.cs" />
+    <Compile Include="IStyleMajorTickmarkControl.cs" />
+    <Compile Include="YellowSubmarineMinorTickmarkControl.cs" />
+    <Compile Include="YellowSubmarineMajorTickmarkControl.cs" />
+    <Compile Include="MagicLightMinorTickmarkControl.cs" />
+    <Compile Include="MagicLightMajorTickmarkControl.cs" />
+    <Compile Include="FlatLightMinorTickmarkControl.cs" />
+    <Compile Include="FlatLightMajorTickmarkControl.cs" />
+    <Compile Include="FlatDarkMinorTickmarkControl.cs" />
+    <Compile Include="FlatDarkMajorTickmarkControl.cs" />
+    <Compile Include="LinearScaleLevelBarModel.cs" />
+    <Compile Include="LinearScaleLevelBarModelCollection.cs" />
+    <Compile Include="LinearScaleLevelBarPresentation.cs" />
+    <Compile Include="PredefinedLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="DefaultLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="CleanWhiteLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="CosmicLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="SmartLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="ProgressiveLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="EcoLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="FutureLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="ClassicLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="IStyleLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="YellowSubmarineLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="MagicLightLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="RedThermometerLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="FlatLightLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="FlatDarkLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="CustomLinearScaleLevelBarPresentation.cs" />
+    <Compile Include="DefaultLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="DefaultLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="CleanWhiteLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="CleanWhiteLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="CosmicLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="CosmicLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="SmartLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="SmartLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="ProgressiveLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="ProgressiveLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="EcoLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="EcoLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="FutureLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="FutureLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="ClassicLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="ClassicLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="IStyleLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="IStyleLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="YellowSubmarineLinearScaleLevelBarBackgroundContro.cs" />
+    <Compile Include="YellowSubmarineLinearScaleLevelBarForegroundContro.cs" />
+    <Compile Include="MagicLightLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="MagicLightLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="RedThermometerLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="RedThermometerLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="FlatLightLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="FlatLightLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="FlatDarkLinearScaleLevelBarForegroundControl.cs" />
+    <Compile Include="FlatDarkLinearScaleLevelBarBackgroundControl.cs" />
+    <Compile Include="LinearScaleModel.cs" />
+    <Compile Include="LinearScaleModelCollection.cs" />
+    <Compile Include="CircularGaugeModel.cs" />
+    <Compile Include="CircularDefaultModel.cs" />
+    <Compile Include="CircularCleanWhiteModel.cs" />
+    <Compile Include="CircularCosmicModel.cs" />
+    <Compile Include="CircularSmartModel.cs" />
+    <Compile Include="CircularRedClockModel.cs" />
+    <Compile Include="CircularProgressiveModel.cs" />
+    <Compile Include="CircularEcoModel.cs" />
+    <Compile Include="CircularFutureModel.cs" />
+    <Compile Include="CircularClassicModel.cs" />
+    <Compile Include="CircularIStyleModel.cs" />
+    <Compile Include="CircularYellowSubmarineModel.cs" />
+    <Compile Include="CircularMagicLightModel.cs" />
+    <Compile Include="CircularFlatLightModel.cs" />
+    <Compile Include="CircularFlatDarkModel.cs" />
+    <Compile Include="LayerModel.cs" />
+    <Compile Include="LayerModelCollection.cs" />
+    <Compile Include="LinearGaugeModel.cs" />
+    <Compile Include="LinearDefaultModel.cs" />
+    <Compile Include="LinearCleanWhiteModel.cs" />
+    <Compile Include="LinearCosmicModel.cs" />
+    <Compile Include="LinearSmartModel.cs" />
+    <Compile Include="LinearProgressiveModel.cs" />
+    <Compile Include="LinearEcoModel.cs" />
+    <Compile Include="LinearFutureModel.cs" />
+    <Compile Include="LinearClassicModel.cs" />
+    <Compile Include="LinearIStyleModel.cs" />
+    <Compile Include="LinearYellowSubmarineModel.cs" />
+    <Compile Include="LinearMagicLightModel.cs" />
+    <Compile Include="LinearRedThermometerModel.cs" />
+    <Compile Include="LinearFlatLightModel.cs" />
+    <Compile Include="LinearFlatDarkModel.cs" />
+    <Compile Include="ArcScaleMarkerModel.cs" />
+    <Compile Include="ArcScaleMarkerModelCollection.cs" />
+    <Compile Include="ArcScaleMarkerPresentation.cs" />
+    <Compile Include="PredefinedArcScaleMarkerPresentation.cs" />
+    <Compile Include="DefaultArcScaleMarkerPresentation.cs" />
+    <Compile Include="CleanWhiteArcScaleMarkerPresentation.cs" />
+    <Compile Include="CosmicArcScaleMarkerPresentation.cs" />
+    <Compile Include="SmartArcScaleMarkerPresentation.cs" />
+    <Compile Include="ProgressiveArcScaleMarkerPresentation.cs" />
+    <Compile Include="EcoArcScaleMarkerPresentation.cs" />
+    <Compile Include="FutureArcScaleMarkerPresentation.cs" />
+    <Compile Include="ClassicArcScaleMarkerPresentation.cs" />
+    <Compile Include="IStyleArcScaleMarkerPresentation.cs" />
+    <Compile Include="YellowSubmarineArcScaleMarkerPresentation.cs" />
+    <Compile Include="MagicLightArcScaleMarkerPresentation.cs" />
+    <Compile Include="FlatLightArcScaleMarkerPresentation.cs" />
+    <Compile Include="FlatDarkArcScaleMarkerPresentation.cs" />
+    <Compile Include="CustomArcScaleMarkerPresentation.cs" />
+    <Compile Include="DefaultArcScaleMarkerControl.cs" />
+    <Compile Include="CleanWhiteArcScaleMarkerControl.cs" />
+    <Compile Include="CosmicArcScaleMarkerControl.cs" />
+    <Compile Include="SmartArcScaleMarkerControl.cs" />
+    <Compile Include="ProgressiveArcScaleMarkerControl.cs" />
+    <Compile Include="EcoArcScaleMarkerControl.cs" />
+    <Compile Include="FutureArcScaleMarkerControl.cs" />
+    <Compile Include="ClassicArcScaleMarkerControl.cs" />
+    <Compile Include="IStyleArcScaleMarkerControl.cs" />
+    <Compile Include="YellowSubmarineArcScaleMarkerControl.cs" />
+    <Compile Include="MagicLightArcScaleMarkerControl.cs" />
+    <Compile Include="FlatLightArcScaleMarkerControl.cs" />
+    <Compile Include="FlatDarkArcScaleMarkerControl.cs" />
+    <Compile Include="LinearScaleMarkerModel.cs" />
+    <Compile Include="LinearScaleMarkerModelCollection.cs" />
+    <Compile Include="LinearScaleMarkerPresentation.cs" />
+    <Compile Include="PredefinedLinearScaleMarkerPresentation.cs" />
+    <Compile Include="DefaultLinearScaleMarkerPresentation.cs" />
+    <Compile Include="CleanWhiteLinearScaleMarkerPresentation.cs" />
+    <Compile Include="CosmicLinearScaleMarkerPresentation.cs" />
+    <Compile Include="SmartLinearScaleMarkerPresentation.cs" />
+    <Compile Include="ProgressiveLinearScaleMarkerPresentation.cs" />
+    <Compile Include="EcoLinearScaleMarkerPresentation.cs" />
+    <Compile Include="FutureLinearScaleMarkerPresentation.cs" />
+    <Compile Include="ClassicLinearScaleMarkerPresentation.cs" />
+    <Compile Include="IStyleLinearScaleMarkerPresentation.cs" />
+    <Compile Include="YellowSubmarineLinearScaleMarkerPresentation.cs" />
+    <Compile Include="MagicLightLinearScaleMarkerPresentation.cs" />
+    <Compile Include="RedThermometerLinearScaleMarkerPresentation.cs" />
+    <Compile Include="FlatLightLinearScaleMarkerPresentation.cs" />
+    <Compile Include="FlatDarkLinearScaleMarkerPresentation.cs" />
+    <Compile Include="CustomLinearScaleMarkerPresentation.cs" />
+    <Compile Include="DefaultLinearScaleMarkerControl.cs" />
+    <Compile Include="CleanWhiteLinearScaleMarkerControl.cs" />
+    <Compile Include="CosmicLinearScaleMarkerControl.cs" />
+    <Compile Include="SmartLinearScaleMarkerControl.cs" />
+    <Compile Include="ProgressiveLinearScaleMarkerControl.cs" />
+    <Compile Include="EcoLinearScaleMarkerControl.cs" />
+    <Compile Include="FutureLinearScaleMarkerControl.cs" />
+    <Compile Include="ClassicLinearScaleMarkerControl.cs" />
+    <Compile Include="IStyleLinearScaleMarkerControl.cs" />
+    <Compile Include="YellowSubmarineLinearScaleMarkerControl.cs" />
+    <Compile Include="MagicLightLinearScaleMarkerControl.cs" />
+    <Compile Include="RedThermometerLinearScaleMarkerControl.cs" />
+    <Compile Include="FlatLightLinearScaleMarkerControl.cs" />
+    <Compile Include="FlatDarkLinearScaleMarkerControl.cs" />
+    <Compile Include="PredefinedElementKind.cs" />
+    <Compile Include="CustomPresentationControl.cs" />
+    <Compile Include="CustomValueIndicatorPresentationControl.cs" />
+    <Compile Include="ArcScaleRangeBarModel.cs" />
+    <Compile Include="ArcScaleRangeBarModelCollection.cs" />
+    <Compile Include="ArcScaleRangeBarPresentation.cs" />
+    <Compile Include="PredefinedArcScaleRangeBarPresentation.cs" />
+    <Compile Include="DefaultArcScaleRangeBarPresentation.cs" />
+    <Compile Include="CustomArcScaleRangeBarPresentation.cs" />
+    <Compile Include="DefaultArcScaleRangeBarControl.cs" />
+    <Compile Include="LinearScaleRangeBarModel.cs" />
+    <Compile Include="LinearScaleRangeBarModelCollection.cs" />
+    <Compile Include="LinearScaleRangeBarPresentation.cs" />
+    <Compile Include="PredefinedLinearScaleRangeBarPresentation.cs" />
+    <Compile Include="DefaultLinearScaleRangeBarPresentation.cs" />
+    <Compile Include="CustomLinearScaleRangeBarPresentation.cs" />
+    <Compile Include="DefaultLinearScaleRangeBarControl.cs" />
+    <Compile Include="ArcScaleRangeModel.cs" />
+    <Compile Include="ArcScaleRangeModelCollection.cs" />
+    <Compile Include="ArcScaleRangePresentation.cs" />
+    <Compile Include="PredefinedArcScaleRangePresentation.cs" />
+    <Compile Include="DefaultArcScaleRangePresentation.cs" />
+    <Compile Include="CustomArcScaleRangePresentation.cs" />
+    <Compile Include="DefaultArcScaleRangeControl.cs" />
+    <Compile Include="LinearScaleRangeModel.cs" />
+    <Compile Include="LinearScaleRangeModelCollection.cs" />
+    <Compile Include="LinearScaleRangePresentation.cs" />
+    <Compile Include="PredefinedLinearScaleRangePresentation.cs" />
+    <Compile Include="DefaultLinearScaleRangePresentation.cs" />
+    <Compile Include="CustomLinearScaleRangePresentation.cs" />
+    <Compile Include="DefaultLinearScaleRangeControl.cs" />
+    <Compile Include="DefaultSpindleCapControl.cs" />
+    <Compile Include="CleanWhiteSpindleCapControl.cs" />
+    <Compile Include="CosmicSpindleCapControl.cs" />
+    <Compile Include="SmartSpindleCapControl.cs" />
+    <Compile Include="RedClockSpindleCapControl.cs" />
+    <Compile Include="ProgressiveSpindleCapControl.cs" />
+    <Compile Include="EcoSpindleCapControl.cs" />
+    <Compile Include="FutureSpindleCapControl.cs" />
+    <Compile Include="ClassicSpindleCapControl.cs" />
+    <Compile Include="IStyleSpindleCapControl.cs" />
+    <Compile Include="YellowSubmarineSpindleCapControl.cs" />
+    <Compile Include="MagicLightSpindleCapControl.cs" />
+    <Compile Include="FlatLightSpindleCapControl.cs" />
+    <Compile Include="FlatDarkSpindleCapControl.cs" />
+    <Compile Include="ArcScaleRange.cs" />
+    <Compile Include="ArcScaleRangeCollection.cs" />
+    <Compile Include="LinearScaleRange.cs" />
+    <Compile Include="LinearScaleRangeCollection.cs" />
+    <Compile Include="ScaleLineOptions.cs" />
+    <Compile Include="ScaleElementInfoBase.cs" />
+    <Compile Include="ScaleLineInfo.cs" />
+    <Compile Include="ScaleCustomLabel.cs" />
+    <Compile Include="ScaleCustomLabelCollection.cs" />
+    <Compile Include="ArcScaleLabelOrientation.cs" />
+    <Compile Include="LinearScaleLabelOrientation.cs" />
+    <Compile Include="ScaleLabelOptions.cs" />
+    <Compile Include="ArcScaleLabelOptions.cs" />
+    <Compile Include="LinearScaleLabelOptions.cs" />
+    <Compile Include="ScaleLabelInfo.cs" />
+    <Compile Include="ScaleElementInfoContainer.cs" />
+    <Compile Include="ScaleElementLayout.cs" />
+    <Compile Include="ScaleElementsInfo.cs" />
+    <Compile Include="ScaleElementsPresentationControl.cs" />
+    <Compile Include="ScaleElementsItemsControl.cs" />
+    <Compile Include="ScaleElementsPanel.cs" />
+    <Compile Include="ArcScaleLayoutMode.cs" />
+    <Compile Include="Scale.cs" />
+    <Compile Include="ArcScale.cs" />
+    <Compile Include="ScaleCollection`1.cs" />
+    <Compile Include="ArcScaleCollection.cs" />
+    <Compile Include="CircularGaugeControl.cs" />
+    <Compile Include="CircularGaugeControlAutomationPeer.cs" />
+    <Compile Include="WeakEventListenerCollection`1.cs" />
+    <Compile Include="TickmarkOptions.cs" />
+    <Compile Include="MinorTickmarkOptions.cs" />
+    <Compile Include="MajorTickmarkOptions.cs" />
+    <Compile Include="TickmarkInfo.cs" />
+    <Compile Include="MinorTickmarkInfo.cs" />
+    <Compile Include="MajorTickmarkInfo.cs" />
+    <Compile Include="ScaleLayoutControl.cs" />
+    <Compile Include="LinearScaleLayoutMode.cs" />
+    <Compile Include="LinearScale.cs" />
+    <Compile Include="LinearScaleCollection.cs" />
+    <Compile Include="ScaleAutomationPeer.cs" />
+    <Compile Include="StateIndicatorControl.cs" />
+    <Compile Include="StateIndicatorControlAutomationPeer.cs" />
+    <Compile Include="State.cs" />
+    <Compile Include="StateCollection.cs" />
+    <Compile Include="StateInfo.cs" />
+    <Compile Include="SymbolLengthType.cs" />
+    <Compile Include="SymbolLength.cs" />
+    <Compile Include="SymbolLengthConverter.cs" />
+    <Compile Include="SymbolType.cs" />
+    <Compile Include="StatesMaskConverter.cs" />
+    <Compile Include="StatesMask.cs" />
+    <Compile Include="SymbolSegmentsMapping.cs" />
+    <Compile Include="StringToCharConverter.cs" />
+    <Compile Include="SymbolStateToVisibilityConverter.cs" />
+    <Compile Include="PresentationToFillConverter.cs" />
+    <Compile Include="SymbolState.cs" />
+    <Compile Include="SymbolInfo.cs" />
+    <Compile Include="SymbolDictionary.cs" />
+    <Compile Include="SymbolPanel.cs" />
+    <Compile Include="SymbolsPanel.cs" />
+    <Compile Include="SymbolsLayoutControl.cs" />
+    <Compile Include="SymbolViewBase.cs" />
+    <Compile Include="SegmentsView.cs" />
+    <Compile Include="FourteenSegmentsView.cs" />
+    <Compile Include="MatrixView.cs" />
+    <Compile Include="MatrixView5x8.cs" />
+    <Compile Include="MatrixView8x14.cs" />
+    <Compile Include="SevenSegmentsView.cs" />
+    <Compile Include="SymbolOptions.cs" />
+    <Compile Include="ValueChangedEventHandler.cs" />
+    <Compile Include="ValueChangedEventArgs.cs" />
+    <Compile Include="IndicatorEnterEventHandler.cs" />
+    <Compile Include="IndicatorLeaveEventHandler.cs" />
+    <Compile Include="CreepingLineAnimationCompletedEventHandler.cs" />
+    <Compile Include="IndicatorEnterLeaveEventArgs.cs" />
+    <Compile Include="IndicatorEnterEventArgs.cs" />
+    <Compile Include="IndicatorLeaveEventArgs.cs" />
+    <Compile Include="Native\AnimationProgress.cs" />
+    <Compile Include="Native\IntegerAnimationProgress.cs" />
+    <Compile Include="Native\IModelSupported.cs" />
+    <Compile Include="Native\IHitTestableElement.cs" />
+    <Compile Include="Native\IGaugeLayoutElement.cs" />
+    <Compile Include="Native\ILogicalParent.cs" />
+    <Compile Include="Native\IOwnedElement.cs" />
+    <Compile Include="Native\IElementInfo.cs" />
+    <Compile Include="Native\HitTestController.cs" />
+    <Compile Include="Native\IAnimatableElement.cs" />
+    <Compile Include="Native\ILayoutCalculator.cs" />
+    <Compile Include="Native\IScaleLayoutElement.cs" />
+    <Compile Include="Native\INamedElement.cs" />
+    <Compile Include="Native\IDefaultSymbolPresentation.cs" />
+    <Compile Include="Native\SpindleCap.cs" />
+    <Compile Include="Native\PredefinedElementKinds.cs" />
+    <Compile Include="Native\PredefinedScaleLabelPresentations.cs" />
+    <Compile Include="Native\PredefinedTickmarksPresentations.cs" />
+    <Compile Include="Native\PredefinedCircularGaugeModels.cs" />
+    <Compile Include="Native\PredefinedSpindleCapPresentations.cs" />
+    <Compile Include="Native\PredefinedArcScaleLinePresentations.cs" />
+    <Compile Include="Native\PredefinedArcScaleNeedlePresentations.cs" />
+    <Compile Include="Native\PredefinedArcScaleMarkerPresentations.cs" />
+    <Compile Include="Native\PredefinedArcScaleRangeBarPresentations.cs" />
+    <Compile Include="Native\PredefinedCircularGaugeLayerPresentations.cs" />
+    <Compile Include="Native\PredefinedArcScaleLayerPresentations.cs" />
+    <Compile Include="Native\PredefinedArcScaleRangePresentations.cs" />
+    <Compile Include="Native\PredefinedLinearGaugeModels.cs" />
+    <Compile Include="Native\PredefinedLinearScaleMarkerPresentations.cs" />
+    <Compile Include="Native\PredefinedLinearScaleLinePresentations.cs" />
+    <Compile Include="Native\PredefinedLinearScaleRangeBarPresentations.cs" />
+    <Compile Include="Native\PredefinedLinearScaleLevelBarPresentations.cs" />
+    <Compile Include="Native\PredefinedLinearGaugeLayerPresentations.cs" />
+    <Compile Include="Native\PredefinedLinearScaleLayerPresentations.cs" />
+    <Compile Include="Native\PredefinedLinearScaleRangePresentations.cs" />
+    <Compile Include="Native\PredefinedDigitalGaugeLayerPresentations.cs" />
+    <Compile Include="Native\PredefinedDigitalGaugeModels.cs" />
+    <Compile Include="Native\PredefinedStatePresentations.cs" />
+    <Compile Include="Native\PredefinedStateIndicatorModels.cs" />
+    <Compile Include="Native\NavigationController.cs" />
+    <Compile Include="Native\ArcScaleLayoutCalculator.cs" />
+    <Compile Include="Native\ScaleLayout.cs" />
+    <Compile Include="Native\ArcScaleLayout.cs" />
+    <Compile Include="Native\ScaleMapping.cs" />
+    <Compile Include="Native\ArcScaleMapping.cs" />
+    <Compile Include="Native\ArcSegmentCalculator.cs" />
+    <Compile Include="Native\LinearScaleLayout.cs" />
+    <Compile Include="Native\LinearScaleMapping.cs" />
+    <Compile Include="Native\LinearScaleLayoutCalculator.cs" />
+    <Compile Include="Native\SymbolsLayout.cs" />
+    <Compile Include="Native\SymbolViewInternal.cs" />
+    <Compile Include="Native\SegmentsViewInternal.cs" />
+    <Compile Include="Native\FourteenSegmentsViewInternal.cs" />
+    <Compile Include="Native\MatrixViewInternal.cs" />
+    <Compile Include="Native\MatrixView5x8Internal.cs" />
+    <Compile Include="Native\MatrixView8x14Internal.cs" />
+    <Compile Include="Native\SevenSegmentsViewInternal.cs" />
+    <Compile Include="Native\SymbolsStateGenerator.cs" />
+    <Compile Include="Native\PixelsArray.cs" />
+    <Compile Include="Native\Categories.cs" />
+    <Compile Include="Native\CommonUtils.cs" />
+    <Compile Include="Native\DebugHelper.cs" />
+    <Compile Include="Native\ObsoleteMessages.cs" />
+    <Compile Include="Native\MathUtils.cs" />
+    <Compile Include="Localization\GaugeStringId.cs" />
+    <Compile Include="Localization\GaugeResLocalizer.cs" />
+    <Compile Include="Localization\GaugeLocalizer.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Descriptions.resx" />
+    <EmbeddedResource Include="Images\Symbols5x8.png" />
+    <EmbeddedResource Include="Images\Symbols8x14.png" />
+    <EmbeddedResource Include="LocalizationRes.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="themes\generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\circulargaugecontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\digitalgaugecontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\elementinfocontainer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\lineargaugecontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\arcscalelinemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\arcscalemarkermodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\arcscalemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\arcscaleneedlemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\arcscalerangebarmodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\arcscalerangemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\circulargaugemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\digitalgaugebackgroundlayermodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\digitalgaugemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\gaugebackgroundlayermodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\lineargaugemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\linearscalelevelbarmodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\linearscalelinemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\linearscalemarkermodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\linearscalerangebarmodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\linearscalerangemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\scalebackgroundlayermodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\scaleforegroundlayermodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\spindlecapmodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\statemodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\symbols\basestyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\symbols\fourteensegmentsmodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\symbols\matrix5x8models.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\symbols\matrix8x14models.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\models\symbols\sevensegmentsmodels.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\scales.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic\stateindicatorcontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

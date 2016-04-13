@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<HomeSettings>
+  
+  <ControllerGroups>
+    <ControllerGroup Name="Спальня">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="2">
+          <Parameters>
+            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0">
+            </Parameter>
+            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" ModbusIndex="4" RefreshRate="0:1:0">
+            </Parameter>
+            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0"
+                        Icon="ThermometreSmall.png">
+            </Parameter>
+            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" RefreshRate="0:1:0"
+                        Icon="HumiditySmall.png">
+            </Parameter>
+            <Parameter Id="bed_5" Name="Вызов" ModbusType="Coil" ModbusIndex="4">
+              <Visibility>
+                <ShowBalloon Type="Exclamation" Text="Вызов!!!!">
+                  <OnClose>
+                    <ResetParameter/>
+                  </OnClose>
+                </ShowBalloon>
+              </Visibility>
+            </Parameter>
+          </Parameters>
+          <Setters>
+            <Setter Name="Установка времени и даты" Type="RealDateTime" ModbusIndex="0"/>
+          </Setters>
+        </Controller>
+      </Controllers>
+
+    </ControllerGroup>
+  </ControllerGroups>
+  <Rooms>
+    <Room Name="Спальня">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="2">
+          <Parameters>
+            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0">
+              <Visibility>
+                <DigitalIndicator/>
+                <LastTimeIndicator/>
+              </Visibility>
+            </Parameter>
+            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" ModbusIndex="4" RefreshRate="0:1:0">
+              <Visibility>
+                <LastTimeIndicator Icon="poo.png"/>
+              </Visibility>
+              </Parameter>
+            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0"
+                        Icon="ThermometreSmall.png">
+              <Visibility>
+                <DigitalIndicator/>
+                <AnalogIndicator Icon="Thermometre.png">
+                  <Scale Min="10" Max="35" MajorCount="5" MinorCount="5" GoodValue="20">
+                    <Ranges>
+                      <Range StartValue="18" EndValue="24" />
+                      <Range StartValue="10" EndValue="18" />
+                      <Range StartValue="24" EndValue="35" />
+                    </Ranges>
+                  </Scale>
+                </AnalogIndicator>
+              <Chart/>
+              </Visibility>
+            </Parameter>
+            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" RefreshRate="0:1:0"
+                        Icon="HumiditySmall.png">
+              <Visibility>
+                <DigitalIndicator/>
+                <AnalogIndicator Icon="Humidity.png">
+                  <Scale Min="0" Max="100" MinorCount="5" GoodValue="50">
+                    <Ranges>
+                      <Range StartValue="30" EndValue="60" />
+                      <Range StartValue="60" EndValue="100" />
+                      <Range StartValue="0" EndValue="30" />
+                    </Ranges>
+                  </Scale>
+                </AnalogIndicator>
+                <Chart/>
+              </Visibility>
+            </Parameter>
+            <Parameter Id="bed_5" Name="Вызов" ModbusType="Coil" ModbusIndex="4">
+              <Visibility>
+                <ShowBalloon Type="Exclamation" Text="Вызов!!!!">
+                  <OnClose>
+                    <ResetParameter/>
+                  </OnClose>
+                </ShowBalloon>
+              </Visibility>
+            </Parameter>
+          </Parameters>
+          <Setters>
+            <Setter Name="Установка времени и даты" Type="RealDateTime" ModbusIndex="0"/>
+          </Setters>
+        </Controller>
+      </Controllers>
+    </Room>
+    <Room Name="Коридор">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="1">
+          <Parameters>
+            <Parameter Id="corr_1" Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3">
+              <Visibility>
+                <ShowBalloon Type="Alarm" Text="Движение!!!!" ShowWhileParameterSet="true">
+                </ShowBalloon>
+              </Visibility>
+            </Parameter>
+          </Parameters>
+        </Controller>
+      </Controllers>
+    </Room>
+    <Room Name="Ванна">
+      <Controllers>
+        <Controller Name="Контроллер 1" ModbusAddress="3">
+          <Parameters>
+            <Parameter Id="bath_1" Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0">
+              <Visibility>
+                <BinaryIndicator OnIcon="DoorOpened.png" OffIcon="DoorClosed.png"/>
+              </Visibility>
+            </Parameter>
+            <Parameter Id="bath_2" Name="Свет включён" ModbusType="Discrete" ModbusIndex="1">
+              <Visibility>
+                <BinaryIndicator OnIcon="LightBulbOn.png" OffIcon="LightBulbOff.png"/>
+              </Visibility>
+            </Parameter>
+          </Parameters>
+        </Controller>
+      </Controllers>
+    </Room>
+  </Rooms>
+</HomeSettings>

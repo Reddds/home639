@@ -56,14 +56,14 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 #define TEMP_INPUT_REG 2
 #define HUM_INPUT_REG 3
 
-#define LAST_KAK_MONTH_YEAR_INPUT_REG 4
+#define LAST_KAK_YEAR_MONTH_INPUT_REG 4
 #define LAST_KAK_DAY_SEC_INPUT_REG 5
 #define LAST_KAK_HOUR_MIN_INPUT_REG 6
 
 // -------- ”становка времени -----------------------------
 #define HOUR_MIN_HOLDING_REG 0
 #define DAY_SEC_HOLDING_REG 1
-#define MONTH_YEAR_HOLDING_REG 2
+#define YEAR_MONTH_HOLDING_REG 2
 
 #define SET_KAKA_COUNT_HOLDING_REG 3 // ≈сли записать в этот регистр то данное число установитс€ как количество покаканий
 
@@ -218,18 +218,21 @@ void LoadLastKakTime()
 	// ≈сли в пам€ть не записаны значени€, там везде 0xff
 	if (tmp == 0xff)
 	{
-		_MODBUSInputRegs[LAST_KAK_MONTH_YEAR_INPUT_REG] = 0;
+		_MODBUSInputRegs[LAST_KAK_YEAR_MONTH_INPUT_REG] = 0;
 		_MODBUSInputRegs[LAST_KAK_DAY_SEC_INPUT_REG] = 0;
 		_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = 0;
 		return;
 	}
-	tmp <<= 8 | EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 1];
-	_MODBUSInputRegs[LAST_KAK_MONTH_YEAR_INPUT_REG] = tmp;
+	tmp <<= 8;
+	tmp |= EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 1];
+	_MODBUSInputRegs[LAST_KAK_YEAR_MONTH_INPUT_REG] = tmp;
 	tmp = EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 2];
-	tmp <<= 8 | EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 5];
+	tmp <<= 8;
+	tmp |= EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 5];
 	_MODBUSInputRegs[LAST_KAK_DAY_SEC_INPUT_REG] = tmp;
 	tmp = EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 3];
-	tmp <<= 8 | EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 4];
+	tmp <<= 8;
+	tmp |= EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS + 4];
 	_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = tmp;
 }
 
@@ -309,10 +312,9 @@ void loop() {
 					auto curMinute = minute();
 					auto curSecond = second();
 					SaveLastKakTime(curYear, curMonth, curDay, curHour, curMinute, curSecond);
-					_MODBUSInputRegs[LAST_KAK_MONTH_YEAR_INPUT_REG] = (curMonth << 8) | curYear;
+					_MODBUSInputRegs[LAST_KAK_YEAR_MONTH_INPUT_REG] = (curYear << 8) | curMonth;
 					_MODBUSInputRegs[LAST_KAK_DAY_SEC_INPUT_REG] = (curDay << 8) | curSecond;
 					_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = (curHour << 8) | curMinute;
-
 				}
 			}
 		}
@@ -518,32 +520,33 @@ void io_poll() {
 
 	// --------------- SET TIME -----------------------
 	auto hourMin = _MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG];
-	if (hourMin != 0)
+	if (hourMin != 0 && hourMin != 0xFFFF)
 	{
 		auto daySec = _MODBUSHoldingRegs[DAY_SEC_HOLDING_REG];
-		auto monthYear = _MODBUSHoldingRegs[MONTH_YEAR_HOLDING_REG];
+		auto yearMonth = _MODBUSHoldingRegs[YEAR_MONTH_HOLDING_REG];
 		time_t t1;
 		tmElements_t tm;
-		tm.Year = y2kYearToTm(monthYear & 0xFF);
-		tm.Month = monthYear >> 8;
+		tm.Year = y2kYearToTm(yearMonth >> 8);
+		tm.Month = yearMonth & 0xFF;
 		tm.Day = daySec >> 8;
 		tm.Hour = hourMin >> 8;
 		tm.Minute = hourMin & 0xFF;
 		tm.Second = daySec & 0xFF;
 		t1 = makeTime(tm);
 
+		//setTime(hourMin >> 8, hourMin & 0xFF, daySec & 0xFF, daySec >> 8, yearMonth & 0xFF, tmYearToCalendar(yearMonth >> 8));
+
+
 		if (RTC.set(t1) == 0)
 		{ // Success
-			_MODBUSInputRegs[ERROR_CODE_INPUT_REG] = 0xFFFF;
+			_MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG] = 0xFFFF;
 			InitRtc();
 		}
 		else
-			_MODBUSInputRegs[ERROR_CODE_INPUT_REG] = 0x0101;
+			_MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG] = 0x0000;
 
-
-		_MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG] = 0;
 		_MODBUSHoldingRegs[DAY_SEC_HOLDING_REG] = 0;
-		_MODBUSHoldingRegs[MONTH_YEAR_HOLDING_REG] = 0;
+		_MODBUSHoldingRegs[YEAR_MONTH_HOLDING_REG] = 0;
 	}
 
 

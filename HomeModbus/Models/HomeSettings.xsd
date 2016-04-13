@@ -3,69 +3,6 @@
   <xs:element name="HomeSettings">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="ControllerGroups">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element maxOccurs="unbounded" name="ControllerGroup">
-                <xs:complexType>
-                  <xs:sequence>
-                    <xs:element name="Controllers">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element maxOccurs="unbounded" name="Controller">
-                            <xs:complexType>
-                              <xs:sequence>
-                                <xs:element name="Parameters">
-                                  <xs:complexType>
-                                    <xs:sequence>
-                                      <xs:element maxOccurs="unbounded" name="Parameter">
-                                        <xs:complexType>
-                                          <xs:simpleContent>
-                                            <xs:extension base="xs:string">
-                                              <xs:attribute name="Id" type="xs:string" use="required" />
-                                              <xs:attribute name="Name" type="xs:string" use="required" />
-                                              <xs:attribute name="ModbusType" type="ModbusTypes" use="required" />
-                                              <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
-                                              <xs:attribute name="RefreshRate" type="xs:string" use="optional" />
-                                              <xs:attribute name="DataType" type="DataTypes" use="optional" />
-                                              <xs:attribute name="Icon" type="xs:string" use="optional" />
-                                            </xs:extension>
-                                          </xs:simpleContent>
-                                        </xs:complexType>
-                                      </xs:element>
-                                    </xs:sequence>
-                                  </xs:complexType>
-                                </xs:element>
-                                <xs:element minOccurs="0" name="Setters">
-                                  <xs:complexType>
-                                    <xs:sequence>
-                                      <xs:element name="Setter" maxOccurs="unbounded">
-                                        <xs:complexType>
-                                          <xs:attribute name="Id" type="xs:string" use="required" />
-                                          <xs:attribute name="Name" type="xs:string" use="required" />
-                                          <xs:attribute name="Type" type="SetterTypes" use="required" />
-                                          <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
-                                        </xs:complexType>
-                                      </xs:element>
-                                    </xs:sequence>
-                                  </xs:complexType>
-                                </xs:element>
-                              </xs:sequence>
-                              <xs:attribute name="Id" type="xs:string" use="required" />
-                              <xs:attribute name="Name" type="xs:string" use="required" />
-                              <xs:attribute name="ModbusAddress" type="xs:unsignedByte" use="required" />
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-                  </xs:sequence>
-                  <xs:attribute name="Name" type="xs:string" use="required" />
-                </xs:complexType>
-              </xs:element>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
         <xs:element name="Rooms">
           <xs:complexType>
             <xs:sequence>
@@ -94,14 +31,6 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:simpleType name="ModbusTypes">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Discrete"/>
-      <xs:enumeration value="Coil" />
-      <xs:enumeration value="InputRegister" />
-      <xs:enumeration value="HoldingRegister" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="SetterTypes">
     <xs:restriction base="xs:string">
       <xs:enumeration value="RealDateTime">
@@ -223,6 +152,7 @@
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="0" name="Chart" />
+      <xs:element minOccurs="0" name="CurrentTime" />
     </xs:sequence>
     <xs:attribute name="Name" type="xs:string" use="optional" />
     <xs:attribute name="ParameterId" type="xs:string" use="optional" />

@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="HomeModbus.Controls.LastTimeIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HomeModbus.Controls"
+             xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
+             mc:Ignorable="d" 
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             Height="130" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <Label x:Name="LTitle" HorizontalAlignment="Center" VerticalAlignment="Center"></Label>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Image x:Name="IIcon" Height="64"></Image>
+                    <dxga:DigitalGaugeControl x:Name="DgMain"
+						Text="{Binding Value, StringFormat=dd MMM HH:mm}" HorizontalAlignment="Left" VerticalAlignment="Top"
+						Height="100" Width="300" Padding="7">
+            <!--region #Layers-->
+            <dxga:DigitalGaugeControl.Layers>
+                <dxga:DigitalGaugeLayer>
+                    <dxga:DigitalGaugeLayer.Presentation>
+                        <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
+                    </dxga:DigitalGaugeLayer.Presentation>
+                </dxga:DigitalGaugeLayer>
+            </dxga:DigitalGaugeControl.Layers>
+            <!--endregion #Layers-->
+            <!--region #Model-->
+            <dxga:DigitalGaugeControl.Model>
+                <dxga:DigitalEcoModel/>
+            </dxga:DigitalGaugeControl.Model>
+            <!--endregion #Model-->
+            <dxga:DigitalGaugeControl.SymbolView>
+                <dxga:FourteenSegmentsView/>
+            </dxga:DigitalGaugeControl.SymbolView>
+        </dxga:DigitalGaugeControl>
+
+        </StackPanel>
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="HomeSettings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ControllerGroups">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="ControllerGroup">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Controllers">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element maxOccurs="unbounded" name="Controller">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Parameters">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element maxOccurs="unbounded" name="Parameter">
+                                        <xs:complexType>
+                                          <xs:simpleContent>
+                                            <xs:extension base="xs:string">
+                                              <xs:attribute name="Id" type="xs:string" use="required" />
+                                              <xs:attribute name="Name" type="xs:string" use="required" />
+                                              <xs:attribute name="ModbusType" type="ModbusTypes" use="required" />
+                                              <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
+                                              <xs:attribute name="RefreshRate" type="xs:string" use="optional" />
+                                              <xs:attribute name="DataType" type="DataTypes" use="optional" />
+                                              <xs:attribute name="BoolDefault" type="xs:boolean" use="optional" />
+                                              <xs:attribute name="UintDefault" type="xs:unsignedShort" use="optional" />
+                                              <xs:attribute name="Icon" type="xs:string" use="optional" />
+                                            </xs:extension>
+                                          </xs:simpleContent>
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element minOccurs="0" name="Setters">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Setter" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:attribute name="Id" type="xs:string" use="required" />
+                                          <xs:attribute name="Name" type="xs:string" use="required" />
+                                          <xs:attribute name="Type" type="SetterTypes" use="required" />
+                                          <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="Id" type="xs:string" use="required" />
+                              <xs:attribute name="Name" type="xs:string" use="required" />
+                              <xs:attribute name="ModbusAddress" type="xs:unsignedByte" use="required" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="Name" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="ModbusTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Discrete"/>
+      <xs:enumeration value="Coil" />
+      <xs:enumeration value="InputRegister" />
+      <xs:enumeration value="HoldingRegister" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SetterTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RealDateTime">
+        <xs:annotation>
+          <xs:documentation>
+            Установка текущей даты и времени. Используются 3 регистра
+            [Час,Минута] [День,Секунда] [Год,Месяц]
+            После успешной установки обнуляются
+            При ошибке [Год,Месяц] = 0xFFFF
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DataTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UInt16"/>
+      <xs:enumeration value="Float" />
+      <xs:enumeration value="RdDateTime">
+        <xs:annotation>
+          <xs:documentation>
+            3 регистра [Год,Месяц] [День,Секунда] [Час,Минута]
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RdTime">
+        <xs:annotation>
+          <xs:documentation>
+            [Час,Минута]
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

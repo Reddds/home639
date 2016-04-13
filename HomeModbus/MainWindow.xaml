@@ -3,18 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HomeModbus"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         xmlns:commands="clr-namespace:HomeModbus.Commands"
         xmlns:tooltip="clr-namespace:HomeModbus.Tooltip"
-        xmlns:controls="clr-namespace:HomeModbus.Controls"
-        xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
-        xmlns:properties="clr-namespace:HomeModbus.Properties"
-        xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
-        xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking" xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
-        x:Class="HomeModbus.MainWindow"
+    xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
+    x:Class="HomeModbus.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing" Loaded="Window_Loaded">
@@ -26,125 +21,8 @@
         <TabControl x:Name="MainTabs">
             <TabItem Header="Основное">
                 <Grid>
-                    <tb:TaskbarIcon x:Name="MyNotifyIcon" ToolTipText="hello world" IconSource="Assets/Images/com_plug.ico">
-                        <tb:TaskbarIcon.ContextMenu>
-                            <ContextMenu>
-                                <TextBlock Text="Hiding the sample window will not close it!" />
-                                <MenuItem Header="_Показать [S]"
-									Command="{commands:ShowSampleWindowCommand}"
-									CommandParameter="{Binding}">
-                                    <MenuItem.Icon>
-                                        <Image Width="16"
-											Height="16"
-											Source="/Assets/Images/Add.png" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-
-                                <MenuItem Header="_Скрыть [H]"
-									Command="{commands:HideSampleWindowCommand}"
-									CommandParameter="{Binding}">
-                                    <MenuItem.Icon>
-                                        <Image Width="16"
-											Height="16"
-											Source="/Assets/Images/Remove.png" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <Separator />
-
-                                <MenuItem Header="_Выход [X]"
-									Command="{commands:CloseWindowCommand}"
-									CommandParameter="{Binding}">
-                                    <MenuItem.Icon>
-                                        <Image Width="16"
-											Height="16"
-											Source="/Assets/Images/Close.png" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                            </ContextMenu>
-                        </tb:TaskbarIcon.ContextMenu>
-                        <tb:TaskbarIcon.TrayPopup>
-                            <!-- the control will be put into a popup with an explicit DataContext -->
-                            <tooltip:FancyPopup />
-                        </tb:TaskbarIcon.TrayPopup>
-                    </tb:TaskbarIcon>
-                    <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="133" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
-                        <GroupBox.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <Button>
-                                    <Button.Style>
-                                        <Style TargetType="{x:Type Button}">
-                                            <Setter Property="Padding" Value="0"/>
-                                            <!--<Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate>
-                                                <ContentPresenter Content="{Binding Content}"/>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>-->
-                                        </Style>
-                                    </Button.Style>
-                                    <Rectangle Width="16" Height="16" Stroke="Black">
-                                        <Rectangle.Style>
-                                            <Style TargetType="{x:Type Rectangle}">
-                                                <Setter Property="Fill" Value="#FFF4F4F5"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsPortOpen}" Value="True">
-                                                        <Setter Property="Fill" Value="LimeGreen"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Rectangle.Style>
-
-                                    </Rectangle>
-
-                                </Button>
-                                <TextBlock Margin="5,0,0,0"><Run Text="Connection port"/></TextBlock>
-                            </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
-                            <Grid.Style>
-                                <Style TargetType="{x:Type Grid}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Connected}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Grid.Style>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Content="Select COM port" />
-                            <ListBox Grid.Row="1" Grid.Column="0" Margin="5" x:Name="LbPorts" SelectionChanged="SelectPort" />
-                            <Label Grid.Row="0" Grid.Column="1" Content="Baudrate" />
-                            <ListBox Grid.Row="1" Grid.Column="1" x:Name="LbBaudRates" SelectionChanged="SelectBaudrate" Margin="5" />
-
-
-                        </Grid>
-                    </GroupBox>
-
-
-                    <Button x:Name="button" Content="Начать" HorizontalAlignment="Left" Height="27" Margin="170,147,0,0" VerticalAlignment="Top" Width="151" Click="StartWatchingClick">
-                        <Button.Style>
-                            <Style TargetType="{x:Type Button}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsListening}" Value="True">
-                                        <Setter Property="IsEnabled" Value="False"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
 
                     <ListBox x:Name="LbLog" Margin="10,182,10,10.2"/>
-                    <CheckBox x:Name="CbLight" Content="Свет" HorizontalAlignment="Left" Margin="10,162,0,0" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="CbBathDoor" Content="Дверь в ванной закрыта" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,147,0,0" IsEnabled="False"/>
-                    <Button x:Name="BStop" Content="Остановить" IsEnabled="{Binding IsListening}" HorizontalAlignment="Left" Height="27" Margin="326,147,0,0" VerticalAlignment="Top" Width="160" Click="BStop_Click"/>
 
                 </Grid>
             </TabItem>
@@ -184,16 +62,6 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
-            <TabItem>
-
-                <dxdo:DockLayoutManager>
-                    <dxdo:LayoutGroup Caption="LayoutRoot" dxb:MergingProperties.ElementMergingBehavior="Undefined">
-                        <dxdo:LayoutPanel Caption="Panel1" dxb:MergingProperties.ElementMergingBehavior="Undefined"/>
-                        <dxdo:LayoutPanel Caption="Panel2" dxb:MergingProperties.ElementMergingBehavior="Undefined"/>
-                    </dxdo:LayoutGroup>
-                </dxdo:DockLayoutManager>
-
-            </TabItem>
         </TabControl>
         <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" >
             <dxc:ChartControl.Legend>
@@ -212,5 +80,46 @@
             </dxc:XYDiagram2D>
         </dxc:ChartControl>
 
+        <tb:TaskbarIcon x:Name="MyNotifyIcon" ToolTipText="hello world" IconSource="Assets/Images/com_plug.ico">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <TextBlock Text="Hiding the sample window will not close it!" />
+                    <MenuItem Header="_Показать [S]"
+									Command="{commands:ShowSampleWindowCommand}"
+									CommandParameter="{Binding}">
+                        <MenuItem.Icon>
+                            <Image Width="16"
+											Height="16"
+											Source="/Assets/Images/Add.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="_Скрыть [H]"
+									Command="{commands:HideSampleWindowCommand}"
+									CommandParameter="{Binding}">
+                        <MenuItem.Icon>
+                            <Image Width="16"
+											Height="16"
+											Source="/Assets/Images/Remove.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+
+                    <MenuItem Header="_Выход [X]"
+									Command="{commands:CloseWindowCommand}"
+									CommandParameter="{Binding}">
+                        <MenuItem.Icon>
+                            <Image Width="16"
+											Height="16"
+											Source="/Assets/Images/Close.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+            <tb:TaskbarIcon.TrayPopup>
+                <!-- the control will be put into a popup with an explicit DataContext -->
+                <tooltip:FancyPopup />
+            </tb:TaskbarIcon.TrayPopup>
+        </tb:TaskbarIcon>
     </Grid>
 </Window>
