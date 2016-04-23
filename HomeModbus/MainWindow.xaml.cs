@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Chip45Programmer;
+using Chip45ProgrammerLib;
 using DevExpress.Xpf.Charts;
 using DevExpress.Xpf.Gauges;
 using HomeModbus.Controls;
@@ -183,7 +184,7 @@ namespace HomeModbus
 
             _demoView.Source = _demoCommands;
             LbDemoCommands.ItemsSource = _demoView.View;
-            _client = new HsClient(11000);
+            _client = new HsClient();
 
             if (LoadSettings())
                 ApplySettings();
@@ -300,12 +301,16 @@ namespace HomeModbus
             layoutGroupObject.Add(setterControl);
             if (visibility.CurrentTime != null)
             {
-                var btn = new Button { Content = "Установить текущее время" };
-                btn.Click += (sender, args) =>
+                var simpleSetter = new SimpleSetter {TbName = {Content = "Установить текущее время"}};
+                simpleSetter.BMain.Click += (sender, args) =>
                 {
                     _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", DateTime.Now.ToString(HsEnvelope.DateTimeFormat));
                 };
-                setterControl.SpMain.Children.Add(btn);
+                _client.SetResultAction(visibility.SetterId, status =>
+                {
+                    simpleSetter.Result(status);
+                });
+                setterControl.SpMain.Children.Add(simpleSetter);
             }
         }
 

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Chip45Programmer
+namespace Chip45ProgrammerLib
 {
-    static class HexFileTester
+    public static class HexFileTester
     {
         public static void Test(string fileName, Action<string> log)
         {

@@ -12,6 +12,7 @@ namespace HomeServer
     {
         private static string _portName;
         private static int _baudRate;
+        private static int _heartBeatMs;
         private static Thread _mainThread;
         private static ManualResetEvent _isListening;
 
@@ -34,10 +35,11 @@ namespace HomeServer
 
         public static List<ControllerGroup> ControolerObjects = new List<ControllerGroup>(); 
 
-        public static void Init(string portName, int baudRate)
+        public static void Init(string portName, int baudRate, int heartBeatMs)
         {
             _portName = portName;
             _baudRate = baudRate;
+            _heartBeatMs = heartBeatMs;
             _isListening = new ManualResetEvent(false);
             SystemEvents.PowerModeChanged += OnPowerChanged;
 
@@ -139,10 +141,7 @@ namespace HomeServer
             _mainThread.Abort();
         }
 
-        private static bool IsPaused
-        {
-            get { return _isListening.WaitOne(0); }
-        }
+        private static bool IsPaused => _isListening.WaitOne(0);
 
         public static void SetCurrentTime()
         {
@@ -288,7 +287,7 @@ namespace HomeServer
                         }
                     }
 
-                    Thread.Sleep(1000);
+                    Thread.Sleep(_heartBeatMs);
                 }
                 catch (ThreadAbortException)
                 {

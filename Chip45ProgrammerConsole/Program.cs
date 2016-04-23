@@ -2,31 +2,29 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO.Ports;
+using System.Linq;
 using System.Text;
-using System.Windows;
+using System.Threading.Tasks;
 using Chip45ProgrammerLib;
 using CommandLineParser.Exceptions;
 
-namespace Chip45Programmer
+namespace Chip45ProgrammerConsole
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    class Program
     {
-        protected override void OnStartup(StartupEventArgs e)
+        static void Main(string[] args)
         {
-            if (e.Args.Length <= 1)
-            {
-                this.StartupUri = new Uri("MainWindow.xaml", UriKind.Relative);
-                return;
-            }
+//            if (args.Length <= 1)
+//            {
+//                Console.WriteLine("Need parameters");
+//                Environment.ExitCode = 1;
+//                return;
+//            }
 
 
             var options = new Options();
-            ConsoleManager.AttachConsole(-1);
             //ConsoleManager.Show();
-            var parser = new CommandLineParser.CommandLineParser();
+            var parser = new CommandLineParser.CommandLineParser { AcceptSlash = false };
             //switch argument is meant for true/false logic
 
             parser.ExtractArgumentAttributes(options);
@@ -35,7 +33,7 @@ namespace Chip45Programmer
 
             try
             {
-                parser.ParseCommandLine(e.Args);
+                parser.ParseCommandLine(args);
                 //                if (options.ShowVersion)
                 //                {
                 //                    var app = Assembly.GetExecutingAssembly();
@@ -65,7 +63,7 @@ namespace Chip45Programmer
                     }
                     else
                     {
-                        ExitResult(1);
+                        Environment.ExitCode = 1;
                         return;
                     }
                 }
@@ -73,14 +71,14 @@ namespace Chip45Programmer
                 if ((doFlash || doEeprom) && doEepromRead)
                 {
                     Console.WriteLine("You may only specify read or write commands.");
-                    ExitResult(1);
+                    Environment.ExitCode = 1;
                     return;
                 }
 
                 if (doEepromRead && options.EepromReadBytes <= 0)
                 {
                     Console.WriteLine("Pleas select number of bytes to read from EEPROM (-y/--eepromreadbytes)");
-                    ExitResult(1);
+                    Environment.ExitCode = 1;
                     return;
                 }
 
@@ -118,7 +116,7 @@ namespace Chip45Programmer
                     if (appCmd == null)
                     {
                         Console.WriteLine("Could not parse application command. Please check format and escape sequences");
-                        ExitResult(1);
+                        Environment.ExitCode = 1;
                         return;
                     }
                 }
@@ -132,8 +130,6 @@ namespace Chip45Programmer
                 port.Open();
                 try
                 {
-
-
                     var chip45 = new Chip45(port, true, true, Console.WriteLine);
                     var arg = new Chip45.ConnectOptions
                     {
@@ -143,7 +139,8 @@ namespace Chip45Programmer
                     chip45.ConnectBootloader(null, new DoWorkEventArgs(arg));
                     if (!chip45.Connected)
                     {
-                        ExitResult(1);
+                        Console.WriteLine("Not connected!");
+                        Environment.ExitCode = 1;
                         return;
                     }
 
@@ -187,8 +184,10 @@ namespace Chip45Programmer
                 catch (Exception ee)
                 {
                     port.Close();
-                    Console.WriteLine(ee.Message);
-
+                    if(options.Verbose)
+                        Console.WriteLine("Error! " + ee);
+                    else
+                        Console.WriteLine("Error! " + ee.Message);
                 }
 
 
@@ -198,12 +197,8 @@ namespace Chip45Programmer
                 Console.WriteLine(ee.Message);
             }
 
-            ExitResult(0);
-        }
+            Environment.ExitCode = 0;
 
-        private static void WriteLogLn(string msg)
-        {
-            Console.WriteLine($"\n{msg}");
         }
 
         static byte[] ParseAppCmd(string iStr)
@@ -250,9 +245,6 @@ namespace Chip45Programmer
             }
             return byteRes.ToArray();
         }
-        private void ExitResult(int exitCode)
-        {
-            Current.Shutdown(exitCode);
-        }
+
     }
 }

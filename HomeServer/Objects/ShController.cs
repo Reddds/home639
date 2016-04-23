@@ -1,10 +1,6 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using HomeServer.Models;
 using Modbus.Device;
 
@@ -135,20 +131,32 @@ namespace HomeServer.Objects
         private class ActionOnRegister : IResetParameter
         {
             private ushort? _currentValue;
+            private uint? _currentLongValue;
             protected DateTime _lastCheck = DateTime.MinValue;
+
+            /// <summary>
+            /// Сбросить после чтения
+            /// </summary>
+            public bool ResetAfterRead { get; set; }
 
             public ushort Index { get; set; }
             private Action<ushort> CallBack { get; set; }
+            private Action<uint> CallBackULong { get; set; }
             public TimeSpan? CheckInterval { get; set; }
+            public ushort UInt16Default { get; set; }
+            public uint ULongDefault { get; set; }
             /// <summary>
             /// Вызывать CallBack даже когда данные не изменились
             /// </summary>
             public bool RaiseOlwais { get; set; }
+            public DataTypes RegisterType { get; set; }
 
-            public ActionOnRegister(ushort index, Action<ushort> callBack)
+            public ActionOnRegister(ushort index, DataTypes registerType, Action<ushort> callBack, Action<uint> callBackULong = null)
             {
                 Index = index;
                 CallBack = callBack;
+                CallBackULong = callBackULong;
+                RegisterType = registerType;
             }
 
             /// <summary>
@@ -175,9 +183,44 @@ namespace HomeServer.Objects
                     return false;
                 _currentValue = newValue;
                 _lastCheck = DateTime.Now;
+                if(_currentValue == UInt16Default)
+                    return false;
                 CallBack?.Invoke(newValue);
+                if (ResetAfterRead)
+                {
+                    _currentValue = UInt16Default;
+                    Reset();
+                }
                 return true;
             }
+            public bool CheckStateULong(ushort newValueHi, ushort newValueLo)
+            {
+                var newValue = (uint)newValueHi;
+                newValue <<= 16;
+                newValue |= newValueLo;
+                // Проверяем, если установлен интервал проверок, то 
+                if (!IsNeedCheck())
+                {
+                    return false;
+                }
+                if (_currentLongValue == newValue)
+                    return false;
+                _currentLongValue = newValue;
+                _lastCheck = DateTime.Now;
+                if (_currentLongValue == ULongDefault)
+                {
+                    Console.WriteLine("ULongDefault");
+                    return false;
+                }
+                CallBackULong?.Invoke(newValue);
+                if (ResetAfterRead)
+                {
+                    _currentLongValue = ULongDefault;
+                    Reset();
+                }
+                return true;
+            }
+
 
             public bool PendingReset { get; set; }
             public void Reset()
@@ -191,7 +234,7 @@ namespace HomeServer.Objects
             private DateTime _currentDateTime;
             private Action<DateTime> CallBack { get; set; }
 
-            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, null)
+            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, DataTypes.RdDateTime,  null)
             {
                 CallBack = callBack;
             }
@@ -285,11 +328,13 @@ namespace HomeServer.Objects
             public SetterTypes SetterType;
             public bool IsPending { get; private set; }
             private object _pendingObject;
+            private Action<bool> _resultAction;
 
-            public ModbusSetter(ushort index, SetterTypes setterType)
+            public ModbusSetter(ushort index, SetterTypes setterType, Action<bool> resultAction = null)
             {
                 Index = index;
                 SetterType = setterType;
+                _resultAction = resultAction;
             }
 
             public void PendingSet(object newValue = null)
@@ -310,7 +355,9 @@ namespace HomeServer.Objects
                 switch (SetterType)
                 {
                     case SetterTypes.RealDateTime:
-                        return SendTime(modbus, slaveAddress);
+                        var resultStatus = SendTime(modbus, slaveAddress);
+                        _resultAction?.Invoke(resultStatus);
+                        return resultStatus;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -346,22 +393,6 @@ namespace HomeServer.Objects
 
         private List<ModbusSetter> _setters;
 
-        /*        class RealDateTimeSetter : ModbusSetter
-                {
-                    public RealDateTimeSetter(ushort index, SetterTypes setterType) : base(index, setterType)
-                    {
-                    }
-
-                    public ushort[] GetSetRegisters()
-                    {
-                        var curTime = DateTime.Now;
-                        var timeData = new ushort[3];
-                        timeData[0] = (ushort)((curTime.Hour << 8) | curTime.Minute);
-                        timeData[1] = (ushort)((curTime.Day << 8) | curTime.Second);
-                        timeData[2] = (ushort)((curTime.Year << 8) | (curTime.Month % 100));
-                        return timeData;
-                    }
-                }*/
 
         #endregion
 
@@ -380,7 +411,7 @@ namespace HomeServer.Objects
             var curOperation = string.Empty;
             try
             {
-
+                // Дискретные
                 if (_discreteChecks != null)
                 {
                     curOperation = $"CheckDiscrete ";
@@ -391,6 +422,7 @@ namespace HomeServer.Objects
                         check.CheckState(discreteStatus[check.Index - _discreteRegisterMinIndex]);
                     }
                 }
+                // Катушки
                 if (_coilChecks != null)
                 {
                     Thread.Sleep(10);
@@ -408,7 +440,7 @@ namespace HomeServer.Objects
                             }
                     }
                 }
-
+                // Регистры
                 if (_inputChecks != null)
                 {
                     var needCheck = false;
@@ -442,6 +474,7 @@ namespace HomeServer.Objects
                         }
                     }
                 }
+                // Перезаписываемые Регистры
                 if (_holdingChecks != null)
                 {
                     var needCheck = false;
@@ -457,12 +490,20 @@ namespace HomeServer.Objects
                     {
                         Thread.Sleep(10);
                         curOperation = $"CheckHolding";
-                        var holdingsStatus = modbus.ReadInputRegisters(SlaveAddress, _holdingRegisterMinIndex,
+                        var holdingsStatus = modbus.ReadHoldingRegisters(SlaveAddress, _holdingRegisterMinIndex,
                             (ushort)(_holdingRegisterMaxIndex - _holdingRegisterMinIndex + 1));
+
                         foreach (var holdingCheck in _holdingChecks)
                         {
-
-                            holdingCheck.CheckState(holdingsStatus[holdingCheck.Index - _holdingRegisterMinIndex]);
+                            switch (holdingCheck.RegisterType)
+                            {
+                                case DataTypes.ULong:
+                                    holdingCheck.CheckStateULong(holdingsStatus[holdingCheck.Index - _holdingRegisterMinIndex], holdingsStatus[holdingCheck.Index + 1 - _holdingRegisterMinIndex]);
+                                    break;
+                                default:
+                                    holdingCheck.CheckState(holdingsStatus[holdingCheck.Index - _holdingRegisterMinIndex]);
+                                    break;
+                            }
                         }
                     }
                 }
@@ -495,13 +536,40 @@ namespace HomeServer.Objects
                 }
             }
 
+            // Перезаписываемые Регистры
+            if (_holdingChecks != null)
+            {
+                foreach (var check in _holdingChecks)
+                {
+                    if (check.PendingReset)
+                    {
+                        check.PendingReset = false;
+
+                        switch (check.RegisterType)
+                        {
+                            case DataTypes.ULong:
+                                Console.WriteLine("Reset ULong");
+                                var resetData = new ushort[2];
+                                resetData[0] = (ushort) (check.ULongDefault >> 16);
+                                resetData[1] = (ushort) (check.ULongDefault & 0xFFFF);
+                                modbus.WriteMultipleRegisters(SlaveAddress, check.Index, resetData);
+                                break;
+                            default:
+                                modbus.WriteSingleRegister(SlaveAddress, check.Index, check.UInt16Default);
+                                break;
+                        }
+                    }
+                }
+            }
+
             if (_setters != null)
             {
                 foreach (var setter in _setters)
                 {
                     if (setter.IsPending)
                     {
-                        setter.Set(modbus, SlaveAddress);
+                        var setResult = setter.Set(modbus, SlaveAddress);
+
                     }
                 }
             }
@@ -569,25 +637,45 @@ namespace HomeServer.Objects
         /// </summary>
         /// <param name="isHolding"></param>
         /// <param name="index"></param>
+        /// <param name="registerType"></param>
         /// <param name="callback"></param>
+        /// <param name="uLongCallback"></param>
         /// <param name="raiseOlwais">Вызывать callback даже когда показания не изменились</param>
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnRegister(bool isHolding, ushort index, Action<ushort> callback,
-            bool raiseOlwais = false, TimeSpan? checkInterval = null)
+        public Action SetActionOnRegister(bool isHolding, ushort index, DataTypes registerType, Action<ushort> callback,
+            Action<uint> uLongCallback,
+            bool raiseOlwais = false, TimeSpan? checkInterval = null, bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0)
         {
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
+            if (callback == null && uLongCallback == null)
+                throw new ArgumentNullException(nameof(callback) + " and " + nameof(uLongCallback));
+            var endIndex = index;
+            switch (registerType)
+            {
+                case DataTypes.UInt16:
+                    break;
+                case DataTypes.Float:
+                    break;
+                case DataTypes.ULong:
+                    endIndex = (ushort) (index + 1);
+                    break;
+                case DataTypes.RdDateTime:
+                    break;
+                case DataTypes.RdTime:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(registerType), registerType, null);
+            }
             if (!isHolding)
             {
                 if (_inputRegisterMinIndex > index)
                     _inputRegisterMinIndex = index;
-                if (_inputRegisterMaxIndex < index)
-                    _inputRegisterMaxIndex = index;
+                if (_inputRegisterMaxIndex < endIndex)
+                    _inputRegisterMaxIndex = endIndex;
                 if (_inputChecks == null)
                     _inputChecks = new List<ActionOnRegister>();
 
-                var holdingCheck = new ActionOnRegister(index, callback)
+                var holdingCheck = new ActionOnRegister(index, registerType, callback, uLongCallback)
                 {
                     RaiseOlwais = raiseOlwais,
                     CheckInterval = checkInterval
@@ -603,11 +691,11 @@ namespace HomeServer.Objects
             {
                 if (_holdingRegisterMinIndex > index)
                     _holdingRegisterMinIndex = index;
-                if (_holdingRegisterMaxIndex < index)
-                    _holdingRegisterMaxIndex = index;
+                if (_holdingRegisterMaxIndex < endIndex)
+                    _holdingRegisterMaxIndex = endIndex;
                 if (_holdingChecks == null)
                     _holdingChecks = new List<ActionOnRegister>();
-                _holdingChecks.Add(new ActionOnRegister(index, callback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval });
+                _holdingChecks.Add(new ActionOnRegister(index, registerType, callback, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
                 return null;
             }
         }
@@ -662,11 +750,18 @@ namespace HomeServer.Objects
             }
         }
 
-        public ModbusSetter SetSetter(ushort index, SetterTypes type)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="type"></param>
+        /// <param name="result">При установки параметра возвращаем правильно ли установилось или нет</param>
+        /// <returns></returns>
+        public ModbusSetter SetSetter(ushort index, SetterTypes type, Action<bool> result = null)
         {
             if (_setters == null)
                 _setters = new List<ModbusSetter>();
-            var newSetter = new ModbusSetter(index, type);
+            var newSetter = new ModbusSetter(index, type, result);
             _setters.Add(newSetter);
             return newSetter;
         }

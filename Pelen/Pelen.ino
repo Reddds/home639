@@ -66,7 +66,9 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 #define YEAR_MONTH_HOLDING_REG 2
 
 #define SET_KAKA_COUNT_HOLDING_REG 3 // Если записать в этот регистр то данное число установится как количество покаканий
-
+// Кнопка пульта нажата. Надо сбрасывать после прочтения
+#define IR_KEY_HI_HOLDING_REG 4
+#define IR_KEY_LO_HOLDING_REG 5
 							   // Init the DS1302
 							   // Set pins:  CE, IO,CLK
 DS1302RTC RTC(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
@@ -79,7 +81,7 @@ LiquidCrystal lcd(A4, A5, 5, 9, 3, 2);//4
 Modbus slave(ID, 0, TXEN);
 // массив данных modbus
 #define modbusInputBufLen 7
-#define modbusHoldingBufLen 5
+#define modbusHoldingBufLen 10
 uint16_t _MODBUSDiscreteInputs;
 uint16_t _MODBUSCoils;
 uint16_t _MODBUSInputRegs[modbusInputBufLen];
@@ -141,6 +143,12 @@ void setup() {
 	irrecv.enableIRIn(); // Start the receiver
 
 	oldMillis = millis();
+
+	// Очищаем буферы
+	for (unsigned char i = 0; i < modbusInputBufLen; i++)
+		_MODBUSInputRegs[i] = 0;
+	for (unsigned char i = 0; i < modbusHoldingBufLen; i++)
+		_MODBUSHoldingRegs[i] = 0;
 }
 
 void InitRtc()
@@ -247,6 +255,8 @@ void loop() {
 	}
 
 	if (irrecv.decode(&irResults)) {
+		_MODBUSHoldingRegs[IR_KEY_HI_HOLDING_REG] = irResults.value >> 16;
+		_MODBUSHoldingRegs[IR_KEY_LO_HOLDING_REG] = irResults.value & 0xFFFF;
 		if ((irResults.value & 0xFF) == 0x10)
 			bitWrite(_MODBUSCoils, CALL_COIL, 1);
 		irrecv.resume(); // Receive the next value

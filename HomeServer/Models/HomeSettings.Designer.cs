@@ -30,7 +30,14 @@ namespace HomeServer.Models
 
         private List<HomeSettingsControllerGroup> _controllerGroups;
 
+        private int _heartBeatMs;
+
         private static XmlSerializer serializer;
+
+        public HomeSettings()
+        {
+            this._heartBeatMs = 1000;
+        }
 
         [System.Xml.Serialization.XmlArrayItemAttribute("ControllerGroup", IsNullable = false)]
         public List<HomeSettingsControllerGroup> ControllerGroups
@@ -42,6 +49,20 @@ namespace HomeServer.Models
             set
             {
                 this._controllerGroups = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [System.ComponentModel.DefaultValueAttribute(1000)]
+        public int HeartBeatMs
+        {
+            get
+            {
+                return this._heartBeatMs;
+            }
+            set
+            {
+                this._heartBeatMs = value;
             }
         }
 
@@ -770,17 +791,26 @@ namespace HomeServer.Models
 
         private string _refreshRate;
 
-        private System.Nullable<DataTypes> _dataType;
+        private DataTypes _dataType;
 
         private System.Nullable<bool> _boolDefault;
 
         private System.Nullable<ushort> _uintDefault;
 
-        private string _icon;
+        private System.Nullable<uint> _uLongDefault;
+
+        private System.Nullable<bool> _resetAfterRead;
+
+        private System.Nullable<bool> _retain;
 
         private string _value;
 
         private static XmlSerializer serializer;
+
+        public HomeSettingsControllerGroupControllerParameter()
+        {
+            this._dataType = DataTypes.UInt16;
+        }
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string Id
@@ -848,38 +878,16 @@ namespace HomeServer.Models
         }
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
+        [System.ComponentModel.DefaultValueAttribute(DataTypes.UInt16)]
         public DataTypes DataType
         {
             get
             {
-                if (this._dataType.HasValue)
-                {
-                    return this._dataType.Value;
-                }
-                else
-                {
-                    return default(DataTypes);
-                }
+                return this._dataType;
             }
             set
             {
                 this._dataType = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool DataTypeSpecified
-        {
-            get
-            {
-                return this._dataType.HasValue;
-            }
-            set
-            {
-                if (value == false)
-                {
-                    this._dataType = null;
-                }
             }
         }
 
@@ -956,15 +964,110 @@ namespace HomeServer.Models
         }
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Icon
+        public uint ULongDefault
         {
             get
             {
-                return this._icon;
+                if (this._uLongDefault.HasValue)
+                {
+                    return this._uLongDefault.Value;
+                }
+                else
+                {
+                    return default(uint);
+                }
             }
             set
             {
-                this._icon = value;
+                this._uLongDefault = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool ULongDefaultSpecified
+        {
+            get
+            {
+                return this._uLongDefault.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._uLongDefault = null;
+                }
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool ResetAfterRead
+        {
+            get
+            {
+                if (this._resetAfterRead.HasValue)
+                {
+                    return this._resetAfterRead.Value;
+                }
+                else
+                {
+                    return default(bool);
+                }
+            }
+            set
+            {
+                this._resetAfterRead = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool ResetAfterReadSpecified
+        {
+            get
+            {
+                return this._resetAfterRead.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._resetAfterRead = null;
+                }
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool Retain
+        {
+            get
+            {
+                if (this._retain.HasValue)
+                {
+                    return this._retain.Value;
+                }
+                else
+                {
+                    return default(bool);
+                }
+            }
+            set
+            {
+                this._retain = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool RetainSpecified
+        {
+            get
+            {
+                return this._retain.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._retain = null;
+                }
             }
         }
 
@@ -1203,6 +1306,9 @@ namespace HomeServer.Models
 
         /// <remarks/>
         Float,
+
+        /// <remarks/>
+        ULong,
 
         /// <remarks/>
         RdDateTime,

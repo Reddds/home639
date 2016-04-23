@@ -6,17 +6,22 @@
       <Controllers>
         <Controller Id="con_2" Name="Контроллер 1" ModbusAddress="2">
           <Parameters>
-            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" RefreshRate="0:1:0">
+            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" 
+                       RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" ModbusIndex="4" RefreshRate="0:1:0">
+            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" 
+                       ModbusIndex="4" RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2" RefreshRate="0:1:0"
-                        Icon="ThermometreSmall.png">
+            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2" 
+                       RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" RefreshRate="0:1:0"
-                        Icon="HumiditySmall.png">
+            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" 
+                       RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_5" Name="Вызов" ModbusType="Coil" ModbusIndex="4" BoolDefault="false">
+            <Parameter Id="bed_5" Name="Вызов" ModbusType="Coil" ModbusIndex="4" BoolDefault="false"
+                       Retain="true">
+            </Parameter>
+          <Parameter Id="ir_key" Name="Кнопка пульта" ModbusType="HoldingRegister" DataType="ULong" ModbusIndex="4" ResetAfterRead="true">
             </Parameter>
           </Parameters>
           <Setters>
@@ -30,7 +35,8 @@
       <Controllers>
         <Controller Id="con_1" Name="Контроллер 1" ModbusAddress="1">
           <Parameters>
-            <Parameter Id="corr_1" Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3">
+            <Parameter Id="corr_1" Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3"
+                       Retain="true">
               
             </Parameter>
           </Parameters>
@@ -41,10 +47,12 @@
       <Controllers>
         <Controller Id="con_3" Name="Контроллер 1" ModbusAddress="3">
           <Parameters>
-            <Parameter Id="bath_1" Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0">
+            <Parameter Id="bath_1" Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0"
+                       Retain="true">
               
             </Parameter>
-            <Parameter Id="bath_2" Name="Свет включён" ModbusType="Discrete" ModbusIndex="1">
+            <Parameter Id="bath_2" Name="Свет включён" ModbusType="Discrete" ModbusIndex="1"
+                       Retain="true">
              
             </Parameter>
           </Parameters>

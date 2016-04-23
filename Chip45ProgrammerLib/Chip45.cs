@@ -33,15 +33,17 @@ tools.chip45.bootloader.params.quiet=-q -q
 #tools.chip45.bootloader.pattern="{cmd.path}" "-C{config.path}" {bootloader.verbose} -p{build.mcu} -c{protocol} {program.extra_params} "-Uflash:w:{runtime.platform.path}/bootloaders/{bootloader.file}:i" -Ulock:w:{bootloader.lock_bits}:m
 
 */
+
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
 
-namespace Chip45Programmer
+namespace Chip45ProgrammerLib
 {
-    class Chip45
+    public class Chip45
     {
         public enum ProgramTypes { Flash, Eeprom }
         public class ProgramOptions
@@ -241,13 +243,37 @@ namespace Chip45Programmer
                 _log("Bootloader " + prompt.Substring(5).Trim());
 
             // Flush
-            _port.ReadExisting();
+            if(_verbose)
+                Console.WriteLine("Flush");
+            SafetyReadExisting();
             Thread.Sleep(10);
 
+            if (_verbose)
+                Console.WriteLine("Write <new line>");
             _port.Write("\n");
             Thread.Sleep(100);
-            _port.ReadExisting();
+            SafetyReadExisting();
             e.Result = true;
+        }
+
+        private string SafetyReadExisting()
+        {
+            var bytes = new List<byte>();
+            while (_port.BytesToRead != 0)
+            {
+                var b = _port.ReadByte();
+                if (b == -1)
+                    break;
+                bytes.Add((byte)b);
+                Thread.Sleep(10);
+            }
+            if (bytes.Count > 0)
+            {
+                var bytesArr = bytes.ToArray();
+                return Encoding.ASCII.GetString(bytesArr);
+
+            }
+            return string.Empty;
         }
 
         public void DisconnectBootloader(object sender, DoWorkEventArgs e)
@@ -260,7 +286,7 @@ namespace Chip45Programmer
             _port.Write("g\n");
             Thread.Sleep(100);
             var resp = _port.ReadUntil(SerialPortExtension.XON, 3);
-            _port.ReadExisting();
+            SafetyReadExisting();
             var success = resp.Contains("g+");
             e.Result = success;
             if (success)
@@ -369,7 +395,7 @@ namespace Chip45Programmer
                 _log(msg);
             worker?.ReportProgress(0, msg);
 
-            _port.ReadExisting();
+            SafetyReadExisting();
             var hexFileLines = flashHexFile.GetHexFile();
             var lineNr = 0;
             var consoleWriteCounter = 0;
@@ -409,7 +435,7 @@ namespace Chip45Programmer
                 Console.Write("100%");
             }
             Console.Write("\n");
-            var received = _port.ReadExisting();
+            var received = SafetyReadExisting();
 
             if (received.Contains("-"))
             {

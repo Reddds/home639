@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
         mc:Ignorable="d"
-        Title="Chip45boot2Program" Height="423.075" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
+        Title="Chip45boot2Program" Height="470.275" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" Icon="chip.ico">
     <xctk:BusyIndicator x:Name="BiMain" BusyContent="{Binding}">
         <xctk:BusyIndicator.BusyContentTemplate>
@@ -101,10 +101,11 @@
                     </Grid.RowDefinitions>
                     <TextBox x:Name="TbSend"  Margin="5" />
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <Button Content="Send" Width="80" Margin="5" Click="BTerminalSendClick"/>
+                        <Button Content="Send" Width="45" Margin="5,5,5,5.4" Click="BTerminalSendClick"/>
                         <RadioButton x:Name="RbTerminalSendAscii" GroupName="TerminalSendType" IsChecked="True" Content="Ascii" Margin="10,0,0,0" VerticalAlignment="Center"/>
                         <RadioButton x:Name="RbTerminalSendHex" GroupName="TerminalSendType" Content="Hex" Margin="10,0,0,0" VerticalAlignment="Center"/>
                         <CheckBox x:Name="CbTerminalSendEndLine" VerticalAlignment="Center">Send \n at end</CheckBox>
+                        <Button Margin="5" Width="20" ToolTip="Clear log" Click="ClearLogClick">X</Button>
                     </StackPanel>
                     <ListBox Grid.Row="2" x:Name="LbLog"  Margin="5" />
                 </Grid>
@@ -216,10 +217,11 @@
 
                 </StackPanel>
             </GroupBox>
-            <GroupBox x:Name="groupBox" Header="Utils" HorizontalAlignment="Left" Height="63" Margin="10,322,0,0" VerticalAlignment="Top" Width="312">
-                <Grid>
-                    <Button Width="250" Height="23" Click="Button_Click">Convert from binary file to Intel Hex</Button>
-                </Grid>
+            <GroupBox x:Name="groupBox" Header="Utils" HorizontalAlignment="Left" Height="89" Margin="10,322,0,0" VerticalAlignment="Top" Width="312">
+                <StackPanel>
+                    <Button Width="250" Height="23" Click="Button_Click" Margin="10, 5">Convert from binary file to Intel Hex</Button>
+                    <Button Width="250" Height="23" Click="ConvertToUnfragmentedHexClick" Margin="10, 5">Convert Hex to UnfragmentedHex</Button>
+                </StackPanel>
             </GroupBox>
         </Grid>
     </xctk:BusyIndicator>

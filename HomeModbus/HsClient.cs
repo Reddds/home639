@@ -14,11 +14,16 @@ namespace HomeModbus
 
         //        private readonly ConcurrentQueue<HsEnvelope> _messageQueue;
         private readonly Dictionary<string, Action<object>> _registeredActions;
+        /// <summary>
+        /// Вызывается при получении результата изменения значения
+        /// </summary>
+        private readonly Dictionary<string, Action<bool>> _setterResultActions;
 
         public HsClient()
         {
 
             _registeredActions = new Dictionary<string, Action<object>>();
+            _setterResultActions = new Dictionary<string, Action<bool>>();
             //            _messageQueue = new ConcurrentQueue<HsEnvelope>();
         }
 
@@ -37,7 +42,12 @@ namespace HomeModbus
             _mqttClient.Subscribe(new[]
             {
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersResult}/#",
-            }, new[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+                $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersSetterResult}/#",
+            }, new[]
+            {
+                MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
+                MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
+            });
         }
 
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
@@ -47,34 +57,53 @@ namespace HomeModbus
             Console.WriteLine($"MQTT: {e.Topic} {strMessage}");
 
             var topicSplit = e.Topic.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            if (topicSplit.Length < 4)
+            if (topicSplit.Length < 3)
                 return;
 
+            var resultKind = topicSplit[1];
             var parameterId = topicSplit[2];
-            var dataType = topicSplit[3];
-
-            var action = FindActionByParameterId(parameterId);
 
             try
             {
-                switch (dataType)
+
+                switch (resultKind)
                 {
-                    case HsEnvelope.BoolResult:
-                        bool boolValue;
-                        if(bool.TryParse(strMessage, out boolValue))
-                            action?.Invoke(boolValue);
+                    case HsEnvelope.ControllersResult:
+                        if (topicSplit.Length < 4)
+                            return;
+
+                        var dataType = topicSplit[3];
+
+                        var action = FindActionByParameterId(parameterId);
+                        switch (dataType)
+                        {
+                            case HsEnvelope.BoolResult:
+                                bool boolValue;
+                                if (bool.TryParse(strMessage, out boolValue))
+                                    action?.Invoke(boolValue);
+                                break;
+                            case HsEnvelope.UInt16Result:
+                                ushort uint16Value;
+                                if (ushort.TryParse(strMessage, out uint16Value))
+                                    action?.Invoke(uint16Value);
+                                break;
+                            case HsEnvelope.DateTimeResult:
+                                DateTime dateTimeValue;
+                                if (DateTime.TryParseExact(strMessage, HsEnvelope.DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeValue))
+                                    action?.Invoke(dateTimeValue);
+                                break;
+                        }
+
                         break;
-                    case HsEnvelope.UInt16Result:
-                        ushort uint16Value;
-                        if (ushort.TryParse(strMessage, out uint16Value))
-                            action?.Invoke(uint16Value);
-                        break;
-                    case HsEnvelope.DateTimeResult:
-                        DateTime dateTimeValue;
-                        if (DateTime.TryParseExact(strMessage, HsEnvelope.DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeValue))
-                            action?.Invoke(dateTimeValue);
+                    case HsEnvelope.ControllersSetterResult:
+                        var resultAction = FindResultActionByParameterId(parameterId);
+                        bool resultBoolValue;
+                        if (bool.TryParse(strMessage, out resultBoolValue))
+                            resultAction?.Invoke(resultBoolValue);
                         break;
                 }
+
+
                 //Console.WriteLine(envelope.EnvelopeType.ToString());
 
             }
@@ -120,28 +149,13 @@ namespace HomeModbus
                 return null;
             return !_registeredActions.ContainsKey(actionId) ? null : _registeredActions[actionId];
         }
-
-/*
-        public void SetActionOnRegister(string parameterId, Action<ushort> action, bool raiseOlwais, TimeSpan? interval)
+        Action<bool> FindResultActionByParameterId(string actionId)
         {
-            var actionHash = Guid.NewGuid().ToString();
-            _registeredActions.Add(actionHash, (obj) =>
-            {
-                if (!obj.GetType().IsPrimitive)
-                    return;
-                action((ushort)obj);
-            });
-
-            var registerActionOnRegister = new SetActionOnRegisterData()
-            {
-                ActionId = actionHash,
-                CheckInterval = interval,
-                ParameterId = parameterId,
-                RaiseOlwais = raiseOlwais
-            };
-            SendMessage($"{HsEnvelope.ControllersSettings}/{HsEnvelope.SetAction}", JsonConvert.SerializeObject(registerActionOnRegister));
+            if (_setterResultActions == null)
+                return null;
+            return !_setterResultActions.ContainsKey(actionId) ? null : _setterResultActions[actionId];
         }
-*/
+
 
         /// <summary>
         /// 
@@ -158,15 +172,20 @@ namespace HomeModbus
                     SendMessage($"{HsEnvelope.ResetParameter}/{parameterId}", newVal?.ToString());
                 }, obj);
             });
-//            var registerActionOnRegister = new SetAction()
-//            {
-//                ActionId = actionHash,
-//                CheckCoilStatus = checkCoilStatus,
-//                ParameterId = parameterId,
-//                RaiseOlwais = raiseOlwais,
-//                CheckInterval = interval
-//            };
-//            SendMessage($"{HsEnvelope.ControllersSettings}/{HsEnvelope.SetAction}", JsonConvert.SerializeObject(registerActionOnRegister));
+            //            var registerActionOnRegister = new SetAction()
+            //            {
+            //                ActionId = actionHash,
+            //                CheckCoilStatus = checkCoilStatus,
+            //                ParameterId = parameterId,
+            //                RaiseOlwais = raiseOlwais,
+            //                CheckInterval = interval
+            //            };
+            //            SendMessage($"{HsEnvelope.ControllersSettings}/{HsEnvelope.SetAction}", JsonConvert.SerializeObject(registerActionOnRegister));
+        }
+        public void SetResultAction(string parameterId,
+            Action<bool> callback)
+        {
+            _setterResultActions.Add(parameterId, callback);
         }
     }
 }

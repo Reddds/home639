@@ -1,8 +1,8 @@
 ﻿using System.IO;
 
-namespace Chip45Programmer
+namespace Chip45ProgrammerLib
 {
-    static class HexUtils
+    public static class HexUtils
     {
         public static bool WriteHexfile(string fileName, HexFile hf)
         {

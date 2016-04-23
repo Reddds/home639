@@ -62,6 +62,11 @@ namespace HomeServer
         public const string ControllersResult = "controllersresult";
 
         /// <summary>
+        /// Результат установки значения
+        /// </summary>
+        public const string ControllersSetterResult = "controllerssetterresult";
+
+        /// <summary>
         /// Передача на контроллер
         /// </summary>
         public const string ControllersSetValue = "controllerssetvalue";
@@ -78,6 +83,8 @@ namespace HomeServer
 
         public const string BoolResult = "boolresult";
         public const string UInt16Result = "uint16result";
+        public const string ULongResult = "ulongresult";
+
         public const string DateTimeResult = "datetimeresult";
 
         public const string SetAction = "setaction";

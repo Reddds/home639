@@ -19,6 +19,7 @@ namespace HomeServer
 
         private static ClienSocketWorker _clientWorker;
 
+        public static bool IsLinux => Environment.OSVersion.Platform == PlatformID.Unix;
 
         static void Main(string[] args)
         {
@@ -49,7 +50,7 @@ namespace HomeServer
             //            _modbusMasterThread = new ModbusMasterThread("COM7", 9600);
             if (LoadSettings())
                 ApplySettings();
-            ModbusMasterThread.Init(options.SerialPort, options.BaudRate);
+            ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeSettings.HeartBeatMs);
             //            CreateSocket();
             try
             {
@@ -76,7 +77,12 @@ namespace HomeServer
 
         private static bool LoadSettings()
         {
-            if (!File.Exists(SettingsFileName))
+            var settingsPath = SettingsFileName;
+            if (IsLinux)
+                settingsPath = Path.Combine("/etc", SettingsFileName);
+
+
+            if (!File.Exists(settingsPath))
             {
                 Console.WriteLine("Файл с настройками не найден!");
                 Environment.Exit(1);
@@ -84,7 +90,7 @@ namespace HomeServer
             }
             try
             {
-                _homeSettings = HomeSettings.LoadFromFile(SettingsFileName);
+                _homeSettings = HomeSettings.LoadFromFile(settingsPath);
                 return true;
             }
             catch (Exception ee)
@@ -158,22 +164,32 @@ namespace HomeServer
                                            _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", state.ToString(), true);
                                        }, parameter.BoolDefault);
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DiscreteOrCoil    {parameter.Id} \t{parameter.Name}");
+                        Console.WriteLine($"Created DiscreteOrCoil    {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
                     break;
                 case ModbusTypes.InputRegister:
                 case ModbusTypes.HoldingRegister:
+                    var isHolding = parameter.ModbusType == ModbusTypes.HoldingRegister;
                     switch (parameter.DataType)
                     {
                         case DataTypes.UInt16:
-                            reserAction = controllerObject.SetActionOnRegister(false, parameter.ModbusIndex, value =>
+                            reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, value =>
                             {
-                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", value.ToString(), true);
-                            }, false, interval);
+                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", value.ToString(), parameter.Retain);
+                            }, null, false, interval, uInt16Default:parameter.UintDefault);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created Register          {parameter.Id} \t{parameter.Name}");
+                                Console.WriteLine($"Created Register          {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
 
                             break;
                         case DataTypes.Float:
+                            break;
+                        case DataTypes.ULong:
+                            reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, null, value =>
+                            {
+                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.ULongResult}", value.ToString(), parameter.Retain);
+                            }, false, interval, resetAfterRead: parameter.ResetAfterRead, uLongDefault: parameter.ULongDefault);
+                            if (Options.Current.Verbose)
+                                Console.WriteLine($"Created Long Register     {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
+
                             break;
                         case DataTypes.RdDateTime:
                             reserAction = controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
@@ -182,7 +198,7 @@ namespace HomeServer
                                     _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DateTimeResult}", value.ToString(HsEnvelope.DateTimeFormat), true);
                                 }, false, interval);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created DateTime Register {parameter.Id} \t{parameter.Name}");
+                                Console.WriteLine($"Created DateTime Register {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
 
                             break;
                         case DataTypes.RdTime:
@@ -204,7 +220,11 @@ namespace HomeServer
             switch (setter.Type)
             {
                 case SetterTypes.RealDateTime:
-                    var setterObj = controllerObject.SetSetter(setter.ModbusIndex, setter.Type);
+                    var setterObj = controllerObject.SetSetter(setter.ModbusIndex, setter.Type, resultStatus =>
+                    {
+                        _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), false);
+                        Console.WriteLine($"Set value '{setter.Id}' status  \t{resultStatus}");
+                    });
                     ClienSocketWorker.Setters.Add(setter.Id, setterObj);
                     if (Options.Current.Verbose)
                         Console.WriteLine($"Created Setter            {setter.Id} \t{setter.Name}");

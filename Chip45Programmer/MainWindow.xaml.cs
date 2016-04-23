@@ -10,6 +10,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Chip45ProgrammerLib;
 using Microsoft.Win32;
 
 namespace Chip45Programmer
@@ -670,6 +671,41 @@ namespace Chip45Programmer
                 return;
             }
             HexUtils.WriteHexfile(sfd.FileName, hexFile);
+        }
+
+        private void ConvertToUnfragmentedHexClick(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog
+            {
+                Filter = "Hex|*.hex;*.eep",
+                DefaultExt = ".hex"
+            };
+
+            if (ofd.ShowDialog() != true)
+                return;
+
+            var sfd = new SaveFileDialog
+            {
+                Filter = "Hex|*.hex;*.eep",
+                DefaultExt = ".hex"
+            };
+            if(sfd.ShowDialog() != true)
+                return;
+
+            var hexFile = new HexFile(WriteLog, true, true, 0xFF);
+            hexFile.Load(ofd.FileName);
+            if (!string.IsNullOrEmpty(hexFile.ErrorString))
+            {
+                MessageBox.Show(hexFile.ErrorString);
+                return;
+            }
+            HexUtils.WriteHexfile(sfd.FileName, hexFile);
+        }
+
+
+        private void ClearLogClick(object sender, RoutedEventArgs e)
+        {
+            LbLog.Items.Clear();
         }
     }
 }

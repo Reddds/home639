@@ -1,0 +1,17 @@
+[Unit]
+Description=Home Automatization Server Daemon
+After=syslog.target network.target
+
+[Service]
+WorkingDirectory=/var/lib/home639server/
+User=torrero
+Group=torrero
+
+Type=simple
+ExecStart=/usr/bin/mono /var/lib/home639server/HomeServer.exe -p "/dev/ttyUSB0" -b 9600 -s localhost -v
+TimeoutStopSec=20
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

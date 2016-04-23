@@ -4,24 +4,34 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Chip45Programmer
+namespace Chip45ProgrammerLib
 {
-    class HexFile : List<byte>
+    public class HexFile : List<byte>
     {
         private readonly Action<string> _log;
         private readonly bool _verbose;
         // Currently the biggest AVR controller has 256k Flash
         const uint MAX_FLASH_BYTES = 262144;
+        private readonly bool _noCheckSize = false;
+        /// <summary>
+        /// Если установлен, то на выходе пропускаем строки, полностью состоящие из 
+        /// этих символов
+        /// </summary>
+        private byte? _emptyByte;
+
+
 
         public string ErrorString { get; private set; }
 
-        public HexFile()
+        public HexFile(bool noCheckSize, byte? emptyByte)
         {
+            _noCheckSize = noCheckSize;
+            _emptyByte = emptyByte;
             Reset();
         }
 
-        public HexFile(Action<string> log, bool verbose)
-            :this()
+        public HexFile(Action<string> log, bool verbose, bool noCheckSize = false, byte? emptyByte = null)
+            :this(noCheckSize, emptyByte)
         {
             _log = log;
             _verbose = verbose;
@@ -46,7 +56,8 @@ namespace Chip45Programmer
 
             Reset();
             ushort lineNr = 0;
-            uint extendedSegmentAddress = 0;
+            //uint extendendSegmentAddress = 0;
+            uint segmentAddress = 0;
 
             var lines = File.ReadAllLines(fileName);
 
@@ -70,17 +81,31 @@ namespace Chip45Programmer
 
                 switch (recordType)
                 {
-                    case 2:
+                    case 4:
                         // extended segment address record
                         var extendedSegmentAddressHigh = Convert.ToByte(line.Substring(9, 2), 16);
-                        extendedSegmentAddress = (uint)(extendedSegmentAddressHigh << 8);
-                        checkSum += extendedSegmentAddressHigh;  // chechsum...
+                        segmentAddress = (uint)(extendedSegmentAddressHigh << 8);
                         var extendedSegmentAddressLow = Convert.ToByte(line.Substring(11, 2), 16);
-                        extendedSegmentAddress += extendedSegmentAddressLow;
+                        segmentAddress += extendedSegmentAddressLow;
+                        segmentAddress <<= 16;
                         checkSum += extendedSegmentAddressLow;  // chechsum...
                         if (_verbose)
                         {
-                            WriteLog("Got extended adress record");
+                            WriteLog("Got extended segment adress record");
+                        }
+                        break;
+                    case 2:
+                        // segment address record
+                        var segmentAddressHigh = Convert.ToByte(line.Substring(9, 2), 16);
+                        segmentAddress = (uint)(segmentAddressHigh << 8);
+                        checkSum += segmentAddressHigh;  // chechsum...
+                        var segmentAddressLow = Convert.ToByte(line.Substring(11, 2), 16);
+                        segmentAddress += segmentAddressLow;
+                        segmentAddress <<= 4;
+                        checkSum += segmentAddressLow;  // chechsum...
+                        if (_verbose)
+                        {
+                            WriteLog("Got segment adress record");
                         }
                         break;
 
@@ -100,7 +125,7 @@ namespace Chip45Programmer
                             {
                                 var dataByte = Convert.ToByte(line.Substring(i + 9, 2), 16); ;
                                 checkSum += dataByte;  // compute checksum
-                                if (!SetByte((int)(address + (extendedSegmentAddress * 16) + (i >> 1)), dataByte))
+                                if (!SetByte((int)(address + segmentAddress + (i >> 1)), dataByte))
                                 {
                                     ErrorString = "Maximum size exceeded";
                                     return false;
@@ -125,15 +150,26 @@ namespace Chip45Programmer
             return true;
         }
 
+        private byte[] CreateEmptyRange(int length)
+        {
+            var newRange = new byte[length];
+            if(_emptyByte != null)
+                for (int i = 0; i < newRange.Length; i++)
+                {
+                    newRange[i] = _emptyByte.Value;
+                }
+            return newRange;
+        }
+
         public bool SetByte(int address, byte data)
         {
-            if (address >= MAX_FLASH_BYTES)
+            if (!_noCheckSize && address >= MAX_FLASH_BYTES)
             {
                 ErrorString = $@"Overflow (address {address})";
                 return false;
             }
             if (address >= Count)
-                AddRange(new byte[address - Count + 1]);
+                AddRange(CreateEmptyRange(address - Count + 1));
             this[address] = data;
             return true;
         }
@@ -151,7 +187,7 @@ namespace Chip45Programmer
 
         public new void Add(byte item)
         {
-            if (Count >= MAX_FLASH_BYTES)
+            if (!_noCheckSize && Count >= MAX_FLASH_BYTES)
             {
                 ErrorString = $@"Overflow (address {Count + 1})";
                 return;
@@ -168,7 +204,7 @@ namespace Chip45Programmer
         public new void AddRange(IEnumerable<byte> collection)
         {
             var collectionCount = collection.Count();
-            if (Count + collectionCount > MAX_FLASH_BYTES)
+            if (!_noCheckSize && Count + collectionCount > MAX_FLASH_BYTES)
             {
                 ErrorString = $@"Overflow (address {Count + collectionCount})";
                 return;
@@ -187,6 +223,26 @@ namespace Chip45Programmer
             return true;
         }
 
+        private string CreateSegment(int address)
+        {
+            //lastSegment = address >> 16;
+            if (_noCheckSize) // Используем расширенный сегмент
+            {
+                var segAddress = (ushort)(address >> 16);
+                var segChksum = (byte)(((2 + 4 + (segAddress >> 8) + (segAddress & 0xFF)) ^ 0xFF) + 1);
+                var segStr = $":02000004{segAddress:X4}{segChksum:X2}";
+                return segStr;
+            }
+            else
+            {
+                //ushort segAddress = address / 16;
+                var segAddress = (ushort)(address >> 4);
+                var segChksum = (byte)(((2 + 2 + (segAddress >> 8) + (segAddress & 0xFF)) ^ 0xFF) + 1);
+                var segStr = $":02000002{segAddress:X4}{segChksum:X2}";
+                return segStr;
+            }
+        }
+
         public string[] GetHexFile()
         {
             var result = new List<string>();
@@ -195,38 +251,57 @@ namespace Chip45Programmer
             var hexSize = Count;
 
             var lines = (hexSize + (byteCount - 1)) / byteCount; // round up
-
+            var lastSegment = 0;
             for (var line = 0; line < lines; ++line)
             {
                 var address = line * byteCount;
-                ushort addressSh = (ushort)address;
+                var addressSh = (ushort)address;
 
                 // preamble
 
-                if ((address > 0)                          // new segment
-                    && ((address % (0x10000)) == 0))
+                if (_emptyByte == null)
                 {
-                    //ushort segAddress = address / 16;
-                    var segAddress = (ushort)(address >> 4);
-                    var segChksum = (byte)(((2 + 2 + (segAddress >> 8) + (segAddress & 0xFF)) ^ 0xFF) + 1);
-                    var segStr = $":02000002{segAddress:X4}{segChksum:X2}";
-                    result.Add(segStr);
-
+                    if ((address > 0) // new segment
+                        && ((address%(0x10000)) == 0))
+                    {
+                        lastSegment = address >> 16;
+                        result.Add(CreateSegment(address));
+                    }
                 }
                 var thisLinesBytecount = (address + byteCount) > hexSize
                                                 ? hexSize - address
                                                 : byteCount;
                 var str = $@":{thisLinesBytecount:X2}{addressSh:X4}00";
                 var checksum = (byte)((byte)thisLinesBytecount + (byte)(addressSh >> 8) + (byte)(addressSh & 0xFF));
+                var addToFile = _emptyByte == null;
                 for (var i = 0; i < thisLinesBytecount; ++i)
                 {
                     var b = this[address + i];
+                    if(_emptyByte != null && b != _emptyByte.Value)
+                        addToFile = true;
                     checksum += b;
                     str += b.ToString("X2");
                 }
-                checksum = (byte)((checksum ^ 0xFF) + 1);
-                str += $"{checksum:X2}";
-                result.Add(str);
+                if (addToFile)
+                {
+                    // Если сегмент на этот адрес ещё не вписан, вписываем
+                    if (_emptyByte != null)
+                    {
+                        if ((address > 0) // new segment
+                        && ((address % (0x10000)) == 0))
+                        {
+                            var curSeg = address >> 16;
+                            if (curSeg != lastSegment)
+                            {
+                                lastSegment = address >> 16;
+                                result.Add(CreateSegment(address));
+                            }
+                        }
+                    }
+                    checksum = (byte) ((checksum ^ 0xFF) + 1);
+                    str += $"{checksum:X2}";
+                    result.Add(str);
+                }
             }
             result.Add(":00000001FF");
 

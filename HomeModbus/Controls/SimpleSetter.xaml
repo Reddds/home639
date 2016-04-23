@@ -5,20 +5,29 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HomeModbus.Controls"
              mc:Ignorable="d" 
-             Height="60" MaxWidth="300" d:DesignWidth="300">
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             Height="40" MaxWidth="300" d:DesignWidth="300">
     <Grid>
-        <Button x:Name="BMain" HorizontalContentAlignment="Stretch">
+        <Button x:Name="BMain" HorizontalContentAlignment="Stretch" Click="BMain_Click">
             <Grid HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="30"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="TbName"></TextBlock>
+                <Label x:Name="TbName"></Label>
                 <Image Grid.Column="1" Width="24" Height="24">
                     <Image.Style>
                         <Style TargetType="Image">
                             <Style.Triggers>
-                                
+                                <DataTrigger Binding="{Binding Mode}" Value="{x:Static local:UpdateModes.Updated}">
+                                    <Setter Property="Source" Value="../Assets/Images/Objects/DefaultChecked.png"></Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Mode}" Value="{x:Static local:UpdateModes.Updating}">
+                                    <Setter Property="Source" Value="../Assets/Images/Objects/Spinner.png"></Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Mode}" Value="{x:Static local:UpdateModes.Fail}">
+                                    <Setter Property="Source" Value="../Assets/Images/Objects/ActionFail.png"></Setter>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
 
