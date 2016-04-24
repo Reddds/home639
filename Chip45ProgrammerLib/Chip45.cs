@@ -353,7 +353,7 @@ namespace Chip45ProgrammerLib
             var worker = sender as BackgroundWorker;
             var opts = (ProgramOptions) e.Argument;
 
-            var flashHexFile = new HexFile(_log, _verbose);
+            var flashHexFile = new HexFile(_log, _verbose, emptyByte:0xff);
                 if (!flashHexFile.Load(opts.ProgramFile))
                 {
                     _log("Failed to load file '" + opts.ProgramFile + "': " + flashHexFile.ErrorString);
