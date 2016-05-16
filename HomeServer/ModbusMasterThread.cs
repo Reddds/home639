@@ -16,13 +16,8 @@ namespace HomeServer
         private static Thread _mainThread;
         private static ManualResetEvent _isListening;
 
-
-
         private static SerialPort _port;
         private static ModbusSerialMaster _modbus;
-
-
-
 
         public static event EventHandler PortChanged;
         public static event EventHandler<bool> ListeningChanged;
@@ -66,6 +61,9 @@ namespace HomeServer
                 _mainThread.Start();
             _isListening.Set();
             Console.WriteLine(@"Start thread");
+
+            
+
             return true;
         }
 

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using HomeServer.Models;
 using HomeServer.Objects;
+using Newtonsoft.Json.Serialization;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
@@ -48,8 +49,10 @@ namespace HomeServer
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersSettings}/#",
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersSetValue}/#",
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ResetParameter}/#",
+                $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersIdRequest}/#",
             }, new[]
             {
+                MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
@@ -98,6 +101,10 @@ namespace HomeServer
 //                    ParseControllerSetting(topicSplit[2], strMessage);
                     return;
 
+                case HsEnvelope.ControllersIdRequest:
+                    //!!!
+                    return;
+
                 case HsEnvelope.ControllersSetValue:
                     if (topicSplit.Length < 3)
                         return;
@@ -114,6 +121,47 @@ namespace HomeServer
                                 if (DateTime.TryParseExact(strMessage, HsEnvelope.DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None,   out newVal))
                                 {
                                     setter.PendingSet(newVal);
+                                }
+                                break;
+                            case SetterTypes.UInt16:
+                                ushort newUint16;
+                                if(ushort.TryParse(strMessage, out newUint16))
+                                {
+                                    setter.PendingSet(newUint16);
+                                }
+                                
+                                break;
+                            case SetterTypes.MultipleUInt16:
+                                var strValues = strMessage.Split(',');
+                                var newValues = new ushort[strValues.Length];
+                                for (var i = 0; i < strValues.Length; i++)
+                                {
+                                    ushort tmpUInt16;
+                                    if (ushort.TryParse(strValues[i], out tmpUInt16))
+                                    {
+                                        newValues[i] = tmpUInt16;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
+                                setter.PendingSet(newValues);
+                                break;
+                            case SetterTypes.File:
+                                var strInts = strMessage.Split(',');
+                                var bytes = new List<byte>();
+                                foreach (var strInt in strInts)
+                                {
+                                    try
+                                    {
+                                        bytes.Add(Convert.ToByte(strInt, 16));
+                                    }
+                                    catch (Exception)
+                                    {
+                                        break;
+                                    }
+                                    setter.PendingSet(bytes.ToArray());
                                 }
                                 break;
                             default:

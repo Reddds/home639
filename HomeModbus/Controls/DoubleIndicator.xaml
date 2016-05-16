@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="HomeModbus.Controls.DoubleIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HomeModbus.Controls"
+             xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
+             mc:Ignorable="d" 
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             Height="90" Width="300">
+    <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+        <dxga:DigitalGaugeControl x:Name="DgHi"
+						Text="{Binding HiValue}" HorizontalAlignment="Left" VerticalAlignment="Top"
+						Height="90" Width="150" Padding="7">
+            <!--region #Layers-->
+            <dxga:DigitalGaugeControl.Layers>
+                <dxga:DigitalGaugeLayer>
+                    <dxga:DigitalGaugeLayer.Presentation>
+                        <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
+                    </dxga:DigitalGaugeLayer.Presentation>
+                </dxga:DigitalGaugeLayer>
+            </dxga:DigitalGaugeControl.Layers>
+            <!--endregion #Layers-->
+            <!--region #Model-->
+            <dxga:DigitalGaugeControl.Model>
+                <dxga:DigitalEcoModel/>
+            </dxga:DigitalGaugeControl.Model>
+            <!--endregion #Model-->
+            <dxga:DigitalGaugeControl.SymbolView>
+                <dxga:FourteenSegmentsView/>
+            </dxga:DigitalGaugeControl.SymbolView>
+        </dxga:DigitalGaugeControl>
+        <dxga:DigitalGaugeControl Grid.Column="1" x:Name="DgLo"
+						Text="{Binding LoValue}" HorizontalAlignment="Left" VerticalAlignment="Top"
+						Height="90" Width="150" Padding="7">
+            <!--region #Layers-->
+            <dxga:DigitalGaugeControl.Layers>
+                <dxga:DigitalGaugeLayer>
+                    <dxga:DigitalGaugeLayer.Presentation>
+                        <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
+                    </dxga:DigitalGaugeLayer.Presentation>
+                </dxga:DigitalGaugeLayer>
+            </dxga:DigitalGaugeControl.Layers>
+            <!--endregion #Layers-->
+            <!--region #Model-->
+            <dxga:DigitalGaugeControl.Model>
+                <dxga:DigitalEcoModel/>
+            </dxga:DigitalGaugeControl.Model>
+            <!--endregion #Model-->
+            <dxga:DigitalGaugeControl.SymbolView>
+                <dxga:FourteenSegmentsView/>
+            </dxga:DigitalGaugeControl.SymbolView>
+        </dxga:DigitalGaugeControl>
+
+    </Grid>
+</UserControl>

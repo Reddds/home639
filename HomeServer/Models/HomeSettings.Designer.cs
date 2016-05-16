@@ -787,7 +787,7 @@ namespace HomeServer.Models
 
         private ModbusTypes _modbusType;
 
-        private byte _modbusIndex;
+        private System.Nullable<byte> _modbusIndex;
 
         private string _refreshRate;
 
@@ -856,11 +856,34 @@ namespace HomeServer.Models
         {
             get
             {
-                return this._modbusIndex;
+                if (this._modbusIndex.HasValue)
+                {
+                    return this._modbusIndex.Value;
+                }
+                else
+                {
+                    return default(byte);
+                }
             }
             set
             {
                 this._modbusIndex = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool ModbusIndexSpecified
+        {
+            get
+            {
+                return this._modbusIndex.HasValue;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    this._modbusIndex = null;
+                }
             }
         }
 
@@ -1294,6 +1317,9 @@ namespace HomeServer.Models
 
         /// <remarks/>
         HoldingRegister,
+
+        /// <remarks/>
+        DeviceId,
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.6.1064.2")]
@@ -1588,6 +1614,15 @@ namespace HomeServer.Models
 
         /// <remarks/>
         RealDateTime,
+
+        /// <remarks/>
+        UInt16,
+
+        /// <remarks/>
+        MultipleUInt16,
+
+        /// <remarks/>
+        File,
     }
 }
 #pragma warning restore

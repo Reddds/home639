@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using HomeServer.ModbusCustomMessages;
 using HomeServer.Models;
 using Modbus.Device;
+using Modbus.IO;
+using Newtonsoft.Json;
+
 
 namespace HomeServer.Objects
 {
@@ -11,7 +17,11 @@ namespace HomeServer.Objects
     /// </summary>
     public class ShController
     {
+        private const int ModbusResultSuccess = 0x8080;
+
         private const int MaxDiscreteOrCoilIndex = 15;
+        private const ushort CommandHoldingRegister = 0;
+
 
         /// <summary>
         /// Количество ошибок обращения к контроллеру
@@ -183,7 +193,7 @@ namespace HomeServer.Objects
                     return false;
                 _currentValue = newValue;
                 _lastCheck = DateTime.Now;
-                if(_currentValue == UInt16Default)
+                if (_currentValue == UInt16Default)
                     return false;
                 CallBack?.Invoke(newValue);
                 if (ResetAfterRead)
@@ -234,7 +244,7 @@ namespace HomeServer.Objects
             private DateTime _currentDateTime;
             private Action<DateTime> CallBack { get; set; }
 
-            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, DataTypes.RdDateTime,  null)
+            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, DataTypes.RdDateTime, null)
             {
                 CallBack = callBack;
             }
@@ -318,7 +328,40 @@ namespace HomeServer.Objects
         private List<ActionOnRegister> _inputChecks;
         private List<ActionOnRegister> _holdingChecks;
 
+
         #endregion
+
+        #region Others
+
+        private class ActionOnReceiveSlaveId
+        {
+            private string _slaveId = null;
+
+            private Action<string> CallBack { get; set; }
+
+            public ActionOnReceiveSlaveId(Action<string> callBack)
+            {
+                CallBack = callBack;
+            }
+
+            /// <summary>
+            /// надо ли проверять сейчас
+            /// </summary>
+            /// <returns></returns>
+            public bool IsNeedCheck()
+            {
+                return _slaveId == null;
+            }
+
+            public void SendValue(string str)
+            {
+                _slaveId = str;
+                CallBack?.Invoke(str);
+            }
+        }
+
+        private ActionOnReceiveSlaveId _actionOnReceiveSlaveId = null;
+        #endregion Others
 
         #region Setters
 
@@ -328,7 +371,7 @@ namespace HomeServer.Objects
             public SetterTypes SetterType;
             public bool IsPending { get; private set; }
             private object _pendingObject;
-            private Action<bool> _resultAction;
+            private readonly Action<bool> _resultAction;
 
             public ModbusSetter(ushort index, SetterTypes setterType, Action<bool> resultAction = null)
             {
@@ -352,12 +395,25 @@ namespace HomeServer.Objects
             public bool Set(ModbusSerialMaster modbus, byte slaveAddress)
             {
                 IsPending = false;
+
                 switch (SetterType)
                 {
                     case SetterTypes.RealDateTime:
                         var resultStatus = SendTime(modbus, slaveAddress);
                         _resultAction?.Invoke(resultStatus);
                         return resultStatus;
+                    case SetterTypes.UInt16:
+                        var resultUInt16Status = SendUInt16(modbus, slaveAddress);
+                        _resultAction?.Invoke(resultUInt16Status);
+                        return resultUInt16Status;
+                    case SetterTypes.MultipleUInt16:
+                        var resultMultipleUInt16Status = SendMultipleUInt16(modbus, slaveAddress);
+                        _resultAction?.Invoke(resultMultipleUInt16Status);
+                        return resultMultipleUInt16Status;
+                    case SetterTypes.File:
+                        var resultFileStatus = SendFile(modbus, slaveAddress);
+                        _resultAction?.Invoke(resultFileStatus);
+                        return resultFileStatus;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -368,17 +424,22 @@ namespace HomeServer.Objects
             private bool SendTime(ModbusSerialMaster modbus, byte slaveAddress)
             {
                 var curTime = DateTime.Now;
-                var timeData = new ushort[3];
-                timeData[0] = (ushort)(((curTime.Hour << 8)) | curTime.Minute);
-                timeData[1] = (ushort)((curTime.Day << 8) | curTime.Second);
-                timeData[2] = (ushort)(((curTime.Year % 100) << 8) | curTime.Month);
+                var timeData = new ushort[4];
+                timeData[0] = 0x1000;
+                timeData[1] = (ushort)(((curTime.Hour << 8)) | curTime.Minute);
+                timeData[2] = (ushort)((curTime.Day << 8) | curTime.Second);
+                timeData[3] = (ushort)(((curTime.Year % 100) << 8) | curTime.Month);
 
                 //            _modbus.WriteMultipleRegisters(2, 8, timeData);
-                modbus.WriteMultipleRegisters(slaveAddress, Index, timeData);
+                modbus.WriteMultipleRegisters(slaveAddress, CommandHoldingRegister, timeData);
                 Thread.Sleep(500);
 
-                var setTimeRes = modbus.ReadInputRegisters(slaveAddress, Index, 1);
-                return setTimeRes[0] == 0x0000;
+                var msg = new ReadExceptionStatusRequest(slaveAddress);
+                var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
+
+                
+                //var modbusResult = modbus.ReadInputRegisters(slaveAddress, 0, 1);
+                return resp.ExceptionStatusBits[0];
                 /*if (setTimeRes.Length > 0 && setTimeRes[0] == 0xffff)
                     WriteToLog?.Invoke(this, "Время установлено успешно!");
                 else
@@ -389,6 +450,57 @@ namespace HomeServer.Objects
 
             }
 
+            private bool SendMultipleUInt16(ModbusSerialMaster modbus, byte slaveAddress)
+            {
+                //            _modbus.WriteMultipleRegisters(2, 8, timeData);
+                modbus.WriteMultipleRegisters(slaveAddress, CommandHoldingRegister, (ushort[])_pendingObject);
+                Thread.Sleep(50);
+
+                var msg = new ReadExceptionStatusRequest(slaveAddress);
+                var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
+                return resp.ExceptionStatusBits[0];
+            }
+
+            private bool SendUInt16(ModbusSerialMaster modbus, byte slaveAddress)
+            {
+                modbus.WriteSingleRegister(slaveAddress, Index, (ushort)_pendingObject);
+                Thread.Sleep(50);
+                var msg = new ReadExceptionStatusRequest(slaveAddress);
+                var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
+                return resp.ExceptionStatusBits[0];
+            }
+
+            private bool SendFile(ModbusSerialMaster modbus, byte slaveAddress)
+            {
+                var hexBytes = (byte[]) _pendingObject;
+                var sent = 0;
+                ushort wordsSent = (ushort) (Index / 2);
+                do
+                {
+                    // Для табло максимальный размер буфера 140
+                    var wordsToSend = (int)ModbusWriteFileRecord.MaxDataCountByBufferSize(140);
+                    var bytesToSend = wordsToSend * 2;
+                    if (sent + bytesToSend > hexBytes.Length)
+                        bytesToSend = hexBytes.Length - sent;
+                    //slaveAddress, Index, wordsSent
+                    // Поддерживается пока только файл №1
+                    var msg = new ModbusWriteFileRecordRequest(slaveAddress, 1, wordsSent, hexBytes, sent, bytesToSend);
+                    var resp = modbus.ExecuteCustomMessage<ModbusWriteFileRecord>(msg);
+                    sent += bytesToSend;
+                    wordsSent += (ushort)wordsToSend;
+                } while (sent < hexBytes.Length);
+
+                var msgResult = new ReadExceptionStatusRequest(slaveAddress);
+                var respResult = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgResult);
+                return respResult.ExceptionStatusBits[0];
+            }
+
+            //            private string ReportSlaveIdRequest(ModbusSerialMaster modbus, byte slaveAddress)
+            //            {
+            //                var msg = new ReportSlaveIdRequest(slaveAddress);
+            //                var resp = modbus.ExecuteCustomMessage<ReportSlaveId>(msg);
+            //                return null;
+            //            }
         }
 
         private List<ModbusSetter> _setters;
@@ -507,12 +619,30 @@ namespace HomeServer.Objects
                         }
                     }
                 }
+                // Остальное
+                if (_actionOnReceiveSlaveId != null && _actionOnReceiveSlaveId.IsNeedCheck())
+                {
+                    curOperation = $"Check Slave Id";
+//                    var msg = new ReportSlaveIdRequest(SlaveAddress);
+//                    var resp = modbus.ExecuteCustomMessage<ReportSlaveId>(msg);
+                    var msg = new ReadDeviceIdentificationRequest(SlaveAddress, ReadDeviceIdentification.ReadDeviceIdCodes.Basic, 0);
+                    var resp = modbus.ExecuteCustomMessage<ReadDeviceIdentification>(msg);
+                    var objs = resp.StringObjects;
+                    msg = new ReadDeviceIdentificationRequest(SlaveAddress, ReadDeviceIdentification.ReadDeviceIdCodes.Regular, 0);
+                    resp = modbus.ExecuteCustomMessage<ReadDeviceIdentification>(msg);
+                    objs.AddRange(resp.StringObjects);
+                    _actionOnReceiveSlaveId.SendValue(JsonConvert.SerializeObject(objs));
+                    //                    var rtuTransport = (ModbusRtuTransport)modbus.Transport;
+                    //                    if (resp.ReseivedId != null)
+                    //                    {
+                    //                        _actionOnReceiveSlaveId.SendValue(resp.ReseivedId);
+                    //                    }
+                }
 
             }
             catch (Exception ee)
             {
-
-                throw new Exception($"{curOperation} " + ee.Message);
+                throw new Exception($"{curOperation} " + ee);//.Message
             }
         }
 
@@ -530,7 +660,7 @@ namespace HomeServer.Objects
                     {
                         check.PendingReset = false;
 
-                        if(check.InitialState != null)
+                        if (check.InitialState != null)
                             modbus.WriteSingleCoil(SlaveAddress, check.Index, check.InitialState.Value);
                     }
                 }
@@ -550,8 +680,8 @@ namespace HomeServer.Objects
                             case DataTypes.ULong:
                                 Console.WriteLine("Reset ULong");
                                 var resetData = new ushort[2];
-                                resetData[0] = (ushort) (check.ULongDefault >> 16);
-                                resetData[1] = (ushort) (check.ULongDefault & 0xFFFF);
+                                resetData[0] = (ushort)(check.ULongDefault >> 16);
+                                resetData[1] = (ushort)(check.ULongDefault & 0xFFFF);
                                 modbus.WriteMultipleRegisters(SlaveAddress, check.Index, resetData);
                                 break;
                             default:
@@ -657,7 +787,7 @@ namespace HomeServer.Objects
                 case DataTypes.Float:
                     break;
                 case DataTypes.ULong:
-                    endIndex = (ushort) (index + 1);
+                    endIndex = (ushort)(index + 1);
                     break;
                 case DataTypes.RdDateTime:
                     break;
@@ -744,10 +874,16 @@ namespace HomeServer.Objects
                     _holdingChecks = new List<ActionOnRegister>();
                 _inputChecks.Add(new ActionOnRegisterDateTime(index, callback)
                 {
-                    RaiseOlwais = raiseOlwais, CheckInterval = checkInterval
+                    RaiseOlwais = raiseOlwais,
+                    CheckInterval = checkInterval
                 });
                 return null;
             }
+        }
+
+        public void SetActionOnSlaveId(Action<string> callback, TimeSpan? checkInterval = null)
+        {
+            _actionOnReceiveSlaveId = new ActionOnReceiveSlaveId(callback);
         }
 
         /// <summary>

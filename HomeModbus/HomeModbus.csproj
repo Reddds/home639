@@ -37,6 +37,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Assets\Images\com_plug.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DevExpress.Charts.v15.2.Core, Version=15.2.7.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Data.v15.2, Version=15.2.7.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
@@ -165,6 +168,12 @@
     <Compile Include="Controls\BinaryIndicator.xaml.cs">
       <DependentUpon>BinaryIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CommandSetter.xaml.cs">
+      <DependentUpon>CommandSetter.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\DoubleIndicator.xaml.cs">
+      <DependentUpon>DoubleIndicator.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\IndicatorControl.xaml.cs">
       <DependentUpon>IndicatorControl.xaml</DependentUpon>
     </Compile>
@@ -183,6 +192,9 @@
     <Compile Include="Controls\SimpleSetter.xaml.cs">
       <DependentUpon>SimpleSetter.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\StringIndicator.xaml.cs">
+      <DependentUpon>StringIndicator.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DataAccess.cs" />
     <Compile Include="HsClient.cs" />
     <Compile Include="Migrations\Configuration.cs" />
@@ -190,6 +202,7 @@
     <Compile Include="Models\GlobalData.cs" />
     <Compile Include="Models\HomeSettings.Designer.cs" />
     <Compile Include="Models\LogValues.cs" />
+    <Compile Include="Models\TabloSounds.cs" />
     <Compile Include="Objects\ControllerGroup.cs" />
     <Compile Include="Objects\ShController.cs" />
     <Compile Include="Properties\Annotations.cs" />
@@ -207,6 +220,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\BinaryIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\CommandSetter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\DoubleIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -231,6 +252,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\SimpleSetter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\StringIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -287,6 +312,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Content Include="eeprom.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Models\HomeSettings.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -296,6 +324,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Content Include="sounds.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

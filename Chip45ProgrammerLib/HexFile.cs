@@ -243,18 +243,18 @@ namespace Chip45ProgrammerLib
             }
         }
 
-        public string[] GetHexFile()
+        public string[] GetHexFile(int rowLength = 0x10)
         {
             var result = new List<string>();
             //const char zeropad('0');
-            const int byteCount = 16;  // byte count is fixed to 16 bytes
+            //const int byteCount = 16;  // byte count is fixed to 16 bytes
             var hexSize = Count;
 
-            var lines = (hexSize + (byteCount - 1)) / byteCount; // round up
+            var lines = (hexSize + (rowLength - 1)) / rowLength; // round up
             var lastSegment = 0;
             for (var line = 0; line < lines; ++line)
             {
-                var address = line * byteCount;
+                var address = line * rowLength;
                 var addressSh = (ushort)address;
 
                 // preamble
@@ -268,9 +268,9 @@ namespace Chip45ProgrammerLib
                         result.Add(CreateSegment(address));
                     }
                 }
-                var thisLinesBytecount = (address + byteCount) > hexSize
+                var thisLinesBytecount = (address + rowLength) > hexSize
                                                 ? hexSize - address
-                                                : byteCount;
+                                                : rowLength;
                 var str = $@":{thisLinesBytecount:X2}{addressSh:X4}00";
                 var checksum = (byte)((byte)thisLinesBytecount + (byte)(addressSh >> 8) + (byte)(addressSh & 0xFF));
                 var addToFile = _emptyByte == null;

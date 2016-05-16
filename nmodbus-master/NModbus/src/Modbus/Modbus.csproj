@@ -119,6 +119,7 @@
     <Compile Include="IO\CrossPlatformUdpClient.cs" />
     <Compile Include="IO\FullUdpClient.cs" />
     <Compile Include="Message\CustomMessageInfo.cs" />
+    <Compile Include="Message\IModbusMessageRtuMEI.cs" />
     <Compile Include="Message\IModbusMessageRtu.cs" />
     <Compile Include="IO\StreamResourceUtility.cs" />
     <Compile Include="IO\IStreamResource.cs" />

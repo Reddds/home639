@@ -87,6 +87,9 @@ namespace HomeModbus
                                 if (ushort.TryParse(strMessage, out uint16Value))
                                     action?.Invoke(uint16Value);
                                 break;
+                            case HsEnvelope.StringResult:
+                                action?.Invoke(strMessage);
+                                break;
                             case HsEnvelope.DateTimeResult:
                                 DateTime dateTimeValue;
                                 if (DateTime.TryParseExact(strMessage, HsEnvelope.DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeValue))

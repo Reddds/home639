@@ -62,6 +62,34 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
+            <TabItem Header="Табло">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="100"/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <GroupBox Header="Настройки">
+                        <Grid>
+                            <xctk:IntegerUpDown x:Name="IudInfoPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Minimum="0" Maximum="255" Value="50"></xctk:IntegerUpDown>
+                            <xctk:IntegerUpDown x:Name="IudAlarmPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="81,10,0,0" Minimum="0" Maximum="255" Value="50"/>
+                        <Button Content="Записать настройки" Click="WriteBiSettingsClick" HorizontalAlignment="Left" Height="37" Margin="637,29,0,-2" VerticalAlignment="Top" Width="199"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Grid.Row="1" Header="Звуки">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="150"/>
+                            </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TbSoundJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"></TextBox>
+                            <Button Click="UploadSoundsClick" Content="Загрузить звуки" Margin="10,0,0,0" Grid.Column="1" Height="24"></Button>
+                        </Grid>
+                        
+                    </GroupBox>
+                    <GroupBox Grid.Row="2" Header="Расписание"></GroupBox>
+                </Grid>
+            </TabItem>
         </TabControl>
         <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" >
             <dxc:ChartControl.Legend>

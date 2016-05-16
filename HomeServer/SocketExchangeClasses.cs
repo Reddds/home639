@@ -72,6 +72,16 @@ namespace HomeServer
         public const string ControllersSetValue = "controllerssetvalue";
 
         /// <summary>
+        /// Запрос ID устройства
+        /// </summary>
+        public const string ControllersIdRequest = "controllersidrequest";
+
+        /// <summary>
+        /// Возврат ID устройства
+        /// </summary>
+        public const string ControllersIdResponse = "controllersidresponse";
+
+        /// <summary>
         /// Начало опроса контроллеров
         /// </summary>
         public const string StartListening = "startlistening";
@@ -84,6 +94,7 @@ namespace HomeServer
         public const string BoolResult = "boolresult";
         public const string UInt16Result = "uint16result";
         public const string ULongResult = "ulongresult";
+        public const string StringResult = "stringresult";
 
         public const string DateTimeResult = "datetimeresult";
 

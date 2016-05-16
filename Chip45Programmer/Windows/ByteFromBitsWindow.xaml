@@ -1,0 +1,29 @@
+﻿<Window x:Class="Chip45Programmer.Windows.ByteFromBitsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Chip45Programmer.Windows"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="ByteFromBitsWindow" Height="334.365" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Label>Address in HEX</Label>
+            <xctk:IntegerUpDown x:Name="IudAddress" Width="100" ParsingNumberStyle="HexNumber" FormatString="X" VerticalAlignment="Center" HorizontalAlignment="Center" Value="0x300000"/>
+        </StackPanel>
+        <DataGrid Grid.Row="1" x:Name="DgByte" LoadingRow="DgByte_LoadingRow" 
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Binding="{Binding On}" />
+            </DataGrid.Columns>
+
+        </DataGrid>
+        <Button Grid.Row="2" HorizontalAlignment="Right" Height="30" Width="70" Margin="5" VerticalAlignment="Center" Click="Button_Click" IsDefault="True">Ok</Button>
+    </Grid>
+</Window>

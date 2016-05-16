@@ -46,9 +46,9 @@ namespace Modbus.IO
 			StreamResource.Write(frame, 0, frame.Length);
 		}
 
-		internal override IModbusMessage CreateResponse<T>(byte[] frame)
+		internal override IModbusMessage CreateResponse<T>(byte[] frame, Func<int, byte[]> read)
 		{
-			IModbusMessage response = base.CreateResponse<T>(frame);
+			IModbusMessage response = base.CreateResponse<T>(frame, read);
 
 			// compare checksum
 			if (CheckFrame && !ChecksumsMatch(response, frame))

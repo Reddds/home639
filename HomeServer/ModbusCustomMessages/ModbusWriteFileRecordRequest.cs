@@ -4,8 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Modbus.Data;
 
-
-namespace HomeModbus
+namespace HomeServer
 {
     class ModbusWriteFileRecord : Modbus.Message.IModbusMessageRtu, IModbusMessageDataCollection
     {
@@ -15,9 +14,9 @@ namespace HomeModbus
         /// </summary>
         private const int HeaderSize = 10;
 
-        protected ushort _fileNumber;
-        protected ushort _recordNumber;
-        protected ushort[] _recordData;
+        protected ushort FileNumber;
+        protected ushort RecordNumber;
+        protected ushort[] RecordData;
         public byte[] NetworkBytes { get; }
         public byte ByteCount { get; private set; }
         public void Initialize(byte[] frame, Func<int, byte[]> read)
@@ -41,12 +40,12 @@ namespace HomeModbus
             if (frame[3] != 6)
                 throw new FormatException("Wrong Reference Type");
 
-            _fileNumber = GetUshort(frame, 4);
-            _recordNumber = GetUshort(frame, 6);
-            _recordData = new ushort[dataLen];
-            for (var i = 0; i < _recordData.Count(); i++)
+            FileNumber = GetUshort(frame, 4);
+            RecordNumber = GetUshort(frame, 6);
+            RecordData = new ushort[dataLen];
+            for (var i = 0; i < RecordData.Count(); i++)
             {
-                _recordData[i] = GetUshort(frame, 10 + i * 2);
+                RecordData[i] = GetUshort(frame, 10 + i * 2);
             }
         }
 
@@ -93,15 +92,15 @@ namespace HomeModbus
                     //exceed the allowable length of the MODBUS PDU : 253bytes.
                     // Request data length
                     // Reference Type
-                    (byte) (_recordData.Count()*2 + 9),
+                    (byte) (RecordData.Count()*2 + 9),
                     6
                 };
 
-                pdu.AddRange(GetBytes(_fileNumber)); //File Number
-                pdu.AddRange(GetBytes(_recordNumber)); //Record Number
-                pdu.AddRange(GetBytes((ushort)_recordData.Count()));//Record length
+                pdu.AddRange(GetBytes(FileNumber)); //File Number
+                pdu.AddRange(GetBytes(RecordNumber)); //Record Number
+                pdu.AddRange(GetBytes((ushort)RecordData.Count()));//Record length
 
-                foreach (var rec in _recordData)
+                foreach (var rec in RecordData)
                 {
                     pdu.AddRange(GetBytes(rec));
                 }
@@ -171,11 +170,11 @@ namespace HomeModbus
         public ModbusWriteFileRecordRequest(byte slaveAddress, ushort fileNumber, ushort recordNumber,
             ushort[] recordData)
         {
-            _fileNumber = fileNumber;
-            _recordNumber = recordNumber;
+            FileNumber = fileNumber;
+            RecordNumber = recordNumber;
             if (recordData.Count() * 2 + 9 > 253)
                 throw new ArgumentException("Длина данных больше, чем поместится в запрос", nameof(recordData));
-            _recordData = recordData;
+            RecordData = recordData;
             SlaveAddress = slaveAddress;
         }
 
@@ -189,8 +188,8 @@ namespace HomeModbus
 
 
 
-            _fileNumber = fileNumber;
-            _recordNumber = recordNumber;
+            FileNumber = fileNumber;
+            RecordNumber = recordNumber;
             SlaveAddress = slaveAddress;
 
 
@@ -203,31 +202,16 @@ namespace HomeModbus
             if (ushortLen * 2 + 9 > 253)
                 throw new ArgumentException("Длина данных больше, чем поместится в запрос", nameof(recordData));
 
-            _recordData = new ushort[ushortLen];
+            RecordData = new ushort[ushortLen];
 
-            for (var i = 0; i < _recordData.Length; i++)
+            for (var i = 0; i < RecordData.Length; i++)
             {
-                _recordData[i] = (ushort)(recordData[startByte + i * 2] << 8);
+                RecordData[i] = (ushort)(recordData[startByte + i * 2] << 8);
                 var nextIndex = startByte + i * 2 + 1;
                 if (nextIndex < recordData.Length)
-                    _recordData[i] |= recordData[nextIndex];
+                    RecordData[i] |= recordData[nextIndex];
             }
         }
     }
 
-    /*    class ModbusWriteFileRecordResponse : IModbusMessage, IModbusMessageDataCollection
-        {
-            public byte[] NetworkBytes { get; }
-            public byte ByteCount { get; }
-            public void Initialize(byte[] frame)
-            {
-                throw new NotImplementedException();
-            }
-
-            public byte FunctionCode { get { return 0x15; } set { } }
-            public byte SlaveAddress { get; set; }
-            public byte[] MessageFrame { get; }
-            public byte[] ProtocolDataUnit { get; }
-            public ushort TransactionId { get; set; }
-        }*/
 }

@@ -83,8 +83,8 @@ namespace Modbus.Message
 			byte[] writeFrame = frame.Slice(6, frame.Length - 6).ToArray();
 			byte[] header = { SlaveAddress, FunctionCode };
 
-			_readRequest = ModbusMessageFactory.CreateModbusMessage<ReadHoldingInputRegistersRequest>(header.Concat(readFrame).ToArray());
-			_writeRequest = ModbusMessageFactory.CreateModbusMessage<WriteMultipleRegistersRequest>(header.Concat(writeFrame).ToArray());
+			_readRequest = ModbusMessageFactory.CreateModbusMessage<ReadHoldingInputRegistersRequest>(header.Concat(readFrame).ToArray(), null);
+			_writeRequest = ModbusMessageFactory.CreateModbusMessage<WriteMultipleRegistersRequest>(header.Concat(writeFrame).ToArray(), null);
 		}
 	}
 }

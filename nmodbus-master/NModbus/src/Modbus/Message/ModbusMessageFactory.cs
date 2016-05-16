@@ -8,10 +8,10 @@ namespace Modbus.Message
 	{
 		private const int MinRequestFrameLength = 3;
 
-		public static T CreateModbusMessage<T>(byte[] frame) where T : IModbusMessage, new()
+		public static T CreateModbusMessage<T>(byte[] frame, Func<int, byte[]> read) where T : IModbusMessage, new()
 		{
 			IModbusMessage message = new T();
-			message.Initialize(frame);
+			message.Initialize(frame, read);
 
 			return (T) message;
 		}
@@ -34,29 +34,29 @@ namespace Modbus.Message
 				{
 					case Modbus.ReadCoils:
 					case Modbus.ReadInputs:
-						request = CreateModbusMessage<ReadCoilsInputsRequest>(frame);
+						request = CreateModbusMessage<ReadCoilsInputsRequest>(frame, null);
 						break;
 					case Modbus.ReadHoldingRegisters:
 					case Modbus.ReadInputRegisters:
-						request = CreateModbusMessage<ReadHoldingInputRegistersRequest>(frame);
+						request = CreateModbusMessage<ReadHoldingInputRegistersRequest>(frame, null);
 						break;
 					case Modbus.WriteSingleCoil:
-						request = CreateModbusMessage<WriteSingleCoilRequestResponse>(frame);
+						request = CreateModbusMessage<WriteSingleCoilRequestResponse>(frame, null);
 						break;
 					case Modbus.WriteSingleRegister:
-						request = CreateModbusMessage<WriteSingleRegisterRequestResponse>(frame);
+						request = CreateModbusMessage<WriteSingleRegisterRequestResponse>(frame, null);
 						break;
 					case Modbus.Diagnostics:
-						request = CreateModbusMessage<DiagnosticsRequestResponse>(frame);
+						request = CreateModbusMessage<DiagnosticsRequestResponse>(frame, null);
 						break;
 					case Modbus.WriteMultipleCoils:
-						request = CreateModbusMessage<WriteMultipleCoilsRequest>(frame);
+						request = CreateModbusMessage<WriteMultipleCoilsRequest>(frame, null);
 						break;
 					case Modbus.WriteMultipleRegisters:
-						request = CreateModbusMessage<WriteMultipleRegistersRequest>(frame);
+						request = CreateModbusMessage<WriteMultipleRegistersRequest>(frame, null);
 						break;
 					case Modbus.ReadWriteMultipleRegisters:
-						request = CreateModbusMessage<ReadWriteMultipleRegistersRequest>(frame);
+						request = CreateModbusMessage<ReadWriteMultipleRegistersRequest>(frame, null);
 						break;
 					default:
 						throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Unsupported function code {0}", functionCode), "frame");

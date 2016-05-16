@@ -43,6 +43,14 @@
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+      <xs:enumeration value="Command">
+        <xs:annotation>
+          <xs:documentation>
+            Отправка комманды
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DataTypes">
@@ -152,7 +160,19 @@
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="0" name="Chart" />
+      <xs:element minOccurs="0" name="DoubleIndicator">
+        <xs:annotation>
+          <xs:documentation>
+            Показывает 2 значения, из старшего и младшего байта слова
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attribute name="IsHex" type="xs:boolean" use="optional" />
+        </xs:complexType>       
+      </xs:element>
+      <xs:element minOccurs="0" name="StringIndicator" />
       <xs:element minOccurs="0" name="CurrentTime" />
+      <xs:element minOccurs="0" name="SendCommand" />
     </xs:sequence>
     <xs:attribute name="Name" type="xs:string" use="optional" />
     <xs:attribute name="ParameterId" type="xs:string" use="optional" />

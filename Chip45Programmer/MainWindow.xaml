@@ -110,63 +110,97 @@
                     <ListBox Grid.Row="2" x:Name="LbLog"  Margin="5" />
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Chip43 Bootloader" HorizontalAlignment="Left" Height="336" Margin="327,10,0,0" VerticalAlignment="Top" Width="516">
+            <GroupBox Header="Programming" HorizontalAlignment="Left" Height="385" Margin="327,10,0,0" VerticalAlignment="Top" Width="516">
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Button x:Name="BConnect" Content="Connect"  Height="26" Margin="5" VerticalAlignment="Center" Width="150" Click="BConnectClick">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Connected}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False"></Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button x:Name="BDisconnect" Content="Disconnect" Margin="5" IsEnabled="{Binding Connected}"  Width="150" Height="26" Click="BDisconnect_Click"/>
-                        <Rectangle Height="26" Margin="5" Stroke="Black" Width="50">
-                            <Rectangle.Style>
-                                <Style TargetType="Rectangle">
-                                    <Setter Property="Fill" Value="#FFF4F4F5"></Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Connected}" Value="True">
-                                            <Setter Property="Fill" Value="LimeGreen"></Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Rectangle.Style>
-                        </Rectangle>
+                    <GroupBox Header="Bootloaders">
+                        <TabControl x:Name="TcBootloaders">
+                            <TabItem x:Name="TiChip45" Header="Chip45">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="BConnect" Content="Connect"  Height="26" Margin="5" VerticalAlignment="Center" Width="150" Click="BConnectClick">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Connected}" Value="True">
+                                                            <Setter Property="IsEnabled" Value="False"></Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button x:Name="BDisconnect" Content="Disconnect" Margin="5" IsEnabled="{Binding Connected}"  Width="150" Height="26" Click="BDisconnect_Click"/>
+                                        <Rectangle Height="26" Margin="5" Stroke="Black" Width="50">
+                                            <Rectangle.Style>
+                                                <Style TargetType="Rectangle">
+                                                    <Setter Property="Fill" Value="#FFF4F4F5"></Setter>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Connected}" Value="True">
+                                                            <Setter Property="Fill" Value="LimeGreen"></Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Rectangle.Style>
+                                        </Rectangle>
 
-                    </StackPanel>
-                    <GroupBox Height="76" >
-                        <GroupBox.Header>
-                            <CheckBox x:Name="CbSendPreString">Send Pre-String Before Connect</CheckBox>
-                        </GroupBox.Header>
-                        <Grid IsEnabled="{Binding IsChecked, ElementName=CbSendPreString}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="70"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label x:Name="label" Content="Pre-String" HorizontalAlignment="Left" Margin="0" />
-                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="TbPreString"  Height="23" Margin="0" TextWrapping="Wrap" Text="FA"/>
+                                    </StackPanel>
+                                    <GroupBox Height="76" >
+                                        <GroupBox.Header>
+                                            <CheckBox x:Name="CbSendPreString">Send Pre-String Before Connect</CheckBox>
+                                        </GroupBox.Header>
+                                        <Grid IsEnabled="{Binding IsChecked, ElementName=CbSendPreString}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <Label x:Name="label" Content="Pre-String" HorizontalAlignment="Left" Margin="0" />
+                                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="TbPreString"  Height="23" Margin="0" TextWrapping="Wrap" Text="FA"/>
 
-                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                <Label Content="Pre-String Timeout" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
-                                <xctk:IntegerUpDown x:Name="IudPreStringTimeoutAfter"   Margin="0" VerticalAlignment="Center"  Width="60" Maximum="5000" Minimum="0" Increment="100" DefaultValue="1000" Text="1000"/>
-                                <Label Content="ms" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
-                                <RadioButton x:Name="RbPreStringAscii" GroupName="PrestringType" IsChecked="True" Content="Ascii" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                                <RadioButton x:Name="RbPreStringHex" GroupName="PrestringType" Content="Hex" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                <Label Content="Pre-String Timeout" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
+                                                <xctk:IntegerUpDown x:Name="IudPreStringTimeoutAfter"   Margin="0" VerticalAlignment="Center"  Width="60" Maximum="5000" Minimum="0" Increment="100" DefaultValue="1000" Text="1000"/>
+                                                <Label Content="ms" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
+                                                <RadioButton x:Name="RbPreStringAscii" GroupName="PrestringType" IsChecked="True" Content="Ascii" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                                <RadioButton x:Name="RbPreStringHex" GroupName="PrestringType" Content="Hex" Margin="10,0,0,0" VerticalAlignment="Center"/>
 
-                            </StackPanel>
+                                            </StackPanel>
 
-                        </Grid>
+                                        </Grid>
+                                    </GroupBox>
+
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem x:Name="TiDs30" Header="ds30">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label>RowSize in bytes</Label>
+                                        <ComboBox x:Name="CbDs30RowSize" Margin="5">
+
+                                        </ComboBox>
+                                        <Label>PageSize in bytes</Label>
+                                        <ComboBox x:Name="CbDs30PageSize" Margin="5">
+
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Click="Ds30TestConnect" Margin="5">Test Connection</Button>
+                                        <Button Click="Ds30TestRead" Margin="5">Test Read</Button>
+                                        <Button Click="Ds30ReadConfigs" Margin="5">Read configs</Button>
+                                        <xctk:IntegerUpDown x:Name="IudByteAddress" Width="65" ParsingNumberStyle="HexNumber" FormatString="X" VerticalAlignment="Center" HorizontalAlignment="Center" Value="0x300000"/>
+
+                                        <Button Click="Ds30ReadByteClick" Margin="5">Read byte</Button>
+                                        
+                                        <Button Click="Ds30SendConfigByteClick" Margin="5">Send config byte</Button>
+                                    </StackPanel>
+                                </StackPanel>
+
+                            </TabItem>
+                        </TabControl>
                     </GroupBox>
-                    <GroupBox  IsEnabled="{Binding Connected}" Header="Flash" Height="83" >
+                    <GroupBox Header="Flash" Height="83" >
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition/>
@@ -179,7 +213,7 @@
                             <Label Content="Flash Hex file" />
                             <rdControls:FilePicker Grid.Row="0" Grid.Column="1" x:Name="FpFlash" SettingKey="Prog" Filter="HEX|*.hex" FileSelected="FpFlash_FileSelected" />
 
-                            <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="BProgramFlash" Content="Program Flash" HorizontalAlignment="Left" Height="23"  Width="150" Click="BProgramFlashClick" IsEnabled="False"/>
+                            <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="BProgramFlash" Content="Program Flash" HorizontalAlignment="Left" Height="23"  Width="150" Click="BProgramFlashClick"/>
 
                         </Grid>
                     </GroupBox>

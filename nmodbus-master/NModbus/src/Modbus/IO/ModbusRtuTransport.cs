@@ -29,10 +29,24 @@ namespace Modbus.IO
 			Debug.Assert(streamResource != null, "Argument streamResource cannot be null.");
 		}
 
-		/// <summary>
-		/// workaround for non-realtime implementation of the RTU protocol
-		/// </summary>
-		public static int RequestBytesToRead(byte[] frameStart, ModbusSlave slave)
+	    /// <summary>
+	    /// workaround for non-realtime implementation of the RTU protocol
+	    /// </summary>
+	    public static byte[] RequestNeededBytes(byte[] frameStart, ModbusSlave slave, Func<int, byte[]> read)
+	    {
+	        byte functionCode = frameStart[1];
+
+	        // allow a custom function registered with the slave to provide the number of bytes left to read
+	        CustomMessageInfo messageInfo;
+	        if (slave.TryGetCustomMessageInfo(functionCode, out messageInfo) || messageInfo.Instance is IModbusMessageRtuMEI)
+	            return ((IModbusMessageRtuMEI)messageInfo.Instance).ReadNeededBytes(frameStart, read);
+	        return null;
+	    }
+
+	    /// <summary>
+        /// workaround for non-realtime implementation of the RTU protocol
+        /// </summary>
+        public static int RequestBytesToRead(byte[] frameStart, ModbusSlave slave)
 		{
 			byte functionCode = frameStart[1];
 			
@@ -68,10 +82,25 @@ namespace Modbus.IO
 			return numBytes;
 		}
 
-		/// <summary>
-		/// workaround for non-realtime implementation of the RTU protocol
-		/// </summary>
-		public static int ResponseBytesToRead<T>(byte[] frameStart, Func<Type, IModbusMessageRtu> instanceCache)
+	    /// <summary>
+	    /// workaround for non-realtime implementation of the RTU protocol
+	    /// </summary>
+	    public static byte[] RequestNeededBytes<T>(byte[] frameStart, Func<Type, IModbusMessageRtu> instanceCache, Func<int, byte[]> read)
+	    {
+	        // allow a custom message to provide the number of bytes left to read
+	        if (typeof (IModbusMessageRtuMEI).IsAssignableFrom(typeof (T)))
+	        {
+	            var inst = instanceCache.Invoke(typeof (T)) as IModbusMessageRtuMEI;
+	            return inst?.ReadNeededBytes(frameStart, read);
+	        }
+	        return null;
+
+	    }
+
+	    /// <summary>
+        /// workaround for non-realtime implementation of the RTU protocol
+        /// </summary>
+        public static int ResponseBytesToRead<T>(byte[] frameStart, Func<Type, IModbusMessageRtu> instanceCache)
 		{
 			// allow a custom message to provide the number of bytes left to read
 			if (typeof(IModbusMessageRtu).IsAssignableFrom(typeof(T)))
@@ -136,20 +165,26 @@ namespace Modbus.IO
 
 		internal override IModbusMessage ReadResponse<T>()
 		{
-			byte[] frameStart = Read(ResponseFrameStartLength);
-			byte[] frameEnd = Read(ResponseBytesToRead<T>(frameStart, _instanceCache));
-			byte[] frame = frameStart.Concat(frameEnd).ToArray();
-			_logger.DebugFormat("RX: {0}", frame.Join(", "));
+			var frameStart = Read(ResponseFrameStartLength);
+			var frameEnd = Read(ResponseBytesToRead<T>(frameStart, _instanceCache));
+			var frame = frameStart.Concat(frameEnd).ToArray();
+		    var additionalData = RequestNeededBytes<T>(frame, _instanceCache, Read);
+		    if (additionalData != null)
+		        frame = frame.Concat(additionalData).ToArray();
+		    _logger.DebugFormat("RX: {0}", frame.Join(", "));
 
-			return CreateResponse<T>(frame);
+			return CreateResponse<T>(frame, Read);
 		}
 
 		internal override byte[] ReadRequest(ModbusSlave slave)
 		{
-			byte[] frameStart = Read(RequestFrameStartLength);
-			byte[] frameEnd = Read(RequestBytesToRead(frameStart, slave));
-			byte[] frame = frameStart.Concat(frameEnd).ToArray();
-			_logger.DebugFormat("RX: {0}", frame.Join(", "));
+			var frameStart = Read(RequestFrameStartLength);
+			var frameEnd = Read(RequestBytesToRead(frameStart, slave));
+			var frame = frameStart.Concat(frameEnd).ToArray();
+		    var additionalData = RequestNeededBytes(frameStart, slave, Read);
+            if(additionalData != null)
+                frame = frame.Concat(additionalData).ToArray();
+            _logger.DebugFormat("RX: {0}", frame.Join(", "));
 
 			return frame;
 		}

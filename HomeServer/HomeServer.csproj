@@ -64,7 +64,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientWorker.cs" />
+    <Compile Include="ModbusCustomMessages\ReadDeviceIdentification.cs" />
+    <Compile Include="ModbusCustomMessages\ReadExceptionStatus.cs" />
     <Compile Include="ModbusMasterThread.cs" />
+    <Compile Include="ModbusCustomMessages\ModbusWriteFileRecordRequest.cs" />
+    <Compile Include="ModbusCustomMessages\ReportSlaveId.cs" />
     <Compile Include="Models\HomeSettings.Designer.cs" />
     <Compile Include="Objects\ControllerGroup.cs" />
     <Compile Include="Objects\ShController.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -10,7 +11,6 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Chip45Programmer;
 using Chip45ProgrammerLib;
 using DevExpress.Xpf.Charts;
 using DevExpress.Xpf.Gauges;
@@ -22,6 +22,7 @@ using HomeServer;
 using log4net;
 using log4net.Config;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using LayoutGroup = DevExpress.Xpf.Docking.LayoutGroup;
 using Visibility = HomeModbus.Models.Visibility;
 
@@ -192,6 +193,16 @@ namespace HomeModbus
             ConnectToServer();
 
             SystemEvents.PowerModeChanged += OnPowerChanged;
+
+            LoadSoundJson();
+        }
+
+        private const string SoundJsonFile = "sounds.json";
+        private void LoadSoundJson()
+        {
+            if (!File.Exists(SoundJsonFile))
+                return;
+            TbSoundJson.Text = File.ReadAllText(SoundJsonFile);
         }
 
         private void OnPowerChanged(object sender, PowerModeChangedEventArgs e)
@@ -312,6 +323,21 @@ namespace HomeModbus
                 });
                 setterControl.SpMain.Children.Add(simpleSetter);
             }
+            var sendCommandSetting = visibility.SendCommand;
+            if (sendCommandSetting != null)
+            {
+                var sendCommandSetter = new CommandSetter();
+                setterControl.SpMain.Children.Add(sendCommandSetter);
+                sendCommandSetter.BMain.Click += (sender, args) =>
+                {
+                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", 
+                        $"{(sendCommandSetter.IudCommand.Value << 8) | sendCommandSetter.IudCommandData.Value},{sendCommandSetter.IudAdditionalData1.Value},{sendCommandSetter.IudAdditionalData2.Value},{sendCommandSetter.IudAdditionalData3.Value}");
+                };
+                _client.SetResultAction(visibility.SetterId, status =>
+                {
+                    sendCommandSetter.Result(status);
+                });
+            }
         }
 
 
@@ -335,8 +361,11 @@ namespace HomeModbus
             var showWhileParameterSet = false;
 
             SimpleIndicator simpleIndicator = null;
+            StringIndicator stringIndicator = null;
             AnalogIndicator analogControl = null;
             LastTimeIndicator lastTimeControl = null;
+            DoubleIndicator doubleControl = null;
+
             Series chartSerie = null;// MainChartLog.Diagram.Series[0];
 
 
@@ -408,6 +437,13 @@ namespace HomeModbus
                 simpleIndicator = new SimpleIndicator();
                 indicatorControl.SpMain.Children.Add(simpleIndicator);
             }
+            var stringIndicatorSettings = visibility.StringIndicator;
+            if (stringIndicatorSettings != null)
+            {
+                stringIndicator = new StringIndicator();
+                indicatorControl.SpMain.Children.Add(stringIndicator);
+            }
+
             var lastTimeIndicator = visibility.LastTimeIndicator;
             if (lastTimeIndicator != null)
             {
@@ -417,6 +453,12 @@ namespace HomeModbus
                 {
                     lastTimeControl.IIcon.Source = GetImageSource(lastTimeIndicator.Icon);
                 }
+            }
+            var doubleIndicator = visibility.DoubleIndicator;
+            if (doubleIndicator != null)
+            {
+                doubleControl = new DoubleIndicator();
+                indicatorControl.SpMain.Children.Add(doubleControl);
             }
             var chartSettings = visibility.Chart;
             if (chartSettings != null)
@@ -434,6 +476,12 @@ namespace HomeModbus
                     {
                         if (value.GetType().IsPrimitive)
                             binaryIndicator.IsChecked = (bool)value;
+                    }
+                    if (stringIndicator != null)
+                    {
+                        var s = value as string;
+                        if (s != null)
+                            stringIndicator.Value = s;
                     }
                     if (visibility.ShowBalloon != null)
                     {
@@ -474,6 +522,15 @@ namespace HomeModbus
                         if (value is DateTime)
                             lastTimeControl.Value = (DateTime)value;
                     }
+                    if (doubleControl != null)
+                    {
+                        if (value.GetType().IsPrimitive)
+                        {
+                            doubleControl.HiValue = (((ushort) value & 0xFF00) >> 8).ToString(doubleIndicator.IsHex ? "X2" : "D") ;
+                            doubleControl.LoValue = ((ushort) value & 0xFF).ToString(doubleIndicator.IsHex ? "X2" : "D") ;
+                        }
+                    }
+
                     if (simpleIndicator != null)
                     {
                         if (value.GetType().IsPrimitive)
@@ -799,6 +856,103 @@ namespace HomeModbus
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void WriteBiSettingsClick(object sender, RoutedEventArgs e)
+        {
+            if (_client == null || IudAlarmPeriod.Value == null || IudInfoPeriod.Value == null)
+                return;
+            //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_info_alarm_period", ((IudInfoPeriod.Value.Value << 8) | IudAlarmPeriod.Value.Value).ToString());
+            //Thread.Sleep(100);
+
+            var bytes = File.ReadAllBytes("eeprom.bin");
+            var strBytes = bytes.Select(b => $"{b:X}").ToList();
+
+/*
+
+            var now = DateTime.Now.Subtract(TimeSpan.FromMinutes(30));
+            for (var i = 0; i < 45; i++)
+            {
+                var h = now.Hour;
+                if (i%2 == 0)
+                    h |= 0x20;
+                strBytes.Add($"{h:X}");
+                var m = now.Minute;
+                strBytes.Add($"{m:X}");
+                now = now.AddMinutes(2);
+                //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_add_event", 0x3344.ToString());
+                //Thread.Sleep(1500);
+            }
+*/
+            var msg = string.Join(",", strBytes);
+            //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_events", msg);
+            _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
+
+        }
+
+        private void UploadSoundsClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                /*var tmp = new[]
+                {
+                    new TabloSounds
+                    {
+                        Sequense = new[] 
+                        {
+                            new TabloSounds.SoundAtom{ Time256Ms = 1, Period = 144, Duration = 144},
+                            new TabloSounds.SoundAtom{ Time256Ms = 2, Period = 0, Duration = 0},
+                         }
+                    }, 
+                };
+                MessageBox.Show(JsonConvert.SerializeObject(tmp));*/
+                var soundObjs = JsonConvert.DeserializeObject<TabloSounds[]>(TbSoundJson.Text);
+                var bytes = new List<byte> {(byte) soundObjs.Length};
+
+                var curOffset = 0;
+                for (var i = 0; i < soundObjs.Length; i++)
+                {
+                    bytes.Add((byte) curOffset);
+                    curOffset += 1 + soundObjs[i].Sequense.Length * 3;
+                }
+
+                for (var i = 0; i < soundObjs.Length; i++)
+                {
+                    var curObj = soundObjs[i];
+                    bytes.Add((byte) curObj.Sequense.Length);
+                    foreach (var soundAtom in curObj.Sequense)
+                    {
+                        bytes.AddRange(soundAtom.ToBytes());
+                    }
+                }
+
+                var strBytes = bytes.Select(b => $"{b:X}").ToList();
+
+                /*
+
+                            var now = DateTime.Now.Subtract(TimeSpan.FromMinutes(30));
+                            for (var i = 0; i < 45; i++)
+                            {
+                                var h = now.Hour;
+                                if (i%2 == 0)
+                                    h |= 0x20;
+                                strBytes.Add($"{h:X}");
+                                var m = now.Minute;
+                                strBytes.Add($"{m:X}");
+                                now = now.AddMinutes(2);
+                                //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_add_event", 0x3344.ToString());
+                                //Thread.Sleep(1500);
+                            }
+                */
+                var msg = string.Join(",", strBytes);
+//                MessageBox.Show(msg);
+                _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
+
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.ToString());
+            }
         }
     }
 }

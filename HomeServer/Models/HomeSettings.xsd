@@ -25,7 +25,7 @@
                                               <xs:attribute name="Id" type="xs:string" use="required" />
                                               <xs:attribute name="Name" type="xs:string" use="required" />
                                               <xs:attribute name="ModbusType" type="ModbusTypes" use="required" />
-                                              <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="required" />
+                                              <xs:attribute name="ModbusIndex" type="xs:unsignedByte" use="optional" />
                                               <xs:attribute name="RefreshRate" type="xs:string" use="optional" />
                                               <xs:attribute name="DataType" type="DataTypes" use="optional" default="UInt16" />
                                               <xs:attribute name="BoolDefault" type="xs:boolean" use="optional" />
@@ -88,7 +88,7 @@
       <xs:enumeration value="Coil" />
       <xs:enumeration value="InputRegister" />
       <xs:enumeration value="HoldingRegister" />
-      
+      <xs:enumeration value="DeviceId" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="SetterTypes">
@@ -100,6 +100,29 @@
             [Час,Минута] [День,Секунда] [Год,Месяц]
             После успешной установки обнуляются
             При ошибке [Год,Месяц] = 0xFFFF
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="UInt16">
+        <xs:annotation>
+          <xs:documentation>
+            Установка 16-битного значения.
+            Записывается в регитр хранения
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="MultipleUInt16">
+        <xs:annotation>
+          <xs:documentation>
+            Установка 16-битных значений.
+            Записываются в регитры хранения
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="File">
+        <xs:annotation>
+          <xs:documentation>
+            Запись файла. Данные передаются через запятую            
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>

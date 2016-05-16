@@ -13,31 +13,31 @@
             <RowDefinition Height="30"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        
+
         <Label x:Name="LTitle" HorizontalAlignment="Center" VerticalAlignment="Center"></Label>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <Image x:Name="IIcon" Height="64"></Image>
-                    <dxga:DigitalGaugeControl x:Name="DgMain"
+            <dxga:DigitalGaugeControl x:Name="DgMain"
 						Text="{Binding Value, StringFormat=dd MMM HH:mm}" HorizontalAlignment="Left" VerticalAlignment="Top"
 						Height="100" Width="300" Padding="7">
-            <!--region #Layers-->
-            <dxga:DigitalGaugeControl.Layers>
-                <dxga:DigitalGaugeLayer>
-                    <dxga:DigitalGaugeLayer.Presentation>
-                        <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
-                    </dxga:DigitalGaugeLayer.Presentation>
-                </dxga:DigitalGaugeLayer>
-            </dxga:DigitalGaugeControl.Layers>
-            <!--endregion #Layers-->
-            <!--region #Model-->
-            <dxga:DigitalGaugeControl.Model>
-                <dxga:DigitalEcoModel/>
-            </dxga:DigitalGaugeControl.Model>
-            <!--endregion #Model-->
-            <dxga:DigitalGaugeControl.SymbolView>
-                <dxga:FourteenSegmentsView/>
-            </dxga:DigitalGaugeControl.SymbolView>
-        </dxga:DigitalGaugeControl>
+                <!--region #Layers-->
+                <dxga:DigitalGaugeControl.Layers>
+                    <dxga:DigitalGaugeLayer>
+                        <dxga:DigitalGaugeLayer.Presentation>
+                            <dxga:EcoDigitalGaugeBackgroundLayerPresentation/>
+                        </dxga:DigitalGaugeLayer.Presentation>
+                    </dxga:DigitalGaugeLayer>
+                </dxga:DigitalGaugeControl.Layers>
+                <!--endregion #Layers-->
+                <!--region #Model-->
+                <dxga:DigitalGaugeControl.Model>
+                    <dxga:DigitalEcoModel/>
+                </dxga:DigitalGaugeControl.Model>
+                <!--endregion #Model-->
+                <dxga:DigitalGaugeControl.SymbolView>
+                    <dxga:FourteenSegmentsView/>
+                </dxga:DigitalGaugeControl.SymbolView>
+            </dxga:DigitalGaugeControl>
 
         </StackPanel>
 

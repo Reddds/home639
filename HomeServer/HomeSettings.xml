@@ -1,27 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <HomeSettings>
-  
+
   <ControllerGroups>
-    <ControllerGroup Name="Спальня">
+   <!-- <ControllerGroup Name="Спальня">
       <Controllers>
         <Controller Id="con_2" Name="Контроллер 1" ModbusAddress="2">
           <Parameters>
-            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0" 
+            <Parameter Id="bed_1" Name="Сколько покакал" ModbusType="InputRegister" ModbusIndex="0"
                        RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime" 
+            <Parameter Id="bed_2" Name="Последний раз какал" ModbusType="InputRegister" DataType="RdDateTime"
                        ModbusIndex="4" RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2" 
+            <Parameter Id="bed_3" Name="Температура" ModbusType="InputRegister" ModbusIndex="2"
                        RefreshRate="0:1:0" Retain="true">
             </Parameter>
-            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3" 
+            <Parameter Id="bed_4" Name="Влажность" ModbusType="InputRegister" ModbusIndex="3"
                        RefreshRate="0:1:0" Retain="true">
             </Parameter>
             <Parameter Id="bed_5" Name="Вызов" ModbusType="Coil" ModbusIndex="4" BoolDefault="false"
                        Retain="true">
             </Parameter>
-          <Parameter Id="ir_key" Name="Кнопка пульта" ModbusType="HoldingRegister" DataType="ULong" ModbusIndex="4" ResetAfterRead="true">
+            <Parameter Id="ir_key" Name="Кнопка пульта" ModbusType="HoldingRegister" DataType="ULong" ModbusIndex="4" ResetAfterRead="true">
             </Parameter>
           </Parameters>
           <Setters>
@@ -37,7 +37,7 @@
           <Parameters>
             <Parameter Id="corr_1" Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3"
                        Retain="true">
-              
+
             </Parameter>
           </Parameters>
         </Controller>
@@ -49,16 +49,47 @@
           <Parameters>
             <Parameter Id="bath_1" Name="Дверь открыта" ModbusType="Discrete" ModbusIndex="0"
                        Retain="true">
-              
+
             </Parameter>
             <Parameter Id="bath_2" Name="Свет включён" ModbusType="Discrete" ModbusIndex="1"
                        Retain="true">
-             
+
             </Parameter>
           </Parameters>
         </Controller>
       </Controllers>
+    </ControllerGroup>-->
+    <ControllerGroup Name="Табло">
+      <Controllers>
+        <Controller Id="bolidBi" Name="Блок индикации" ModbusAddress="10">
+          <Parameters>
+            <Parameter Id="bolid_bi_is_timeSet" Name="Время установлено" ModbusType="Discrete" ModbusIndex="0"
+                       Retain="true">
+
+            </Parameter>
+            <Parameter Id="bolid_bi_cur_time" Name="Текущее время" ModbusType="InputRegister" ModbusIndex="1"/>
+            <Parameter Id="bolid_bi_old_cur_num" Name="Номер предыдущего и текущего события" ModbusType="InputRegister" ModbusIndex="2"/>
+            <Parameter Id="bolid_bi_event_hour_min" Name="Время следующего события" ModbusType="InputRegister" ModbusIndex="3"/>
+            <Parameter Id="bolid_bi_cur_time_2" Name="Текущее время 2" ModbusType="InputRegister" ModbusIndex="4"/>
+            <Parameter Id="bolid_bi_cur_seconds" Name="Текущее время в секундах" ModbusType="InputRegister" ModbusIndex="5"/>
+
+            <Parameter Id="bolid_bi_sound_len_is_playing" Name="Количество звуков / проигрывается" ModbusType="InputRegister" ModbusIndex="6"/>
+            <Parameter Id="bolid_bi_pl_len_pos_in_ee" Name="Длина текущего звука / позиция в EEPROM" ModbusType="InputRegister" ModbusIndex="7"/>
+
+
+            <Parameter Id="bolid_bi_slave_id" Name="Идентификатор устройства" ModbusType="DeviceId" RefreshRate="0:1:0" Retain="true"/>
+          </Parameters>
+          <Setters>
+            <Setter Id="bolid_bi_timeSet" Name="Установка времени и даты" Type="RealDateTime" ModbusIndex="9"/>
+            <Setter Id="bolid_bi_info_alarm_period" Name="Установка периода колебаний для информационного сообщений или тревоги" Type="UInt16" ModbusIndex="2"/>
+            <Setter Id="bolid_bi_add_event" Name="Добавление события" Type="UInt16" ModbusIndex="13"/>
+            <Setter Id="bolid_bi_write_all_events" Name="Запись всех событий таблицей" Type="File" ModbusIndex="18"/>
+            <Setter Id="bolid_bi_write_all_sounds" Name="Запись всех звуков таблицей" Type="File" ModbusIndex="140"/>
+            <Setter Id="bolid_bi_send_command" Name="Запись тестовой комманды" Type="MultipleUInt16" ModbusIndex="0"/>
+          </Setters>
+        </Controller>
+      </Controllers>
     </ControllerGroup>
   </ControllerGroups>
-  
+
 </HomeSettings>

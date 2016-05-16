@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <HomeSettings>
-  
+
   <Rooms>
     <Room Name="Спальня">
       <Layout>
         <LayoutGroup Orientation="Vertical">
           <Visibility Name="Сколько покакал" ParameterId="bed_1">
-            <DigitalIndicator/>           
+            <DigitalIndicator/>
           </Visibility>
           <Visibility ParameterId="bed_2">
             <LastTimeIndicator Icon="poo.png"/>
@@ -60,7 +60,7 @@
           </ShowBalloon>
         </Visibility>
       </Layout>
-      
+
     </Room>
     <Room Name="Ванна">
       <Layout>
@@ -71,7 +71,50 @@
           <BinaryIndicator OnIcon="LightBulbOn.png" OffIcon="LightBulbOff.png"/>
         </Visibility>
       </Layout>
-      
+
+    </Room>
+    <Room Name="Табло">
+      <Layout>
+        <LayoutGroup Orientation="Vertical">
+          <Visibility ParameterId="bolid_bi_cur_time" Name="Текущее время на табло" >
+            <DoubleIndicator/>
+          </Visibility>
+          <Visibility ParameterId="bolid_bi_cur_time_2" Name="Текущее время на табло 2" >
+            <DoubleIndicator/>
+          </Visibility>
+          <Visibility ParameterId="bolid_bi_old_cur_num" Name="Номер предыдущего и текущего события" >
+            <DoubleIndicator/>
+          </Visibility>
+          <Visibility ParameterId="bolid_bi_event_hour_min" Name="Время следующего события" >
+            <DoubleIndicator/>
+          </Visibility>
+          <Visibility ParameterId="bolid_bi_cur_seconds" Name="Текущее время в секундах" >
+            <DigitalIndicator/>
+          </Visibility>
+        </LayoutGroup>
+        <LayoutGroup Orientation="Vertical">
+          <Visibility ParameterId="bolid_bi_is_timeSet">
+            <BinaryIndicator OnIcon="DoorOpened.png" OffIcon="DoorClosed.png"/>
+          </Visibility>
+          <Visibility SetterId="bolid_bi_timeSet" >
+            <CurrentTime/>
+          </Visibility>
+
+          <Visibility ParameterId="bolid_bi_slave_id" Name="Идентификатор устройства">
+            <StringIndicator/>
+          </Visibility>
+          <Visibility ParameterId="bolid_bi_sound_len_is_playing" Name="Количество звуков / проигрывается" >
+            <DoubleIndicator/>
+          </Visibility>
+          <Visibility ParameterId="bolid_bi_pl_len_pos_in_ee" Name="Длина текущего звука / позиция в EEPROM" >
+            <DoubleIndicator/>
+          </Visibility>
+        
+        </LayoutGroup>
+        <Visibility SetterId="bolid_bi_send_command" Name="Отправка тестовой комманды" >
+          <SendCommand/>
+        </Visibility>
+      </Layout>
     </Room>
   </Rooms>
 </HomeSettings>

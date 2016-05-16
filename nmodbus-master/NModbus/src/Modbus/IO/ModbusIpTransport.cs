@@ -88,7 +88,7 @@ namespace Modbus.IO
 			byte[] mbapHeader = fullFrame.Slice(0, 6).ToArray();
 			byte[] messageFrame = fullFrame.Slice(6, fullFrame.Length - 6).ToArray();
 
-			IModbusMessage response = CreateResponse<T>(messageFrame);
+			IModbusMessage response = CreateResponse<T>(messageFrame, null);
 			response.TransactionId = (ushort) IPAddress.NetworkToHostOrder(BitConverter.ToInt16(mbapHeader, 0));
 
 			return response;

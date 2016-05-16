@@ -52,7 +52,7 @@ namespace Modbus.Message
 
 		public abstract int MinimumFrameSize { get; }
 
-		public void Initialize(byte[] frame)
+		public void Initialize(byte[] frame, Func<int, byte[]> read)
 		{
 			if (frame.Length < MinimumFrameSize)
 				throw new FormatException(String.Format(CultureInfo.InvariantCulture, "Message frame must contain at least {0} bytes of data.", MinimumFrameSize));

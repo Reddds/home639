@@ -186,16 +186,16 @@ namespace Modbus.IO
 			return (T) response;
 		}
 
-		internal virtual IModbusMessage CreateResponse<T>(byte[] frame) where T : IModbusMessage, new()
+		internal virtual IModbusMessage CreateResponse<T>(byte[] frame, Func<int, byte[]> read) where T : IModbusMessage, new()
 		{
 			byte functionCode = frame[1];
 			IModbusMessage response;
 
 			// check for slave exception response else create message from frame
 			if (functionCode > Modbus.ExceptionOffset)
-				response = ModbusMessageFactory.CreateModbusMessage<SlaveExceptionResponse>(frame);
+				response = ModbusMessageFactory.CreateModbusMessage<SlaveExceptionResponse>(frame, read);
 			else				
-				response = ModbusMessageFactory.CreateModbusMessage<T>(frame);
+				response = ModbusMessageFactory.CreateModbusMessage<T>(frame, read);
 
 			return response;
 		}

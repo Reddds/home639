@@ -5,13 +5,13 @@ using HomeModbus.Annotations;
 namespace HomeModbus.Controls
 {
     /// <summary>
-    /// Interaction logic for SimpleIndicator.xaml
+    /// Interaction logic for StringIndicator.xaml
     /// </summary>
-    public partial class SimpleIndicator : INotifyPropertyChanged
+    public partial class StringIndicator : INotifyPropertyChanged
     {
-        private double _value;
+        private string _value;
 
-        public double Value
+        public string Value
         {
             get { return _value; }
             set
@@ -21,7 +21,7 @@ namespace HomeModbus.Controls
             }
         }
 
-        public SimpleIndicator()
+        public StringIndicator()
         {
             InitializeComponent();
         }
@@ -33,9 +33,5 @@ namespace HomeModbus.Controls
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-    }
-
-    class SimpleIndicatorImpl : SimpleIndicator
-    {
     }
 }

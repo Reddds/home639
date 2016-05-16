@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Modbus.Message
@@ -34,10 +35,11 @@ namespace Modbus.Message
 		/// </summary>
 		ushort TransactionId { get; set; }
 
-		/// <summary>
-		/// Initializes a modbus message from the specified message frame.
-		/// </summary>
-		/// <param name="frame">The frame.</param>
-		void Initialize(byte[] frame);
+	    /// <summary>
+	    /// Initializes a modbus message from the specified message frame.
+	    /// </summary>
+	    /// <param name="frame">The frame.</param>
+	    /// <param name="read"></param>
+	    void Initialize(byte[] frame, Func<int, byte[]> read);
 	}
 }
