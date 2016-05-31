@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Modbus.Data;
 
-namespace HomeServer
+namespace HomeServer.ModbusCustomMessages
 {
     class ModbusWriteFileRecord : Modbus.Message.IModbusMessageRtu, IModbusMessageDataCollection
     {

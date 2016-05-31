@@ -38,7 +38,7 @@ namespace HomeServer
     }
 */
 
-    public enum CheckCoilStatus { OnTrue, OnFalse, OnBoth }
+    public enum CheckBoolStatus { OnTrue, OnFalse, OnBoth }
 
     public class HsEnvelope
     {
@@ -193,7 +193,7 @@ namespace HomeServer
         /// <summary>
         /// При каком событии вызывать метод
         /// </summary>
-        public CheckCoilStatus CheckCoilStatus { get; set; }
+        public CheckBoolStatus CheckBoolStatus { get; set; }
         /// <summary>
         /// Id параметра
         /// </summary>
@@ -212,7 +212,7 @@ namespace HomeServer
         //        /// </summary>
         //        public bool? InitialState { get; set; }
         /// <summary>
-        /// Сброс значения после изменения состояния только для катушек и checkCoilStatus != OnBoth
+        /// Сброс значения после изменения состояния только для катушек и CheckBoolStatus != OnBoth
         /// </summary>
         public bool ResetAfter { get; set; }
     }

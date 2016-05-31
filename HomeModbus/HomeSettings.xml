@@ -86,7 +86,7 @@
             <DoubleIndicator/>
           </Visibility>
           <Visibility ParameterId="bolid_bi_event_hour_min" Name="Время следующего события" >
-            <DoubleIndicator/>
+            <DigitalIndicator/>
           </Visibility>
           <Visibility ParameterId="bolid_bi_cur_seconds" Name="Текущее время в секундах" >
             <DigitalIndicator/>

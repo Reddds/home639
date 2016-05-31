@@ -127,7 +127,8 @@ namespace HomeModbus
                         _sender.Shutdown(SocketShutdown.Both);
                         _sender.Close();
             */
-            _mqttClient.Disconnect();
+            if(_mqttClient.IsConnected)
+                _mqttClient.Disconnect();
             _mqttClient = null;
         }
 
@@ -178,7 +179,7 @@ namespace HomeModbus
             //            var registerActionOnRegister = new SetAction()
             //            {
             //                ActionId = actionHash,
-            //                CheckCoilStatus = checkCoilStatus,
+            //                CheckBoolStatus = CheckBoolStatus,
             //                ParameterId = parameterId,
             //                RaiseOlwais = raiseOlwais,
             //                CheckInterval = interval

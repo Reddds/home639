@@ -1,4 +1,19 @@
-﻿[{
+﻿[
+    {
+        "Sequense": [
+            {
+                "Time256Ms": 1,
+                "Period": 144, // 0x90
+                "Duration": 144
+            },
+            {
+                "Time256Ms": 1,
+                "Period": 0, // 0x90
+                "Duration": 0
+            }
+        ]
+    },
+	{
         "Sequense": [
             {
                 "Time256Ms": 1,
@@ -14,6 +29,11 @@
                 "Time256Ms": 1,
                 "Period": 96, //0x60
                 "Duration": 96
+            },
+            {
+                "Time256Ms": 2,
+                "Period": 0,
+                "Duration": 0
             }
         ]
     },

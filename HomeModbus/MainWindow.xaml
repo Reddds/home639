@@ -83,11 +83,24 @@
                                 <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
                         <TextBox x:Name="TbSoundJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"></TextBox>
-                            <Button Click="UploadSoundsClick" Content="Загрузить звуки" Margin="10,0,0,0" Grid.Column="1" Height="24"></Button>
                         </Grid>
                         
                     </GroupBox>
-                    <GroupBox Grid.Row="2" Header="Расписание"></GroupBox>
+                    <GroupBox Grid.Row="2" Header="Расписание">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="150"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TbDiaryJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"></TextBox>
+                            <Button Click="UploadDiaryClick" Margin="10,0,0,0" Grid.Column="1" Height="54">
+
+                                <TextBlock>Загрузить Расписание<LineBreak/> и звуки</TextBlock>
+                            </Button>
+                        </Grid>
+
+
+                    </GroupBox>
                 </Grid>
             </TabItem>
         </TabControl>

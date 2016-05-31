@@ -30,20 +30,26 @@
         </Controller>
       </Controllers>
 
-    </ControllerGroup>
-    <ControllerGroup Name="Коридор">
+    </ControllerGroup>-->
+<!--    <ControllerGroup Name="Коридор">
       <Controllers>
         <Controller Id="con_1" Name="Контроллер 1" ModbusAddress="1">
           <Parameters>
             <Parameter Id="corr_1" Name="Движение и свет" ModbusType="Discrete" ModbusIndex="3"
                        Retain="true">
-
+              ~1~<EchoToControllers>
+                <Echo ControllerId="bolidBi">
+                  <If >
+                    
+                  </If>
+                </Echo>
+              </EchoToControllers>@1@
             </Parameter>
           </Parameters>
         </Controller>
       </Controllers>
-    </ControllerGroup>
-    <ControllerGroup Name="Ванна">
+    </ControllerGroup>-->
+    <!--<ControllerGroup Name="Ванна">
       <Controllers>
         <Controller Id="con_3" Name="Контроллер 1" ModbusAddress="3">
           <Parameters>
@@ -80,7 +86,16 @@
             <Parameter Id="bolid_bi_slave_id" Name="Идентификатор устройства" ModbusType="DeviceId" RefreshRate="0:1:0" Retain="true"/>
           </Parameters>
           <Setters>
-            <Setter Id="bolid_bi_timeSet" Name="Установка времени и даты" Type="RealDateTime" ModbusIndex="9"/>
+            <Setter Id="bolid_bi_timeSet" Name="Установка времени и даты" Type="RealDateTime" ModbusIndex="9">
+              <Command>
+                <Id>
+                  <Literal>0x10</Literal>
+                </Id>
+                <CommandData>
+                  
+                </CommandData>
+              </Command>
+            </Setter>
             <Setter Id="bolid_bi_info_alarm_period" Name="Установка периода колебаний для информационного сообщений или тревоги" Type="UInt16" ModbusIndex="2"/>
             <Setter Id="bolid_bi_add_event" Name="Добавление события" Type="UInt16" ModbusIndex="13"/>
             <Setter Id="bolid_bi_write_all_events" Name="Запись всех событий таблицей" Type="File" ModbusIndex="18"/>

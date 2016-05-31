@@ -1,0 +1,26 @@
+﻿[
+    {
+        "Description": "Умыть",
+        "Time": "09:00",
+        "SoundId": "First",
+        "PlayDuration": "T10Sec"
+    },
+    {
+        "Description": "На массаж",
+        "Time": "11:30",
+        "SoundId": "Second",
+        "PlayDuration": "T30Sec"
+    },
+    {
+        "Description": "Помыть ванну",
+        "Time": "20:00",
+        "SoundId": "Second",
+        "PlayDuration": "T30Sec"
+    }
+    /*,
+    {
+        "Time": "19:37",
+        "SoundId": "First",
+        "PlayDuration": "T10Sec"
+    }*/
+]

@@ -200,11 +200,11 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Base\ValueLog.cs" />
     <Compile Include="Models\GlobalData.cs" />
-    <Compile Include="Models\HomeSettings.Designer.cs" />
+    <Compile Include="Models\HomeClientSettings.cs" />
     <Compile Include="Models\LogValues.cs" />
+    <Compile Include="Models\TabloDiaryItem.cs" />
     <Compile Include="Models\TabloSounds.cs" />
     <Compile Include="Objects\ControllerGroup.cs" />
-    <Compile Include="Objects\ShController.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Tooltip\BalloonStack.xaml.cs">
       <DependentUpon>BalloonStack.xaml</DependentUpon>
@@ -313,6 +313,12 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Content Include="eeprom.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="diary.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HomeClientSettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Models\HomeSettings.xsd">

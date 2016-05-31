@@ -4,7 +4,7 @@ chmod -R 644 ../
 TARGET_DIR=/var/lib/home639server/
 mkdir $TARGET_DIR
 cp ../* $TARGET_DIR
-cp ../HomeSettings.xml /etc/
+cp ../HomeServerSettings.json /etc/
 
 cp home639server.service /etc/systemd/system/
 systemctl daemon-reload

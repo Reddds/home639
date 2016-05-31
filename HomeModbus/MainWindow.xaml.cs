@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -24,7 +25,6 @@ using log4net.Config;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using LayoutGroup = DevExpress.Xpf.Docking.LayoutGroup;
-using Visibility = HomeModbus.Models.Visibility;
 
 // Import log4net classes.
 
@@ -39,8 +39,8 @@ namespace HomeModbus
 
         private const string ServerName = "tor";
 
-        private const string SettingsFileName = "HomeSettings.xml";
-        private HomeSettings _homeSettings;
+        private const string SettingsFileName = "HomeClientSettings.json";
+        private HomeClientSettings _homeSettings;
 
         private const string ValuesLogLogFileName = "ValuesLog.json";
         //        private readonly ModbusMasterThread _modbusMasterThread;
@@ -195,14 +195,23 @@ namespace HomeModbus
             SystemEvents.PowerModeChanged += OnPowerChanged;
 
             LoadSoundJson();
+            LoadDiaryJson();
         }
 
         private const string SoundJsonFile = "sounds.json";
+        private const string DiaryJsonFile = "diary.json";
         private void LoadSoundJson()
         {
             if (!File.Exists(SoundJsonFile))
                 return;
             TbSoundJson.Text = File.ReadAllText(SoundJsonFile);
+        }
+
+        private void LoadDiaryJson()
+        {
+            if (!File.Exists(DiaryJsonFile))
+                return;
+            TbDiaryJson.Text = File.ReadAllText(DiaryJsonFile);
         }
 
         private void OnPowerChanged(object sender, PowerModeChangedEventArgs e)
@@ -275,18 +284,20 @@ namespace HomeModbus
                 var roomTab = new RoomTab { Header = room.Name };
                 MainTabs.Items.Add(roomTab);
 
-                foreach (var layoutGroup in room.Layout.LayoutGroup)
-                {
-                    ProcessLayoutGroup(roomTab.MainPanel, layoutGroup);
-                }
-                foreach (var visibility in room.Layout.Visibility)
-                {
-                    ProcessVisibility(roomTab.MainPanel, visibility);
-                }
+                if (room.LayoutGroups != null)
+                    foreach (var layoutGroup in room.LayoutGroups)
+                    {
+                        ProcessLayoutGroup(roomTab.MainPanel, layoutGroup);
+                    }
+                if (room.Visibilities != null)
+                    foreach (var visibility in room.Visibilities)
+                    {
+                        ProcessVisibility(roomTab.MainPanel, visibility);
+                    }
             }
         }
 
-        private void ProcessVisibility(LayoutGroup layoutGroupObject, Visibility visibility)
+        private void ProcessVisibility(LayoutGroup layoutGroupObject, HomeClientSettings.Room.Visibility visibility)
         {
             // Ищем соответствующий параметр
             if (!string.IsNullOrEmpty(visibility.ParameterId))
@@ -303,7 +314,7 @@ namespace HomeModbus
         }
 
 
-        private void CreateVisibilitySetter(LayoutGroup layoutGroupObject, Visibility visibility)
+        private void CreateVisibilitySetter(LayoutGroup layoutGroupObject, HomeClientSettings.Room.Visibility visibility)
         {
             var setterControl = new IndicatorControl
             {
@@ -312,7 +323,7 @@ namespace HomeModbus
             layoutGroupObject.Add(setterControl);
             if (visibility.CurrentTime != null)
             {
-                var simpleSetter = new SimpleSetter {TbName = {Content = "Установить текущее время"}};
+                var simpleSetter = new SimpleSetter { TbName = { Content = "Установить текущее время" } };
                 simpleSetter.BMain.Click += (sender, args) =>
                 {
                     _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", DateTime.Now.ToString(HsEnvelope.DateTimeFormat));
@@ -330,8 +341,11 @@ namespace HomeModbus
                 setterControl.SpMain.Children.Add(sendCommandSetter);
                 sendCommandSetter.BMain.Click += (sender, args) =>
                 {
-                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", 
-                        $"{(sendCommandSetter.IudCommand.Value << 8) | sendCommandSetter.IudCommandData.Value},{sendCommandSetter.IudAdditionalData1.Value},{sendCommandSetter.IudAdditionalData2.Value},{sendCommandSetter.IudAdditionalData3.Value}");
+                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}",
+                        $"{sendCommandSetter.IudCommand.Value},{sendCommandSetter.IudCommandData.Value},"+
+                        $"{sendCommandSetter.IudAdditionalData1.Value >> 8},{sendCommandSetter.IudAdditionalData1.Value & 0xff}," +
+                        $"{sendCommandSetter.IudAdditionalData2.Value >> 8},{sendCommandSetter.IudAdditionalData2.Value & 0xff}," +
+                        $"{sendCommandSetter.IudAdditionalData3.Value >> 8},{sendCommandSetter.IudAdditionalData3.Value & 0xff}");
                 };
                 _client.SetResultAction(visibility.SetterId, status =>
                 {
@@ -342,7 +356,7 @@ namespace HomeModbus
 
 
         private void CreateVisibilityParameter(LayoutGroup layoutGroupObject,
-            Visibility visibility)
+            HomeClientSettings.Room.Visibility visibility)
         {
             var indicatorControl = new IndicatorControl
             {
@@ -372,7 +386,7 @@ namespace HomeModbus
             if (visibility.ShowBalloon != null)
             {
                 var balloonSettings = visibility.ShowBalloon;
-                if (balloonSettings.ShowWhileParameterSetSpecified && balloonSettings.ShowWhileParameterSet)
+                if (balloonSettings.ShowWhileParameterSet)
                 {
                     //                                            dutyBalloon = new FancyBalloon(balloonSettings.Text1, GetBalloonStyle(balloonSettings.Type));
                     showWhileParameterSet = true;
@@ -403,15 +417,15 @@ namespace HomeModbus
                 var scale = analogControl.MainGauge.Scales[0];
                 scale.StartValue = analogIndicator.Scale.Min;
                 scale.EndValue = analogIndicator.Scale.Max;
-                if (analogIndicator.Scale.MajorCountSpecified)
-                    scale.MajorIntervalCount = analogIndicator.Scale.MajorCount;
-                if (analogIndicator.Scale.MinorCountSpecified)
-                    scale.MinorIntervalCount = analogIndicator.Scale.MinorCount;
+                if (analogIndicator.Scale.MajorCount != null)
+                    scale.MajorIntervalCount = analogIndicator.Scale.MajorCount.Value;
+                if (analogIndicator.Scale.MinorCount != null)
+                    scale.MinorIntervalCount = analogIndicator.Scale.MinorCount.Value;
 
-                if (analogIndicator.Scale.GoodValueSpecified)
+                if (analogIndicator.Scale.GoodValue != null)
                     scale.Markers.Add(new ArcScaleMarker()
                     {
-                        Value = analogIndicator.Scale.GoodValue
+                        Value = analogIndicator.Scale.GoodValue.Value
                     });
 
                 if (analogIndicator.Scale.Ranges != null)
@@ -489,7 +503,7 @@ namespace HomeModbus
                             if ((bool)value)
                             {
                                 var balloonSettings = visibility.ShowBalloon;
-                                var balloon = new FancyBalloon(balloonSettings.Text1,
+                                var balloon = new FancyBalloon(balloonSettings.Text,
                                     GetBalloonStyle(balloonSettings.Type));
                                 ShowBalloon(balloon);
                                 if (balloonSettings.OnClose != null)
@@ -526,8 +540,8 @@ namespace HomeModbus
                     {
                         if (value.GetType().IsPrimitive)
                         {
-                            doubleControl.HiValue = (((ushort) value & 0xFF00) >> 8).ToString(doubleIndicator.IsHex ? "X2" : "D") ;
-                            doubleControl.LoValue = ((ushort) value & 0xFF).ToString(doubleIndicator.IsHex ? "X2" : "D") ;
+                            doubleControl.HiValue = (((ushort)value & 0xFF00) >> 8).ToString(doubleIndicator.IsHex ? "X2" : "D");
+                            doubleControl.LoValue = ((ushort)value & 0xFF).ToString(doubleIndicator.IsHex ? "X2" : "D");
                         }
                     }
 
@@ -548,38 +562,41 @@ namespace HomeModbus
             });
         }
 
-        private void ProcessLayoutGroup(LayoutGroup layoutGroupObject, Models.LayoutGroup layoutGroup)
+        private void ProcessLayoutGroup(LayoutGroup layoutGroupObject, HomeClientSettings.Room.LayoutGroup layoutGroup)
         {
             var newLayoutGroupObject = new LayoutGroup();
             layoutGroupObject.Items.Add(newLayoutGroupObject);
-            newLayoutGroupObject.Orientation = layoutGroup.Orientation == Orientations.Horizontal
+            newLayoutGroupObject.Orientation = layoutGroup.Orientation == HomeClientSettings.Room.LayoutGroup.Orientations.Horizontal
                 ? Orientation.Horizontal
-                : Orientation.Vertical; foreach (var layoutGroup1 in layoutGroup.LayoutGroup1)
-            {
-                ProcessLayoutGroup(newLayoutGroupObject, layoutGroup1);
-            }
-            foreach (var visibility in layoutGroup.Visibility)
-            {
-                ProcessVisibility(newLayoutGroupObject, visibility);
-            }
+                : Orientation.Vertical;
+            if (layoutGroup.LayoutGroups != null)
+                foreach (var layoutGroup1 in layoutGroup.LayoutGroups)
+                {
+                    ProcessLayoutGroup(newLayoutGroupObject, layoutGroup1);
+                }
+            if (layoutGroup.Visibilities != null)
+                foreach (var visibility in layoutGroup.Visibilities)
+                {
+                    ProcessVisibility(newLayoutGroupObject, visibility);
+                }
         }
 
 
-        private FancyBalloon.BaloonStyles GetBalloonStyle(BalloonTypes balloonType)
+        private FancyBalloon.BaloonStyles GetBalloonStyle(HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes balloonType)
         {
             switch (balloonType)
             {
-                case BalloonTypes.Normal:
+                case HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes.Normal:
                     return FancyBalloon.BaloonStyles.Normal;
-                case BalloonTypes.Info:
+                case HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes.Info:
                     return FancyBalloon.BaloonStyles.Info;
-                case BalloonTypes.Warning:
+                case HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes.Warning:
                     return FancyBalloon.BaloonStyles.Warning;
-                case BalloonTypes.Exclamation:
+                case HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes.Exclamation:
                     return FancyBalloon.BaloonStyles.Exclamation;
-                case BalloonTypes.Alarm:
+                case HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes.Alarm:
                     return FancyBalloon.BaloonStyles.Alarm;
-                case BalloonTypes.Error:
+                case HomeClientSettings.Room.Visibility.ShowBalloonClass.BalloonTypes.Error:
                     return FancyBalloon.BaloonStyles.Error;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(balloonType), balloonType, null);
@@ -595,7 +612,7 @@ namespace HomeModbus
             }
             try
             {
-                _homeSettings = HomeSettings.LoadFromFile(SettingsFileName);
+                _homeSettings = JsonConvert.DeserializeObject<HomeClientSettings>(File.ReadAllText(SettingsFileName));
                 return true;
             }
             catch (Exception ee)
@@ -868,91 +885,113 @@ namespace HomeModbus
             var bytes = File.ReadAllBytes("eeprom.bin");
             var strBytes = bytes.Select(b => $"{b:X}").ToList();
 
-/*
+            /*
 
-            var now = DateTime.Now.Subtract(TimeSpan.FromMinutes(30));
-            for (var i = 0; i < 45; i++)
-            {
-                var h = now.Hour;
-                if (i%2 == 0)
-                    h |= 0x20;
-                strBytes.Add($"{h:X}");
-                var m = now.Minute;
-                strBytes.Add($"{m:X}");
-                now = now.AddMinutes(2);
-                //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_add_event", 0x3344.ToString());
-                //Thread.Sleep(1500);
-            }
-*/
+                        var now = DateTime.Now.Subtract(TimeSpan.FromMinutes(30));
+                        for (var i = 0; i < 45; i++)
+                        {
+                            var h = now.Hour;
+                            if (i%2 == 0)
+                                h |= 0x20;
+                            strBytes.Add($"{h:X}");
+                            var m = now.Minute;
+                            strBytes.Add($"{m:X}");
+                            now = now.AddMinutes(2);
+                            //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_add_event", 0x3344.ToString());
+                            //Thread.Sleep(1500);
+                        }
+            */
             var msg = string.Join(",", strBytes);
             //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_events", msg);
             _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
 
         }
 
-        private void UploadSoundsClick(object sender, RoutedEventArgs e)
+        private void AddSoundBytes(List<byte> bytes)
         {
             try
             {
-                /*var tmp = new[]
-                {
-                    new TabloSounds
-                    {
-                        Sequense = new[] 
-                        {
-                            new TabloSounds.SoundAtom{ Time256Ms = 1, Period = 144, Duration = 144},
-                            new TabloSounds.SoundAtom{ Time256Ms = 2, Period = 0, Duration = 0},
-                         }
-                    }, 
-                };
-                MessageBox.Show(JsonConvert.SerializeObject(tmp));*/
                 var soundObjs = JsonConvert.DeserializeObject<TabloSounds[]>(TbSoundJson.Text);
-                var bytes = new List<byte> {(byte) soundObjs.Length};
+                File.WriteAllText(SoundJsonFile, TbSoundJson.Text);
+                bytes.Add((byte) soundObjs.Length);
 
                 var curOffset = 0;
                 for (var i = 0; i < soundObjs.Length; i++)
                 {
-                    bytes.Add((byte) curOffset);
+                    bytes.Add((byte)curOffset);
                     curOffset += 1 + soundObjs[i].Sequense.Length * 3;
                 }
 
                 for (var i = 0; i < soundObjs.Length; i++)
                 {
                     var curObj = soundObjs[i];
-                    bytes.Add((byte) curObj.Sequense.Length);
+                    bytes.Add((byte)curObj.Sequense.Length);
                     foreach (var soundAtom in curObj.Sequense)
                     {
                         bytes.AddRange(soundAtom.ToBytes());
                     }
                 }
 
-                var strBytes = bytes.Select(b => $"{b:X}").ToList();
-
-                /*
-
-                            var now = DateTime.Now.Subtract(TimeSpan.FromMinutes(30));
-                            for (var i = 0; i < 45; i++)
-                            {
-                                var h = now.Hour;
-                                if (i%2 == 0)
-                                    h |= 0x20;
-                                strBytes.Add($"{h:X}");
-                                var m = now.Minute;
-                                strBytes.Add($"{m:X}");
-                                now = now.AddMinutes(2);
-                                //_client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_add_event", 0x3344.ToString());
-                                //Thread.Sleep(1500);
-                            }
-                */
-                var msg = string.Join(",", strBytes);
-//                MessageBox.Show(msg);
-                _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
-
+//                var strBytes = bytes.Select(b => $"{b:X}").ToList();
+//                var msg = string.Join(",", strBytes);
+//                _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
+//                MessageBox.Show("Звуки отправлены!");
             }
             catch (Exception ee)
             {
                 MessageBox.Show(ee.ToString());
             }
+        }
+
+        private void UploadDiaryClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var diaryObjs = JsonConvert.DeserializeObject<TabloDiaryItem[]>(TbDiaryJson.Text);
+                File.WriteAllText(DiaryJsonFile, TbDiaryJson.Text);
+                var bytes = new List<byte>
+                {
+                    0xff, // 2  EE_EVENT_ACCEPT_TIME
+                    12, // 3 EE_MAX_EVENTS
+                    0xff, // 4 Reserved
+                    0xff, // 5 Reserved
+                    0xff, // 6 Reserved
+                    0xff, // 7 Reserved
+                    0xff, // 8 Reserved
+                    0xff, // 9 Reserved
+                    (byte)diaryObjs.Length
+                };
+
+
+                for (var i = 0; i < diaryObjs.Length; i++)
+                {
+                    var curObj = diaryObjs[i];
+
+                    var tmmpByte = (byte)((int)curObj.PlayDuration << 5);
+
+                    tmmpByte |= (byte)curObj.Time.Hour;
+                    bytes.Add(tmmpByte);
+                    tmmpByte = (byte)((int)curObj.SoundId << 6);
+                    tmmpByte |= (byte)curObj.Time.Minute;
+                    bytes.Add(tmmpByte);
+
+                }
+
+                // sounds
+                AddSoundBytes(bytes);
+
+
+
+                var strBytes = bytes.Select(b => $"{b:X}").ToList();
+                var msg = string.Join(",", strBytes);
+                _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_settings", msg);
+                MessageBox.Show("Расписание отправлено!");
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.ToString());
+            }
+
         }
     }
 }

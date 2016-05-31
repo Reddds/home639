@@ -4,16 +4,15 @@ using System.Globalization;
 using System.IO;
 using HomeServer.Models;
 using HomeServer.Objects;
-using uPLibrary.Networking.M2Mqtt;
+using Newtonsoft.Json;
 
 namespace HomeServer
 {
     class Program
     {
-        private const string SettingsFileName = "HomeSettings.xml";
+        private const string ServerSettingsFileName = "HomeServerSettings.json";
 
-        private static HomeSettings _homeSettings;
-        private static MqttClient _mqttClient;
+        private static HomeServerSettings _homeServerSettings;
 
         private static List<ShController> _allControllers;
 
@@ -50,7 +49,7 @@ namespace HomeServer
             //            _modbusMasterThread = new ModbusMasterThread("COM7", 9600);
             if (LoadSettings())
                 ApplySettings();
-            ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeSettings.HeartBeatMs);
+            ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeServerSettings.HeartBeatMs);
             //            CreateSocket();
             try
             {
@@ -72,30 +71,69 @@ namespace HomeServer
 
         private static void CreateMqttClient(string serverAddress)
         {
-            _clientWorker = new ClienSocketWorker(serverAddress, _allControllers, _homeSettings.ControllerGroups);
+            _clientWorker = new ClienSocketWorker(serverAddress, _allControllers, _homeServerSettings.ControllerGroups);
         }
 
         private static bool LoadSettings()
         {
-            var settingsPath = SettingsFileName;
+//            var settingsPath = SettingsFileName;
+//            if (IsLinux)
+//                settingsPath = Path.Combine("/etc", SettingsFileName);
+
+            var serverSettingsPath = ServerSettingsFileName;
             if (IsLinux)
-                settingsPath = Path.Combine("/etc", SettingsFileName);
+                serverSettingsPath = Path.Combine("/etc", ServerSettingsFileName);
 
 
-            if (!File.Exists(settingsPath))
+//            if (!File.Exists(settingsPath))
+//            {
+//                Console.WriteLine("Файл с настройками не найден!");
+//                Environment.Exit(1);
+//                return false;
+//            }
+
+            if (!File.Exists(serverSettingsPath))
             {
-                Console.WriteLine("Файл с настройками не найден!");
+                Console.WriteLine($"Файл с настройками ({serverSettingsPath}) не найден!");
                 Environment.Exit(1);
                 return false;
             }
             try
             {
-                _homeSettings = HomeSettings.LoadFromFile(settingsPath);
+//                _homeSettings = HomeSettings.LoadFromFile(settingsPath);
+/*                 _homeServerSettings = new HomeServerSettings();
+               _homeServerSettings.ControllerGroups = new[]
+                {
+                    new HomeServerSettings.ControllerGroup
+                    {
+                        Name = "sd;lksdfk",
+                        Controllers = new []
+                        {
+                            new HomeServerSettings.ControllerGroup.Controller
+                            {
+                                Id = "erwerw",
+                                ModbusAddress = 3,
+                                Name = "8240384094802394",
+                                Parameters = new []
+                                {
+                                    new HomeServerSettings.ControllerGroup.Controller.Parameter
+                                    {
+                                        DataType = HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong,
+                                        Id = "dsfsdffsd"
+                                    }
+                                }
+                            } 
+                        }
+                    }
+                };
+                var ttt = JsonConvert.SerializeObject(_homeServerSettings);*/
+                
+                _homeServerSettings = JsonConvert.DeserializeObject<HomeServerSettings>(File.ReadAllText(serverSettingsPath));
                 return true;
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine(ee.ToString());
                 Environment.Exit(1);
             }
             return false;
@@ -105,7 +143,7 @@ namespace HomeServer
         {
             _allControllers = new List<ShController>();
 
-            foreach (var controllerGroup in _homeSettings.ControllerGroups)
+            foreach (var controllerGroup in _homeServerSettings.ControllerGroups)
             {
                 var controllerGroupObject = new ControllerGroup();
                 if (ModbusMasterThread.ControolerObjects == null)
@@ -119,20 +157,22 @@ namespace HomeServer
                         controllerGroupObject.ShControllers = new List<ShController>();
                     controllerGroupObject.ShControllers.Add(controllerObject);
                     _allControllers.Add(controllerObject);
-                    foreach (var parameter in controller.Parameters)
-                    {
-                        CreateParameter(parameter, controllerObject);
-                    }
-                    foreach (var setter in controller.Setters)
-                    {
-                        CreateSetter(setter, controllerObject);
-                    }
+                    if(controller.Parameters != null)
+                        foreach (var parameter in controller.Parameters)
+                        {
+                            CreateParameter(parameter, controllerObject);
+                        }
+                    if(controller.Setters != null)
+                        foreach (var setter in controller.Setters)
+                        {
+                            CreateSetter(setter, controllerObject);
+                        }
                     //                    ProcessPararmeters(controller.Parameters, layoutGroupObject, controllerObject);
                     //                    ProcessSetters(controller.Setters, layoutGroupObject, controllerObject);
                 }
             }
         }
-        private static void CreateParameter(HomeSettingsControllerGroupControllerParameter parameter,
+        private static void CreateParameter(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
     ShController controllerObject)
         {
             //            var indicatorControl = new IndicatorControl
@@ -153,25 +193,40 @@ namespace HomeServer
 
             switch (parameter.ModbusType)
             {
-                case ModbusTypes.Discrete:
-                case ModbusTypes.Coil:
-                    var isCoil = parameter.ModbusType == ModbusTypes.Coil;
+                case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Discrete:
+                case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil:
+                    var isCoil = parameter.ModbusType == HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil;
                     reserAction = controllerObject.SetActionOnDiscreteOrCoil(isCoil,
-                                       CheckCoilStatus.OnBoth,
+                                       CheckBoolStatus.OnBoth,
                                        parameter.ModbusIndex,
                                        (state) =>
                                        {
                                            _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", state.ToString(), true);
+                                           if (parameter.Echo != null)
+                                           {
+                                               switch (parameter.Echo.Type)
+                                               {
+                                                   case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
+                                                       ClienSocketWorker.ProceedSetValue(
+                                                           new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id},
+                                                           state.ToString());
+//                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
+
+                                                       break;
+                                                   default:
+                                                       throw new ArgumentOutOfRangeException();
+                                               }
+                                           }
                                        }, parameter.BoolDefault);
                     if (Options.Current.Verbose)
                         Console.WriteLine($"Created DiscreteOrCoil    {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
                     break;
-                case ModbusTypes.InputRegister:
-                case ModbusTypes.HoldingRegister:
-                    var isHolding = parameter.ModbusType == ModbusTypes.HoldingRegister;
+                case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.InputRegister:
+                case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.HoldingRegister:
+                    var isHolding = parameter.ModbusType == HomeServerSettings.ControllerGroup.Controller.ModbusTypes.HoldingRegister;
                     switch (parameter.DataType)
                     {
-                        case DataTypes.UInt16:
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
                             reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, value =>
                             {
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", value.ToString(), parameter.Retain);
@@ -180,9 +235,9 @@ namespace HomeServer
                                 Console.WriteLine($"Created Register          {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
 
                             break;
-                        case DataTypes.Float:
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.Float:
                             break;
-                        case DataTypes.ULong:
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
                             reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, null, value =>
                             {
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.ULongResult}", value.ToString(), parameter.Retain);
@@ -191,7 +246,7 @@ namespace HomeServer
                                 Console.WriteLine($"Created Long Register     {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
 
                             break;
-                        case DataTypes.RdDateTime:
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
                             reserAction = controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
                                 value =>
                                 {
@@ -201,14 +256,14 @@ namespace HomeServer
                                 Console.WriteLine($"Created DateTime Register {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
 
                             break;
-                        case DataTypes.RdTime:
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdTime:
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
 
                     break;
-                case ModbusTypes.DeviceId:
+                case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.DeviceId:
                     if (Options.Current.Verbose)
                         Console.WriteLine($"Created DeviceId Reseiver {parameter.Id} \t{parameter.Name}");
 
@@ -219,16 +274,43 @@ namespace HomeServer
                             value, parameter.Retain);
                     });
                     break;
-                    //                default:
-                    //                    throw new ArgumentOutOfRangeException();
+                case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.DeviceStatus:
+                    reserAction = controllerObject.SetActionOnDeviceStatus(
+                   CheckBoolStatus.OnBoth,
+                   parameter.ModbusIndex,
+                   (state) =>
+                   {
+                       _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", state.ToString(), true);
+                       if (parameter.Echo != null)
+                       {
+                           switch (parameter.Echo.Type)
+                           {
+                               case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
+                                   ClienSocketWorker.ProceedSetValue(
+                                       new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id },
+                                       state.ToString());
+                                                       //                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
+
+                                                       break;
+                               default:
+                                   throw new ArgumentOutOfRangeException();
+                           }
+                       }
+                   }, parameter.BoolDefault);
+                    if (Options.Current.Verbose)
+                        Console.WriteLine($"Created DeviceStatus Reseiver {parameter.Id} \t{parameter.Name}");
+
+                    break;
+                //                default:
+                //                    throw new ArgumentOutOfRangeException();
             }
             if (reserAction != null)
                 ClienSocketWorker.ParameterResets.Add(parameter.Id, reserAction);
         }
 
-        private static void CreateSetter(HomeSettingsControllerGroupControllerSetter setter, ShController controllerObject)
+        private static void CreateSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, ShController controllerObject)
         {
-            var setterObj = controllerObject.SetSetter(setter.ModbusIndex, setter.Type, resultStatus =>
+            var setterObj = controllerObject.SetSetter(setter, resultStatus =>
             {
                 _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), false);
                 Console.WriteLine($"Set value '{setter.Id}' status  \t{resultStatus}");

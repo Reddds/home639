@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using ExpressionEvaluator;
 using HomeServer.ModbusCustomMessages;
 using HomeServer.Models;
 using Modbus.Device;
@@ -20,6 +21,7 @@ namespace HomeServer.Objects
         private const int ModbusResultSuccess = 0x8080;
 
         private const int MaxDiscreteOrCoilIndex = 15;
+        private const int MaxDeviceStatusIndex = 7;
         private const ushort CommandHoldingRegister = 0;
 
 
@@ -47,16 +49,16 @@ namespace HomeServer.Objects
             private bool? _currentState;
             public bool? InitialState { get; private set; }
 
-            public CheckCoilStatus CheckCoilStatus { get; set; }
+            public CheckBoolStatus CheckBoolStatus { get; set; }
             public ushort Index { get; set; }
             private Action<bool> CallBack { get; set; }
             public TimeSpan? CheckInterval { get; set; }
 
-            protected ActionOnDiscreteOrCoil(ushort index, CheckCoilStatus checkCoilStatus, Action<bool> callBack,
+            protected ActionOnDiscreteOrCoil(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
                 bool? initialState)
             {
                 Index = index;
-                CheckCoilStatus = checkCoilStatus;
+                CheckBoolStatus = checkBoolStatus;
                 CallBack = callBack;
                 InitialState = initialState;
                 _currentState = initialState;
@@ -66,17 +68,17 @@ namespace HomeServer.Objects
             {
                 if (newState == _currentState)
                     return false;
-                switch (CheckCoilStatus)
+                switch (CheckBoolStatus)
                 {
-                    case CheckCoilStatus.OnTrue:
+                    case CheckBoolStatus.OnTrue:
                         if (newState)
                             CallBack(true);
                         break;
-                    case CheckCoilStatus.OnFalse:
+                    case CheckBoolStatus.OnFalse:
                         if (!newState)
                             CallBack(false);
                         break;
-                    case CheckCoilStatus.OnBoth:
+                    case CheckBoolStatus.OnBoth:
                         CallBack(newState);
                         break;
                 }
@@ -87,9 +89,9 @@ namespace HomeServer.Objects
 
         private class ActionOnDiscrete : ActionOnDiscreteOrCoil
         {
-            public ActionOnDiscrete(ushort index, CheckCoilStatus checkCoilStatus, Action<bool> callBack,
+            public ActionOnDiscrete(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
                 bool? initialState)
-                : base(index, checkCoilStatus, callBack, initialState)
+                : base(index, checkBoolStatus, callBack, initialState)
             {
             }
         }
@@ -98,9 +100,9 @@ namespace HomeServer.Objects
         {
             public bool ResetAfter { get; private set; }
 
-            public ActionOnCoil(ushort index, CheckCoilStatus checkCoilStatus, Action<bool> callBack, bool resetAfter,
+            public ActionOnCoil(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack, bool resetAfter,
                 bool? initialState)
-                : base(index, checkCoilStatus, callBack, initialState)
+                : base(index, checkBoolStatus, callBack, initialState)
             {
                 ResetAfter = resetAfter;
             }
@@ -153,15 +155,15 @@ namespace HomeServer.Objects
             private Action<ushort> CallBack { get; set; }
             private Action<uint> CallBackULong { get; set; }
             public TimeSpan? CheckInterval { get; set; }
-            public ushort UInt16Default { get; set; }
-            public uint ULongDefault { get; set; }
+            public ushort? UInt16Default { get; set; }
+            public uint? ULongDefault { get; set; }
             /// <summary>
             /// Вызывать CallBack даже когда данные не изменились
             /// </summary>
             public bool RaiseOlwais { get; set; }
-            public DataTypes RegisterType { get; set; }
+            public HomeServerSettings.ControllerGroup.Controller.DataTypes RegisterType { get; set; }
 
-            public ActionOnRegister(ushort index, DataTypes registerType, Action<ushort> callBack, Action<uint> callBackULong = null)
+            public ActionOnRegister(ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callBack, Action<uint> callBackULong = null)
             {
                 Index = index;
                 CallBack = callBack;
@@ -193,12 +195,12 @@ namespace HomeServer.Objects
                     return false;
                 _currentValue = newValue;
                 _lastCheck = DateTime.Now;
-                if (_currentValue == UInt16Default)
+                if (UInt16Default != null && _currentValue == UInt16Default.Value)
                     return false;
                 CallBack?.Invoke(newValue);
                 if (ResetAfterRead)
                 {
-                    _currentValue = UInt16Default;
+                    _currentValue = UInt16Default ?? 0;
                     Reset();
                 }
                 return true;
@@ -244,7 +246,7 @@ namespace HomeServer.Objects
             private DateTime _currentDateTime;
             private Action<DateTime> CallBack { get; set; }
 
-            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, DataTypes.RdDateTime, null)
+            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime, null)
             {
                 CallBack = callBack;
             }
@@ -361,6 +363,59 @@ namespace HomeServer.Objects
         }
 
         private ActionOnReceiveSlaveId _actionOnReceiveSlaveId = null;
+
+
+        private class ActionOnDeviceStatus
+        {
+            private bool? _currentState;
+            public bool? InitialState { get; private set; }
+            public ushort Index { get; set; }
+            public CheckBoolStatus CheckBoolStatus { get; set; }
+            private Action<bool> CallBack { get; set; }
+            public TimeSpan? CheckInterval { get; set; }
+
+            public ActionOnDeviceStatus(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+                bool? initialState)
+            {
+                Index = index;
+                CheckBoolStatus = checkBoolStatus;
+                CallBack = callBack;
+                InitialState = initialState;
+                _currentState = initialState;
+            }
+
+            public bool CheckState(bool newState)
+            {
+                if (newState == _currentState)
+                    return false;
+                switch (CheckBoolStatus)
+                {
+                    case CheckBoolStatus.OnTrue:
+                        if (newState)
+                            CallBack(true);
+                        break;
+                    case CheckBoolStatus.OnFalse:
+                        if (!newState)
+                            CallBack(false);
+                        break;
+                    case CheckBoolStatus.OnBoth:
+                        CallBack(newState);
+                        break;
+                }
+                _currentState = newState;
+                return true;
+            }
+        }
+        /// <summary>
+        /// Минимальный индекс дискретного регистра для проверки
+        /// </summary>
+        private byte _deviceStatusMinIndex = MaxDeviceStatusIndex;
+        /// <summary>
+        /// Максимальный индекс дискретного регистра для проверки
+        /// </summary>
+        private byte _deviceStatusMaxIndex;
+
+        private List<ActionOnDeviceStatus> _actionsOnDeviceStatus = null;
         #endregion Others
 
         #region Setters
@@ -368,15 +423,17 @@ namespace HomeServer.Objects
         public class ModbusSetter
         {
             public ushort Index;
-            public SetterTypes SetterType;
+            public HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes SetterType;
             public bool IsPending { get; private set; }
             private object _pendingObject;
+            private readonly HomeServerSettings.ControllerGroup.Controller.Setter _setter;
             private readonly Action<bool> _resultAction;
 
-            public ModbusSetter(ushort index, SetterTypes setterType, Action<bool> resultAction = null)
+            public ModbusSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, Action<bool> resultAction = null)
             {
-                Index = index;
-                SetterType = setterType;
+                Index = setter.ModbusIndex;
+                SetterType = setter.Type;
+                _setter = setter;
                 _resultAction = resultAction;
             }
 
@@ -398,48 +455,171 @@ namespace HomeServer.Objects
 
                 switch (SetterType)
                 {
-                    case SetterTypes.RealDateTime:
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.RealDateTime:
                         var resultStatus = SendTime(modbus, slaveAddress);
                         _resultAction?.Invoke(resultStatus);
                         return resultStatus;
-                    case SetterTypes.UInt16:
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.UInt16:
                         var resultUInt16Status = SendUInt16(modbus, slaveAddress);
                         _resultAction?.Invoke(resultUInt16Status);
                         return resultUInt16Status;
-                    case SetterTypes.MultipleUInt16:
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.MultipleUInt16:
                         var resultMultipleUInt16Status = SendMultipleUInt16(modbus, slaveAddress);
                         _resultAction?.Invoke(resultMultipleUInt16Status);
                         return resultMultipleUInt16Status;
-                    case SetterTypes.File:
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.File:
                         var resultFileStatus = SendFile(modbus, slaveAddress);
                         _resultAction?.Invoke(resultFileStatus);
                         return resultFileStatus;
-                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.Command:
+                        if (_setter.Command == null)
+                            return false;
+                        var resultCommandStatus = SendCommand(modbus, slaveAddress);
+                        _resultAction?.Invoke(resultCommandStatus);
+                        return resultCommandStatus;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
                 return false;
             }
 
+            private int Convert(string convertion, int origValue)
+            {
+                var reg = new TypeRegistry();
+                reg.RegisterSymbol("val", origValue);
+                var p = new CompiledExpression(convertion) { TypeRegistry = reg };
+                return (int)p.Eval();
+            }
+
+            private uint GetBitValue(HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.BitsValue val, IReadOnlyList<int> requestData)
+            {
+               
+                switch (val.Type)
+                {
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.BitsValue.BitsTypes.Zero:
+                        return 0;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.BitsValue.BitsTypes.Literal:
+                        return val.Value << val.Index;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.BitsValue.BitsTypes.FromRequest:
+                        if (val.Count == 0)
+                            return 0;
+                        if (requestData == null || val.ParamIndex < 0 || val.ParamIndex >= requestData.Count)
+                            return 0;
+                        var retVal = requestData[val.ParamIndex];
+                        var mask = 1;
+                        for (var i = 1; i < val.Count; i++)
+                        {
+                            mask <<= 1;
+                            mask |= 1;
+                        }
+                        return (uint) ((retVal & mask) << val.Index);
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            private byte GetByteValue(HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.ByteValue val,
+                IReadOnlyList<int> requestData)
+            {
+                switch (val.Type)
+                {
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.ByteValue.ByteTypes.Zero:
+                        return 0;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.ByteValue.ByteTypes.Literal:
+                        return val.Value;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.ByteValue.ByteTypes.FromRequest:
+                        if (requestData != null && val.ParamIndex >= 0 && val.ParamIndex < requestData.Count)
+                        {
+                            var retVal = requestData[val.ParamIndex];
+                            if (!string.IsNullOrEmpty(val.Conversion))
+                                retVal = Convert(val.Conversion, retVal);
+                            return (byte)retVal;
+                        }
+                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.ByteValue.ByteTypes.BitsFromRequest:
+                        if (val.Bits == null)
+                            return 0;
+                        var retVal1 = (byte)val.Bits.Aggregate(0, (current, bitsValue) => current | (byte) GetBitValue(bitsValue, requestData));
+                        return retVal1;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                return 0;
+            }
+
+            private ushort GetWordValue(HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue val,
+                IReadOnlyList<int> requestData)
+            {
+                switch (val.Type)
+                {
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue.WordTypes.Zero:
+                        return 0;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue.WordTypes.Literal:
+                        return val.Value;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue.WordTypes.TwoBytesFromRequest:
+                        var retVal = (ushort) 0;
+                        if (val.Hi != null)
+                            retVal = (ushort) (GetByteValue(val.Hi, requestData) << 8);
+                        if (val.Lo != null)
+                            retVal |= GetByteValue(val.Lo, requestData);
+                        return retVal;
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue.WordTypes.WordFromRequest:
+                        if (requestData != null && val.ParamIndex >= 0 && val.ParamIndex < requestData.Count)
+                            return (ushort)requestData[val.ParamIndex];
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                return 0;
+            }
+
+            private bool SendCommand(ModbusSerialMaster modbus, byte slaveAddress)
+            {
+                var command = _setter.Command;
+
+                if(command?.Id == null)
+                    return false;
+
+                var requestValues = _pendingObject as int[];
+
+
+                var msg = new WriteSysUserCommandRequest(slaveAddress, command.IsSystem,
+                    GetByteValue(command.Id, requestValues), GetByteValue(command.Data, requestValues),
+                    GetWordValue(command.Additional1, requestValues),
+                    GetWordValue(command.Additional2, requestValues),
+                    GetWordValue(command.Additional3, requestValues));
+
+                var resp = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
+
+                Thread.Sleep(200);
+
+                var msgCheck = new ReadExceptionStatusRequest(slaveAddress);
+                var respCheck = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgCheck);
+                return respCheck.ExceptionStatusBits[0];
+            }
+
             private bool SendTime(ModbusSerialMaster modbus, byte slaveAddress)
             {
                 var curTime = DateTime.Now;
-                var timeData = new ushort[4];
-                timeData[0] = 0x1000;
-                timeData[1] = (ushort)(((curTime.Hour << 8)) | curTime.Minute);
-                timeData[2] = (ushort)((curTime.Day << 8) | curTime.Second);
-                timeData[3] = (ushort)(((curTime.Year % 100) << 8) | curTime.Month);
+                var msg = new WriteSysUserCommandRequest(slaveAddress, true,
+                    
+                    0x10, 0x00,
+                    (byte) curTime.Hour,//23,//
+                    (byte)curTime.Minute,//59,//
+                    (byte)curTime.Day,
+                    (byte)curTime.Second,
+                    (byte)(curTime.Year%100),
+                    (byte)curTime.Month);
 
-                //            _modbus.WriteMultipleRegisters(2, 8, timeData);
-                modbus.WriteMultipleRegisters(slaveAddress, CommandHoldingRegister, timeData);
+                var resp = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
                 Thread.Sleep(500);
 
-                var msg = new ReadExceptionStatusRequest(slaveAddress);
-                var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
+                var msgCheck = new ReadExceptionStatusRequest(slaveAddress);
+                var respCheck = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgCheck);
 
                 
                 //var modbusResult = modbus.ReadInputRegisters(slaveAddress, 0, 1);
-                return resp.ExceptionStatusBits[0];
+                return respCheck.ExceptionStatusBits[0];
                 /*if (setTimeRes.Length > 0 && setTimeRes[0] == 0xffff)
                     WriteToLog?.Invoke(this, "Время установлено успешно!");
                 else
@@ -609,7 +789,7 @@ namespace HomeServer.Objects
                         {
                             switch (holdingCheck.RegisterType)
                             {
-                                case DataTypes.ULong:
+                                case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
                                     holdingCheck.CheckStateULong(holdingsStatus[holdingCheck.Index - _holdingRegisterMinIndex], holdingsStatus[holdingCheck.Index + 1 - _holdingRegisterMinIndex]);
                                     break;
                                 default:
@@ -638,7 +818,17 @@ namespace HomeServer.Objects
                     //                        _actionOnReceiveSlaveId.SendValue(resp.ReseivedId);
                     //                    }
                 }
-
+                // Катушки
+                if (_actionsOnDeviceStatus != null)
+                {
+                    curOperation = $"Check Device Status ";
+                    var msg = new ReadDeviceStatusRequest(SlaveAddress);
+                    var resp = modbus.ExecuteCustomMessage<ReadDeviceStatus>(msg);
+                    foreach (var check in _actionsOnDeviceStatus)
+                    {
+                        check.CheckState(resp.DeviceStatusBits[check.Index]);
+                    }
+                }
             }
             catch (Exception ee)
             {
@@ -677,7 +867,7 @@ namespace HomeServer.Objects
 
                         switch (check.RegisterType)
                         {
-                            case DataTypes.ULong:
+                            case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
                                 Console.WriteLine("Reset ULong");
                                 var resetData = new ushort[2];
                                 resetData[0] = (ushort)(check.ULongDefault >> 16);
@@ -685,7 +875,8 @@ namespace HomeServer.Objects
                                 modbus.WriteMultipleRegisters(SlaveAddress, check.Index, resetData);
                                 break;
                             default:
-                                modbus.WriteSingleRegister(SlaveAddress, check.Index, check.UInt16Default);
+                                
+                                modbus.WriteSingleRegister(SlaveAddress, check.Index, check.UInt16Default ?? 0);
                                 break;
                         }
                     }
@@ -709,13 +900,13 @@ namespace HomeServer.Objects
         /// Прописывает метод, который будет вызван после изменения статуса дискретного регистра или катушки
         /// </summary>
         /// <param name="isCoil"></param>
-        /// <param name="checkCoilStatus">При каком событии вызывать метод</param>
+        /// <param name="checkBoolStatus">При каком событии вызывать метод</param>
         /// <param name="index">Индекс регистра или катушки</param>
         /// <param name="callback">Метод, который будет вызываться</param>
         /// <param name="initialState">Начальное состояние</param>
-        /// <param name="resetAfter">Сброс значения только для катушек и checkCoilStatus != OnBoth</param>
+        /// <param name="resetAfter">Сброс значения только для катушек и CheckBoolStatus != OnBoth</param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnDiscreteOrCoil(bool isCoil, CheckCoilStatus checkCoilStatus, ushort index,
+        public Action SetActionOnDiscreteOrCoil(bool isCoil, CheckBoolStatus checkBoolStatus, ushort index,
             Action<bool> callback,
             bool? initialState = null, bool resetAfter = false)
         {
@@ -727,7 +918,7 @@ namespace HomeServer.Objects
             {
                 throw new ArgumentException("Сброс дискретного регистра невозможен!", nameof(resetAfter));
             }
-            if (checkCoilStatus == CheckCoilStatus.OnBoth && resetAfter)
+            if (checkBoolStatus == CheckBoolStatus.OnBoth && resetAfter)
             {
                 throw new ArgumentException("Сброс при проверке статуса OnBoth невозможен!", nameof(resetAfter));
             }
@@ -740,7 +931,7 @@ namespace HomeServer.Objects
                     _coilMaxIndex = index;
                 if (_coilChecks == null)
                     _coilChecks = new List<ActionOnCoil>();
-                var actionOnCoil = new ActionOnCoil(index, checkCoilStatus, callback, resetAfter, initialState);
+                var actionOnCoil = new ActionOnCoil(index, checkBoolStatus, callback, resetAfter, initialState);
 
                 _coilChecks.Add(actionOnCoil);
                 return () =>
@@ -756,8 +947,37 @@ namespace HomeServer.Objects
                     _discreteRegisterMaxIndex = index;
                 if (_discreteChecks == null)
                     _discreteChecks = new List<ActionOnDiscrete>();
-                var actionOnDiscrete = new ActionOnDiscrete(index, checkCoilStatus, callback, initialState);
+                var actionOnDiscrete = new ActionOnDiscrete(index, checkBoolStatus, callback, initialState);
                 _discreteChecks.Add(actionOnDiscrete);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Реакция на изменение состояния устройства
+        /// </summary>
+        /// <param name="checkBoolStatus"></param>
+        /// <param name="index"></param>
+        /// <param name="callback"></param>
+        /// <param name="initialState"></param>
+        /// <returns></returns>
+        public Action SetActionOnDeviceStatus(CheckBoolStatus checkBoolStatus, byte index,
+            Action<bool> callback, bool? initialState = null)
+        {
+            if (index > MaxDeviceStatusIndex)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            {
+                if (_deviceStatusMinIndex > index)
+                    _deviceStatusMinIndex = index;
+                if (_deviceStatusMaxIndex < index)
+                    _deviceStatusMaxIndex = index;
+                if (_actionsOnDeviceStatus == null)
+                    _actionsOnDeviceStatus = new List<ActionOnDeviceStatus>();
+                var actionOnDeviceStatus = new ActionOnDeviceStatus(index, checkBoolStatus, callback, initialState);
+                _actionsOnDeviceStatus.Add(actionOnDeviceStatus);
                 return null;
             }
         }
@@ -773,7 +993,7 @@ namespace HomeServer.Objects
         /// <param name="raiseOlwais">Вызывать callback даже когда показания не изменились</param>
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnRegister(bool isHolding, ushort index, DataTypes registerType, Action<ushort> callback,
+        public Action SetActionOnRegister(bool isHolding, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
             Action<uint> uLongCallback,
             bool raiseOlwais = false, TimeSpan? checkInterval = null, bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0)
         {
@@ -782,16 +1002,16 @@ namespace HomeServer.Objects
             var endIndex = index;
             switch (registerType)
             {
-                case DataTypes.UInt16:
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
                     break;
-                case DataTypes.Float:
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.Float:
                     break;
-                case DataTypes.ULong:
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
                     endIndex = (ushort)(index + 1);
                     break;
-                case DataTypes.RdDateTime:
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
                     break;
-                case DataTypes.RdTime:
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdTime:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(registerType), registerType, null);
@@ -889,15 +1109,14 @@ namespace HomeServer.Objects
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="type"></param>
+        /// <param name="setter"></param>
         /// <param name="result">При установки параметра возвращаем правильно ли установилось или нет</param>
         /// <returns></returns>
-        public ModbusSetter SetSetter(ushort index, SetterTypes type, Action<bool> result = null)
+        public ModbusSetter SetSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, Action<bool> result = null)
         {
             if (_setters == null)
                 _setters = new List<ModbusSetter>();
-            var newSetter = new ModbusSetter(index, type, result);
+            var newSetter = new ModbusSetter(setter, result);
             _setters.Add(newSetter);
             return newSetter;
         }

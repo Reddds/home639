@@ -12,7 +12,6 @@ namespace HomeModbus.Objects
     class ControllerGroup
     {
         public event EventHandler<string> WriteToLog;
-        public List<ShController> ShControllers;
 
         public void ToLog(string msg)
         {

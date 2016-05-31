@@ -1,0 +1,218 @@
+﻿{
+    "Rooms": [
+        {
+            "Name": "Спальня",
+            "LayoutGroups": [
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "Name": "Сколько покакал",
+                            "ParameterId": "bed_1",
+                            "DigitalIndicator": { }
+
+
+                        },
+                        {
+                            "ParameterId": "bed_2",
+                            "LastTimeIndicator": {
+                                "Icon": "poo.png"
+                            }
+
+
+                        }
+                    ]
+                },
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "ParameterId": "bed_3",
+                            "Icon": "ThermometreSmall.png",
+                            "DigitalIndicator": { },
+                            "AnalogIndicator": {
+                                "Icon": "Thermometre.png",
+                                "Scale": {
+                                    "Min": 10,
+                                    "Max": 35,
+                                    "MajorCount": 5,
+                                    "MinorCount": 5,
+                                    "GoodValue": 20,
+                                    "Ranges": [
+                                        {
+                                            "StartValue": 18,
+                                            "EndValue": 24
+                                        },
+                                        {
+                                            "StartValue": 10,
+                                            "EndValue": 18
+                                        },
+                                        {
+                                            "StartValue": 24,
+                                            "EndValue": 35
+                                        }
+                                    ]
+                                }
+                            },
+                            "Chart": { }
+
+
+                        },
+                        {
+                            "ParameterId": "bed_4",
+                            "Icon": "HumiditySmall.png",
+                            "DigitalIndicator": { },
+                            "AnalogIndicator": {
+                                "Icon": "Humidity.png",
+                                "Scale": {
+                                    "Min": 0,
+                                    "Max": 100,
+                                    "MinorCount": 5,
+                                    "GoodValue": 50,
+                                    "Ranges": [
+                                        {
+                                            "StartValue": 30,
+                                            "EndValue": 60
+                                        },
+                                        {
+                                            "StartValue": 60,
+                                            "EndValue": 100
+                                        },
+                                        {
+                                            "StartValue": 0,
+                                            "EndValue": 30
+                                        }
+                                    ]
+                                }
+                            },
+                            "Chart": { }
+                        }
+                    ]
+                }
+            ],
+            "Visibilities": [
+                {
+                    "ParameterId": "bed_5",
+                    "ShowBalloon": {
+                        "Type": "Exclamation",
+                        "Text": "Вызов!!!!",
+                        "OnClose": {
+                            "ResetParameter": { }
+                        }
+                    }
+
+                },
+                {
+                    "SetterId": "bed_10",
+                    "CurrentTime": { }
+                }
+            ]
+        },
+        {
+            "Name": "Коридор",
+            "Visibilities": [
+                {
+                    "ParameterId": "corr_1",
+                    "ShowBalloon": {
+                        "Type": "Alarm",
+                        "Text": "Движение!!!!",
+                        "ShowWhileParameterSet": true
+                    }
+                }
+            ]
+        },
+        {
+            "Name": "Ванна",
+            "Visibilities": [
+                {
+                    "ParameterId": "bath_1",
+                    "BinaryIndicator": {
+                        "OnIcon": "DoorOpened.png",
+                        "OffIcon": "DoorClosed.png"
+                    }
+                },
+                {
+                    "ParameterId": "bath_2",
+                    "BinaryIndicator": {
+                        "OnIcon": "LightBulbOn.png",
+                        "OffIcon": "LightBulbOff.png"
+                    }
+                }
+            ]
+        },
+        {
+            "Name": "Табло",
+            "LayoutGroups": [
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "ParameterId": "bolid_bi_cur_time",
+                            "Name": "Текущее время на табло",
+                            "DoubleIndicator": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_total_minutes",
+                            "Name": "Минуты с начала дня",
+                            "DigitalIndicator": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_old_cur_num",
+                            "Name": "Номер предыдущего и текущего события",
+                            "DoubleIndicator": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_event_hour_min",
+                            "Name": "Время следующего события",
+                            "DigitalIndicator": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_cur_seconds",
+                            "Name": "Текущее время в секундах",
+                            "DigitalIndicator": { }
+                        }
+                    ]
+                },
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "ParameterId": "bolid_bi_is_timeSet",
+                            "BinaryIndicator": {
+                                "OnIcon": "DoorOpened.png",
+                                "OffIcon": "DoorClosed.png"
+                            }
+                        },
+                        {
+                            "SetterId": "bolid_bi_timeSet",
+                            "CurrentTime": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_slave_id",
+                            "Name": "Идентификатор устройства",
+                            "StringIndicator": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_sound_len_is_playing",
+                            "Name": "Количество звуков / Количество событий",
+                            "DoubleIndicator": { }
+                        },
+                        {
+                            "ParameterId": "bolid_bi_pl_len_pos_in_ee",
+                            "Name": "Длина текущего звука / позиция в EEPROM",
+                            "DoubleIndicator": { }
+                        }
+                    ]
+                }
+            ],
+            "Visibilities": [
+                {
+                    "SetterId": "bolid_bi_send_user_command",
+                    "Name": "Отправка тестовой комманды",
+                    "SendCommand": { }
+                }
+            ]
+        }
+    ]
+
+}

@@ -1,0 +1,378 @@
+﻿{
+    "ControllerGroups": [
+        /*{
+            "Name": "Спальня",
+            "Controllers": [
+                {
+                    "Id": "con_2",
+                    "Name": "Контроллер 1",
+                    "ModbusAddress": 2,
+                    "Parameters": [
+                        {
+                            "Id": "bed_1",
+                            "Name": "Сколько покакал",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 0,
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "bed_2",
+                            "Name": "Последний раз какал",
+                            "ModbusType": "InputRegister",
+                            "DataType": "RdDateTime",
+                            "ModbusIndex": 4,
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "bed_3",
+                            "Name": "Температура",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 2,
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "bed_4",
+                            "Name": "Влажность",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 3,
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "bed_5",
+                            "Name": "Вызов",
+                            "ModbusType": "Coil",
+                            "ModbusIndex": 4,
+                            "BoolDefault": false,
+                            "Retain": true
+                        },
+                        {
+                            "Id": "ir_key",
+                            "Name": "Кнопка пульта",
+                            "ModbusType": "HoldingRegister",
+                            "ModbusIndex": 4,
+                            "DataType": "ULong",
+                            "ResetAfterRead": true
+                        }
+                    ],
+                    "Setters": [
+                        {
+                            "Id": "bed_10",
+                            "Name": "Установка времени и даты",
+                            "Type": "RealDateTime",
+                            "ModbusIndex": 0
+                        }
+                    ]
+                }
+            ]
+        },
+
+
+        {
+            "Name": "Коридор",
+            "Controllers": [
+                {
+                    "Id": "con_1",
+                    "Name": "Контроллер 1",
+                    "ModbusAddress": 1,
+                    "Parameters": [
+                        {
+                            "Id": "corr_1",
+                            "Name": "Движение и свет",
+                            "ModbusType": "Discrete",
+                            "ModbusIndex": 3,
+                            "Retain": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "Name": "Ванна",
+            "Controllers": [
+                {
+                    "Id": "con_3",
+                    "Name": "Контроллер 1",
+                    "ModbusAddress": 3,
+                    "Parameters": [
+                        {
+                            "Id": "bath_1",
+                            "Name": "Дверь открыта",
+                            "ModbusType": "Discrete",
+                            "ModbusIndex": 0,
+                            "Retain":  true
+                        },
+                        {
+                            "Id": "bath_2",
+                            "Name": "Свет включён",
+                            "ModbusType": "Discrete",
+                            "ModbusIndex": 1,
+                            "Retain": true
+                        }
+                    ]
+                }
+            ]
+
+        },*/
+
+
+        {
+            "Name": "Табло",
+            "Controllers": [
+                {
+                    "Id": "bolidBi",
+                    "Name": "Блок индикации",
+                    "ModbusAddress": 127,
+                    "Parameters": [
+                        {
+                            "Id": "bolid_bi_is_timeSet",
+                            "Name": "Время установлено",
+                            "ModbusType": "DeviceStatus",
+                            "ModbusIndex": 0,
+                            "Retain": true
+                            /*"Echo": {
+                                "Type": "Setter",
+                                "Id": "bolid_bi_light_alarm"
+                            }*/
+
+                        },
+                        {
+                            "Id": "bolid_bi_cur_time",
+                            "Name": "Текущее время",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 1
+                        },
+                        {
+                            "Id": "bolid_bi_old_cur_num",
+                            "Name": "Номер предыдущего и текущего события",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 2
+                        },
+                        {
+                            "Id": "bolid_bi_event_hour_min",
+                            "Name": "Время следующего события",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 3
+                        },
+                        {
+                            "Id": "bolid_bi_cur_time_2",
+                            "Name": "Текущее время 2",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 4
+                        },
+                        {
+                            "Id": "bolid_bi_cur_seconds",
+                            "Name": "Текущее время в секундах",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 5
+                        },
+                        {
+                            "Id": "bolid_bi_sound_len_is_playing",
+                            "Name": "Количество звуков / проигрывается",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 6
+                        },
+                        {
+                            "Id": "bolid_bi_pl_len_pos_in_ee",
+                            "Name": "Длина текущего звука / позиция в EEPROM",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 7
+                        },
+                        {
+                            "Id": "bolid_bi_total_minutes",
+                            "Name": "Минуты с начала дня",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 8
+                        },
+                        {
+                            "Id": "bolid_bi_slave_id",
+                            "Name": "Идентификатор устройства",
+                            "ModbusType": "DeviceId",
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        }
+                    ],
+                    "Setters": [
+                        {
+                            "Id": "bolid_bi_timeSet",
+                            "Name": "Установка времени и даты",
+                            "Type": "RealDateTime"
+                        },
+                        {
+                            "Id": "bolid_bi_comTimeSet",
+                            "Name": "Установка времени и даты командой",
+                            "Type": "Command",
+                            "Command": {
+                                "Id": {
+                                    "Type": "Literal",
+                                    "Value": 16 //0x10
+                                },
+                                "Data": {
+                                    "Type": "Zero"
+                                }, //[1] - Час/Минута [2] - День месяца/Секунда [3] - Месяц/Год
+                                "Additional1": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 0
+                                    },
+                                    "Lo": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 1
+                                    }
+                                },
+                                "Additional2": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 4
+                                    },
+                                    "Lo": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 3
+                                    }
+                                },
+                                "Additional3": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 5
+                                    },
+                                    "Lo": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 6,
+                                        "Convertion": "val % 100"
+                                    }
+                                }
+                            }
+                        },
+                        /*{
+                            "Id": "bolid_bi_light_alarm",
+                            "Name": "Включение/выключение тревоги",
+                            "Type": "Command",
+                            "Command": {
+                                "Id": {
+                                    "Type": "Literal",
+                                    "Value": 131 //0x83
+                                },
+                                "Data": {
+                                    "Type": "BitsFromRequest",
+                                    "Bits": [ // From 0
+                                        {
+                                            "Index": 0,
+                                            "Count": 3,
+                                            "Type": "Literal",
+                                            "Value": 2
+                                        },
+                                        {
+                                            "Index": 6,
+                                            "Count": 1, // blink
+                                            "Type": "Literal",
+                                            "Value": 1
+                                        },
+                                        {
+                                            "Index": 7,
+                                            "Count": 1, // on|off
+                                            "Type": "FromRequest",
+                                            "ParamIndex": 0
+                                        }
+                                    ]
+                                },
+                                "Additional1": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "Literal",
+                                        "Value": 0
+                                    },
+                                    "Lo": {
+                                        "Type": "Literal",
+                                        "Value": 0
+                                    }
+                                }
+                            }
+                        },*/
+                        {
+                            "Id": "bolid_bi_write_all_events",
+                            "Name": "Запись всех событий таблицей",
+                            "Type": "File",
+                            "ModbusIndex": 18
+                        },
+                        {
+                            "Id": "bolid_bi_write_settings",
+                            "Name": "Запись всех настроек, событий и звуков таблицей",
+                            "Type": "File",
+                            "ModbusIndex": 2
+                        },
+                        {
+                            "Id": "bolid_bi_write_all_sounds",
+                            "Name": "Запись всех звуков таблицей",
+                            "Type": "File",
+                            "ModbusIndex": 140
+                        },
+                        /*                       {
+                            "Id": "bolid_bi_send_user_command",
+                            "Name": "Запись тестовой комманды",
+                            "Type": "MultipleUInt16",
+                            "ModbusIndex": 0
+                        },*/
+                        {
+                            "Id": "bolid_bi_send_user_command",
+                            "Name": "Включение/выключение тревоги",
+                            "Type": "Command",
+                            "Command": {
+                                "Id": {
+                                    "Type": "FromRequest",
+                                    "ParamIndex": 0
+                                },
+                                "Data": {
+                                    "Type": "FromRequest",
+                                    "ParamIndex": 1
+                                },
+                                "Additional1": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 2
+                                    },
+                                    "Lo": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 3
+                                    }
+                                },
+                                "Additional2": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 4
+                                    },
+                                    "Lo": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 5
+                                    }
+                                },
+                                "Additional3": {
+                                    "Type": "TwoBytesFromRequest",
+                                    "Hi": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 6
+                                    },
+                                    "Lo": {
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 7
+                                    }
+                                }
+                            }
+                        }
+
+                    ]
+                }
+            ]
+        }
+    ]
+
+
+
+}
