@@ -19,7 +19,11 @@ namespace HomeServer.Objects
     public class ShController
     {
         private const int ModbusResultSuccess = 0x8080;
-
+        /// <summary>
+        /// После прошивки у всех устройств адрес по умолчанию,
+        /// который потом заменяется на желаемый
+        /// </summary>
+        private const byte ModbusAddresForNewDevice = 0x7f;
         private const int MaxDiscreteOrCoilIndex = 15;
         private const int MaxDeviceStatusIndex = 7;
         private const ushort CommandHoldingRegister = 0;
@@ -573,6 +577,8 @@ namespace HomeServer.Objects
                 return 0;
             }
 
+
+
             private bool SendCommand(ModbusSerialMaster modbus, byte slaveAddress)
             {
                 var command = _setter.Command;
@@ -690,17 +696,112 @@ namespace HomeServer.Objects
 
         public readonly string Id;
         public byte SlaveAddress;
+        private byte[] _slaveId;
 
-
-        public ShController(string id, byte slaveAddress)
+        public ShController(string id, string slaveId, byte slaveAddress)
         {
             Id = id;
             SlaveAddress = slaveAddress;
+
+            if(string.IsNullOrEmpty(slaveId))
+                return;
+            var slaveIdSplit = slaveId.Split('.');
+            if (slaveIdSplit.Length != 4)
+                return;
+            _slaveId = new byte[slaveIdSplit.Length];
+            for (var i = 0; i < slaveIdSplit.Length; i++)
+            {
+                byte b;
+                if (!byte.TryParse(slaveIdSplit[i].Trim(), out b))
+                {
+                    _slaveId = null;
+                    break;
+                }
+                _slaveId[i] = b;
+            }
         }
+
+        /// <summary>
+        /// Проверка SlaveId устройства
+        /// </summary>
+        /// <param name="modbus"></param>
+        /// <param name="address"></param>
+        /// <returns>Если устройство не отвечает по данному адресу, возвращаем null
+        /// Если SlaveId не совпадает, возвращаем false
+        /// </returns>
+        private bool? CheckSlaveId(ModbusSerialMaster modbus, byte address)
+        {
+            try
+            {
+                var slaveId = GetSlaveId(modbus, address);
+                if (slaveId != null)
+                {
+                    // Если от устройства получено значение, значит адрес присвоен и любое несоответствие означает, что 
+                    // это не то устройство или какая-то ошибка
+                    if (slaveId.Length != _slaveId.Length)
+                        return false;
+                    return slaveId.SequenceEqual(_slaveId);
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// Присвоение устройству заданного адреса, если ещё не присвоен
+        /// На основе SlaveId
+        /// </summary>
+        /// <param name="modbus"></param>
+        private bool AssignAddress(ModbusSerialMaster modbus)
+        {
+            if (CheckSlaveId(modbus, SlaveAddress) == true)
+                return true;
+
+            // Проверяем, еслить ли новое устройство в сети
+            if (CheckSlaveId(modbus, ModbusAddresForNewDevice) != true)
+                return false;
+
+            // Пытаемся установить адрес
+            if (!SetDesiredAddress(modbus))
+                return false;
+
+            return CheckSlaveId(modbus, SlaveAddress) == true;
+        }
+
+        private bool SetDesiredAddress(ModbusSerialMaster modbus)
+        {
+            var msg = new WriteSysUserCommandRequest(ModbusAddresForNewDevice, true,
+                0x01, SlaveAddress);
+
+            var resp = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
+
+            var msgCheck = new ReadExceptionStatusRequest(SlaveAddress);
+            var respCheck = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgCheck);
+            return respCheck.ExceptionStatusBits[0];
+        }
+
+        private byte[] GetSlaveId(ModbusSerialMaster modbus, byte slaveAddress)
+        {
+            var msg = new ReportSlaveIdRequest(slaveAddress);
+            var resp = modbus.ExecuteCustomMessage<ReportSlaveId>(msg);
+            return resp.ReseivedId;
+        }
+
+        private bool _addresIsSet;
 
         public virtual void GetStatus(ModbusSerialMaster modbus)
         {
             var curOperation = string.Empty;
+            if (_slaveId != null && !_addresIsSet)
+            {
+                curOperation = "Checking address";
+                _addresIsSet = AssignAddress(modbus);
+                if(_addresIsSet == false)
+                    throw new Exception("Error assigning address");
+            }
+
             try
             {
                 // Дискретные
@@ -802,7 +903,7 @@ namespace HomeServer.Objects
                 // Остальное
                 if (_actionOnReceiveSlaveId != null && _actionOnReceiveSlaveId.IsNeedCheck())
                 {
-                    curOperation = $"Check Slave Id";
+                    curOperation = $"Check Device Identification";
 //                    var msg = new ReportSlaveIdRequest(SlaveAddress);
 //                    var resp = modbus.ExecuteCustomMessage<ReportSlaveId>(msg);
                     var msg = new ReadDeviceIdentificationRequest(SlaveAddress, ReadDeviceIdentification.ReadDeviceIdCodes.Basic, 0);

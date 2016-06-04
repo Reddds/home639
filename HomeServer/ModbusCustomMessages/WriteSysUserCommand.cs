@@ -179,6 +179,15 @@ namespace HomeServer.ModbusCustomMessages
             CommandAdd3Hi = (byte) (commandAdd3 >> 8);
             CommandAdd3Lo = (byte) (commandAdd3 & 0xFF);
         }
+
+        public WriteSysUserCommandRequest(byte slaveAddress, bool isSystem,
+                        byte commandId,
+                        byte commandData):this(slaveAddress, isSystem, 
+                            commandId, commandData, 
+                            0,0,0,0,0,0)
+        {
+            
+        }
     }
 
 }

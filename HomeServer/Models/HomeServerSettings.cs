@@ -34,6 +34,7 @@ namespace HomeServer.Models
                     InputRegister,
                     /// <remarks/>
                     HoldingRegister,
+                    SlaveId, // Идентификатор устройства на основании него присваивается адрес
                     /// <remarks/>
                     DeviceId,
                     DeviceStatus,
@@ -322,6 +323,7 @@ namespace HomeServer.Models
                 public Setter[] Setters { get; set; }
                 public string Id { get; set; }
                 public string Name { get; set; }
+                public string SlaveId { get; set; }
                 public byte ModbusAddress { get; set; }
             }
             public Controller[] Controllers { get; set; }

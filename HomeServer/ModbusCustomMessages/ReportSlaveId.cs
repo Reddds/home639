@@ -9,12 +9,16 @@ namespace HomeServer
     class ReportSlaveId : Modbus.Message.IModbusMessageRtu, IModbusMessageDataCollection
     {
         private const byte ReportSlaveIdFunctionCode = 0x11;
+
+        private const byte ModbusOn = 0xff;
+        private const byte ModbusOff = 0x00;
         /// <summary>
         /// Длина заголовка сообщения
         /// </summary>
         private const int HeaderSize = 3;
 
         public byte[] ReseivedId { get; set; }
+        public bool RunIndicator { get; set; }
         public byte[] NetworkBytes { get; }
         public byte ByteCount { get; private set; }
         public void Initialize(byte[] frame, Func<int, byte[]> read)
@@ -26,7 +30,9 @@ namespace HomeServer
                 throw new FormatException("Message frame does not contain enough bytes.");
 
             ByteCount = frame[2];
-            if (ByteCount > (frame.Length - HeaderSize - 2))//
+            if(ByteCount != 4)
+                throw new FormatException("Wrong byte count.");
+            if (ByteCount + 1 > (frame.Length - HeaderSize - 2))//
                 throw new FormatException("Message frame does not contain enough bytes.");
 
 
@@ -36,7 +42,7 @@ namespace HomeServer
 
             ReseivedId = new byte[ByteCount];
             Array.Copy(frame, HeaderSize, ReseivedId, 0, ByteCount);
-
+            RunIndicator = frame[7] == ModbusOn;
         }
 
         public byte FunctionCode
@@ -84,6 +90,7 @@ namespace HomeServer
                     (byte) ReseivedId.Length
                 };
                 pdu.AddRange(ReseivedId);
+                pdu.Add(RunIndicator ? ModbusOn : ModbusOff);
                 return pdu.ToArray();
             }
         }
@@ -128,7 +135,7 @@ namespace HomeServer
         {
             get
             {
-                return frameStart => frameStart[2] + 1;
+                return frameStart => frameStart[2] + 2;
             }
         }
     }

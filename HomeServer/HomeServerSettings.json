@@ -125,7 +125,8 @@
                 {
                     "Id": "bolidBi",
                     "Name": "Блок индикации",
-                    "ModbusAddress": 127,
+                    "SlaveId": "1.1.1.1",//!!!!!!!!!
+                    "ModbusAddress": 10,
                     "Parameters": [
                         {
                             "Id": "bolid_bi_is_timeSet",

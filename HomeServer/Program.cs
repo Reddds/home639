@@ -152,7 +152,7 @@ namespace HomeServer
 
                 foreach (var controller in controllerGroup.Controllers)
                 {
-                    var controllerObject = new ShController(controller.Id, controller.ModbusAddress);
+                    var controllerObject = new ShController(controller.Id, controller.SlaveId, controller.ModbusAddress);
                     if (controllerGroupObject.ShControllers == null)
                         controllerGroupObject.ShControllers = new List<ShController>();
                     controllerGroupObject.ShControllers.Add(controllerObject);
