@@ -63,8 +63,8 @@ extern "C" void __cxa_pure_virtual() {;}
 #define portOutputRegister(P)
 #define portInputRegister(P)
 #define portModeRegister(P)
-#include <..\Corridor\Corridor.ino>
-#include <..\Corridor\DemoMode.h>
-#include <..\Corridor\ModbusRtu.h>
-#include <..\Corridor\RS485.h>
+#include <Corridor.ino>
+#include <ControllerSettings.h>
+#include <DemoMode.h>
+#include <RS485.h>
 #endif

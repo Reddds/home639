@@ -131,8 +131,42 @@ namespace HomeModbus.Models
 
         }
 
-        public List<Room> Rooms { get; set; }
+        public class Plugin
+        {
+            public class PluginEvent
+            {
+                public class EchoValue
+                {
+                    public enum EchoTypes
+                    {
+                        Setter
+                    }
 
+                    public class Argument
+                    {
+                        public enum ArgumentTypes
+                        {
+                            Literal
+                        }
+                        public ArgumentTypes Type { get; set; }
+                        public object Value { get; set; }
+                    }
+
+                    public EchoTypes Type { get; set; }
+                    public string Id { get; set; }
+                    public Argument[] Arguments { get; set; }
+                }
+
+
+                public string Name { get; set; }
+                public EchoValue Echo { get; set; }
+            }
+
+            public string Name { get; set; }
+            public PluginEvent[] Events { get; set; }
+        }
+        public Room[] Rooms { get; set; }
+        public Plugin[] Plugins { get; set; }
     }
 
 

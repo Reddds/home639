@@ -21,13 +21,13 @@
     <ClInclude Include="__vm\.Corridor.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModbusRtu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DemoMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RS485.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ControllerSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

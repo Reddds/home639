@@ -43,7 +43,6 @@ namespace Chip45ProgrammerLib
             _log?.Invoke(msg);
         }
 
-
         public bool Load(string fileName)
         {
             if (!File.Exists(fileName))

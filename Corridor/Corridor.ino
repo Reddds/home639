@@ -1,12 +1,18 @@
-#include "ModbusRtu.h"
+// Reset Command 01 64 7F 00 00 00 00 00 00 00 FC 64
+
+
 #include "RS485.h"
 #include "DemoMode.h"
+#include <Time.h>
+#include <DS1302RTC.h>
 #include <avr/wdt.h>
+#include "ControllerSettings.h"
+#include <ModbusRtu.h>
 
 //#define RESET_VECTOR() ((void(const *)(void))0x7800)()
 #define RESET_PIN 18 // A4
 #define TXEN 4  //!!! (Забит в bootloader)
-#define ID   1      // адрес ведомого
+//#define ID   1      // адрес ведомого
 #define sensorPin  2   // номер входа, подключенный к кнопке
 #define stlPin  13  // номер выхода индикатора работы
 // расположен на плате Arduino
@@ -14,10 +20,11 @@
 
 #define WATCHING_TIME_MS 5000
 
-#define RESET_COIL 1 // Адрес : 17. Команда MODBUS: [slaveID] 05 0011 FF00 [CRC]
+#define RESET_COIL 1 // Адрес : 17. Команда MODBUS: [slaveID] 05 0001 FF00 [CRC] / 01 05 00 01 FF 00 DD FA 
 #define MODE_DEMO_COIL 2 // Адрес : 18
+#include <MyModbus/ModbusRtu.h>
 
-// В режиме Демо считывается EEPROM c адреса 0
+// В режиме Демо считывается EEPROM c адреса EE_DEMO_START
 // Если в [0] 0x22 - идентификатор что демопрограмма загружена
 // [1] - байт длины программы (максимум - 255 байт)
 // [2]... код демопрограммы
@@ -33,7 +40,7 @@ enum WorkMode { ModeMoveSensor, ModeDemo };
 WorkMode _currentMode = ModeMoveSensor;
 
 //Задаём ведомому адрес, последовательный порт, выход управления TX
-Modbus slave(ID, 0, TXEN);
+
 boolean led;
 int8_t state = 0;
 unsigned long tempus;
@@ -59,12 +66,29 @@ void ResetMoveDetection()
 	_lastMove = 0;
 }
 
+MyDeviceInfoTag myDeviceInfo =
+{
+	DEVICE_NEED_TIME_SET,
+	SLAVE_ID_DEVICE_TYPE,
+	SLAVE_ID_DEVICE_SUB_TYPE,
+	SLAVE_ID_DEVICE_REVISION,
+	SLAVE_ID_DEVICE_NUMBER,
+	VENDOR_NAME,
+	PRODUCT_CODE,
+	MAJOR_MINOR_REVISION,
+	VENDOR_URL,
+	PRODUCT_NAME,
+	MODEL_NAME,
+	USER_APPLICATION_NAME
+};
+
 void setup() {
+	Modbus(0, TXEN, &myDeviceInfo);
 	ResetMoveDetection();
 	// настраиваем входы и выходы
 	io_setup();
 	// настраиваем последовательный порт ведомого
-	slave.begin(9600);
+	ModbusBegin(9600);
 	// зажигаем светодиод на 100 мс
 	tempus = millis() + 100;
 	digitalWrite(stlPin, HIGH);
@@ -144,7 +168,7 @@ void loop() {
 	}
 	//-----------------------------------------------------
 	// обработка сообщений
-	state = slave.poll(_MODBUSDiscreteInputs, _MODBUSCoils, NULL, 0, NULL, 0);
+	state = ModbusPoll(_MODBUSDiscreteInputs, &_MODBUSCoils, NULL, 0, NULL, 0);
 	// если получили пакет без ошибок - зажигаем светодиод на 50 мс
 	if (state > 4) {
 		tempus = millis() + 50;
@@ -192,11 +216,11 @@ void ResetArduino()
 
 void io_poll() {
 	// reset если в RESET_COIL было записано значение
-	if (bitRead(_MODBUSCoils, RESET_COIL))
-	{
-		ResetArduino();
-		return;
-	}
+//	if (bitRead(_MODBUSCoils, RESET_COIL))
+//	{
+//		ResetArduino();
+//		return;
+//	}
 
 	if (bitRead(_MODBUSCoils, MODE_DEMO_COIL))
 	{

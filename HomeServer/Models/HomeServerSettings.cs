@@ -50,8 +50,19 @@ namespace HomeServer.Models
                             Setter
                         }
 
+                        public class Argument
+                        {
+                            public enum ArgumentTypes
+                            {
+                                Literal
+                            }
+                            public ArgumentTypes Type { get; set; }
+                            public object Value { get; set; }
+                        }
+
                         public EchoTypes Type { get; set; }
                         public string Id { get; set; }
+                        public Argument[] Arguments { get; set; }
                     }
 
                     private byte? _modbusIndex;
@@ -318,7 +329,7 @@ namespace HomeServer.Models
                     public SendCommand Command { get; set; }
                 }
 
-
+                public bool Disabled { get; set; }
                 public Parameter[] Parameters { get; set; }
                 public Setter[] Setters { get; set; }
                 public string Id { get; set; }
@@ -326,6 +337,8 @@ namespace HomeServer.Models
                 public string SlaveId { get; set; }
                 public byte ModbusAddress { get; set; }
             }
+            public bool Disabled { get; set; }
+
             public Controller[] Controllers { get; set; }
             public string Name { get; set; }
         }

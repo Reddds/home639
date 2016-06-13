@@ -1,8 +1,14 @@
-/*
+п»ї/*
 Ver 2.1
+Reset bytes 02 64 7F 00 00 00 00 00 00 00 0C 6B
+
 */
 
+
 //#include "Calendar.h"
+
+//#include <MySerial.h>
+#include <MyTime.h>
 #include <dht.h>
 #include <LiquidCrystal.h>
 #include <DS1302RTC.h>
@@ -11,48 +17,48 @@ Ver 2.1
 #include <Wire.h>
 #include <EEPROM.h>
 #include <IRremote.h>
-#include "ModbusRtu.h"
+
+#include <ModbusRtu.h>
 #include <avr/wdt.h>
 
-//!!!!!!!! Установка времени при записи в порт
+#include "ControllerSettings.h"
+
+//!!!!!!!! РЈСЃС‚Р°РЅРѕРІРєР° РІСЂРµРјРµРЅРё РїСЂРё Р·Р°РїРёСЃРё РІ РїРѕСЂС‚
 //2015,12,24,19,54,00,
 
 #define RESET_PIN 7 // A4
-#define TXEN 4  //!!! (Забит в bootloader)
-#define ID   2      // адрес ведомого
+#define TXEN 4  //!!! (Р—Р°Р±РёС‚ РІ bootloader)
+#include <MyModbus/ModbusRtu.h>
+//#define MODBUS_ID   2      // Р°РґСЂРµСЃ РІРµРґРѕРјРѕРіРѕ
 
 
-// Set your own pins with these defines !
-#define DS1302_SCLK_PIN   A2    // Arduino pin for the Serial Clock
-#define DS1302_IO_PIN     A1    // Arduino pin for the Data I/O
-#define DS1302_CE_PIN     A0    // Arduino pin for the Chip Enable
 
 
-//Массив, содержащий время компиляции
+//РњР°СЃСЃРёРІ, СЃРѕРґРµСЂР¶Р°С‰РёР№ РІСЂРµРјСЏ РєРѕРјРїРёР»СЏС†РёРё
 char compileTime[] = __TIME__; //"hh:mm:ss"
 char compileDate[] = __DATE__; //"hh:mm:ss"
 
 #define DHTPIN 6
 #define DHTTYPE DHT22
 #define KAKA_PIN 8
-#define CALL_PIN 10 // Кнопка вызова
+#define CALL_PIN 10 // РљРЅРѕРїРєР° РІС‹Р·РѕРІР°
 
-#define RECV_PIN 11 // ИК приёмник
+#define RECV_PIN 11 // РРљ РїСЂРёС‘РјРЅРёРє
 
 #define CALL_LED_PIN 13
 
 #define KAKA_EEPROM_ADDRESS 10
-#define LAST_KAKA_TIME_EEPROM_ADDRESS 1
+#define LAST_KAKA_TIME_EEPROM_ADDRESS 2
 
-#define RESET_COIL 1 // Адрес : 17. Команда MODBUS: [slaveID] 05 0011 FF00 [CRC]
-#define RESET_KAKA_COIL 2 // Адрес 18
-#define NEW_KAKA_COIL 3 // Если кнопка нажата, устанавливается значение 1, пока получатель не сбросит
-#define CALL_COIL 4 // Кнопка вызова. После получения сбросить
-#define WASH_BANNER_TEST_COIL 5 // Показать сообщение об умывании
+#define RESET_COIL 1 // РђРґСЂРµСЃ : 17. РљРѕРјР°РЅРґР° MODBUS: [slaveID] 05 0011 FF00 [CRC]  = 02 05 00 11 FF 00 0C DC
+#define RESET_KAKA_COIL 2 // РђРґСЂРµСЃ 18
+#define NEW_KAKA_COIL 3 // Р•СЃР»Рё РєРЅРѕРїРєР° РЅР°Р¶Р°С‚Р°, СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ 1, РїРѕРєР° РїРѕР»СѓС‡Р°С‚РµР»СЊ РЅРµ СЃР±СЂРѕСЃРёС‚
+#define CALL_COIL 4 // РљРЅРѕРїРєР° РІС‹Р·РѕРІР°. РџРѕСЃР»Рµ РїРѕР»СѓС‡РµРЅРёСЏ СЃР±СЂРѕСЃРёС‚СЊ
+#define WASH_BANNER_TEST_COIL 5 // РџРѕРєР°Р·Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РѕР± СѓРјС‹РІР°РЅРёРё
 
 #define KAKA_COUNT_INPUT_REG 0
 #define ERROR_CODE_INPUT_REG 1
-// Температура - влажность
+// РўРµРјРїРµСЂР°С‚СѓСЂР° - РІР»Р°Р¶РЅРѕСЃС‚СЊ
 #define TEMP_INPUT_REG 2
 #define HUM_INPUT_REG 3
 
@@ -60,26 +66,24 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 #define LAST_KAK_DAY_SEC_INPUT_REG 5
 #define LAST_KAK_HOUR_MIN_INPUT_REG 6
 
-// -------- Установка времени -----------------------------
+// -------- РЈСЃС‚Р°РЅРѕРІРєР° РІСЂРµРјРµРЅРё -----------------------------
 #define HOUR_MIN_HOLDING_REG 0
 #define DAY_SEC_HOLDING_REG 1
 #define YEAR_MONTH_HOLDING_REG 2
 
-#define SET_KAKA_COUNT_HOLDING_REG 3 // Если записать в этот регистр то данное число установится как количество покаканий
-// Кнопка пульта нажата. Надо сбрасывать после прочтения
+#define SET_KAKA_COUNT_HOLDING_REG 3 // Р•СЃР»Рё Р·Р°РїРёСЃР°С‚СЊ РІ СЌС‚РѕС‚ СЂРµРіРёСЃС‚СЂ С‚Рѕ РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ СѓСЃС‚Р°РЅРѕРІРёС‚СЃСЏ РєР°Рє РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРєР°РєР°РЅРёР№
+// РљРЅРѕРїРєР° РїСѓР»СЊС‚Р° РЅР°Р¶Р°С‚Р°. РќР°РґРѕ СЃР±СЂР°СЃС‹РІР°С‚СЊ РїРѕСЃР»Рµ РїСЂРѕС‡С‚РµРЅРёСЏ
 #define IR_KEY_HI_HOLDING_REG 4
 #define IR_KEY_LO_HOLDING_REG 5
 							   // Init the DS1302
 							   // Set pins:  CE, IO,CLK
-DS1302RTC RTC(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
+//DS1302RTC RTC(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
 //DHT dht(DHTPIN, DHTTYPE);
 dht DHT;
 LiquidCrystal lcd(A4, A5, 5, 9, 3, 2);//4
 
-									  //--------  MODBUS  -----------------------------
-									  //Задаём ведомому адрес, последовательный порт, выход управления TX
-Modbus slave(ID, 0, TXEN);
-// массив данных modbus
+
+// РјР°СЃСЃРёРІ РґР°РЅРЅС‹С… modbus
 #define modbusInputBufLen 7
 #define modbusHoldingBufLen 10
 uint16_t _MODBUSDiscreteInputs;
@@ -112,24 +116,51 @@ void printI00(int val, char delim);
 
 IRrecv irrecv(RECV_PIN);
 
+MyDeviceInfoTag myDeviceInfo =
+	{
+		DEVICE_NEED_TIME_SET,
+		SLAVE_ID_DEVICE_TYPE,
+		SLAVE_ID_DEVICE_SUB_TYPE,
+		SLAVE_ID_DEVICE_REVISION,
+		SLAVE_ID_DEVICE_NUMBER,
+		VENDOR_NAME,
+		PRODUCT_CODE,
+		MAJOR_MINOR_REVISION,
+		VENDOR_URL,
+		PRODUCT_NAME,
+		MODEL_NAME,
+		USER_APPLICATION_NAME
+	};
+
 void setup() {
-	// настраиваем входы и выходы
+	//--------  MODBUS  -----------------------------
+	//Р—Р°РґР°С‘Рј РІРµРґРѕРјРѕРјСѓ Р°РґСЂРµСЃ, РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚, РІС‹С…РѕРґ СѓРїСЂР°РІР»РµРЅРёСЏ TX
+
+	
+
+
+	Modbus(0, TXEN, &myDeviceInfo);
+
+	// РЅР°СЃС‚СЂР°РёРІР°РµРј РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹
 	io_setup();
 	LoadLastKakTime();
-	// настраиваем последовательный порт ведомого
-	slave.begin(9600);
+	// РЅР°СЃС‚СЂР°РёРІР°РµРј РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ РІРµРґРѕРјРѕРіРѕ
+	ModbusBegin(9600);
 
 
 
 	// put your setup code here, to run once:
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	//Serial.println("DHTxx test!");
 
 	pinMode(KAKA_PIN, INPUT_PULLUP);
 	pinMode(CALL_PIN, INPUT_PULLUP);
 
-	//Читаем счетчик из EEPROM:
-	SetKakaKount(EEPROM.read(KAKA_EEPROM_ADDRESS), false);
+	//Р§РёС‚Р°РµРј СЃС‡РµС‚С‡РёРє РёР· EEPROM:
+	uint8_t tmp = EEPROM[KAKA_EEPROM_ADDRESS];
+	if (tmp == 0xff)
+		tmp = 0;
+	SetKakaKount(tmp, false);
 
 	//dht.begin();
 	lcd.begin(16, 2);
@@ -144,7 +175,7 @@ void setup() {
 
 	oldMillis = millis();
 
-	// Очищаем буферы
+	// РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹
 	for (unsigned char i = 0; i < modbusInputBufLen; i++)
 		_MODBUSInputRegs[i] = 0;
 	for (unsigned char i = 0; i < modbusHoldingBufLen; i++)
@@ -155,7 +186,7 @@ void InitRtc()
 {
 	lcd.clear();
 	
-	if (RTC.haltRTC())
+	if (MyTimeHaltRtc())
 		lcd.print("Clock stpd! Set Time!");
 	else
 		lcd.print("Clock working.");
@@ -163,8 +194,8 @@ void InitRtc()
 	// Setup Time library
 	lcd.setCursor(0, 1);
 	lcd.print("RTC Sync");
-	setSyncProvider(RTC.get); // the function to get the time from the RTC
-	int timeStat = timeStatus();
+
+	timeStatus_t timeStat = MyTimeInitRtc();
 	if (timeStat == timeSet)
 		lcd.print(" Ok!");
 	else if (timeStat == timeNotSet)
@@ -199,12 +230,12 @@ int lastCallPinState = LOW;
 long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
-// день, для которого уже сброшено число памперсов с какашками
+// РґРµРЅСЊ, РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ СѓР¶Рµ СЃР±СЂРѕС€РµРЅРѕ С‡РёСЃР»Рѕ РїР°РјРїРµСЂСЃРѕРІ СЃ РєР°РєР°С€РєР°РјРё
 uint8_t resetDay = 0;
 
-// день, для которого уже показано сообщение чтоб умыться
+// РґРµРЅСЊ, РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ СѓР¶Рµ РїРѕРєР°Р·Р°РЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ С‡С‚РѕР± СѓРјС‹С‚СЊСЃСЏ
 uint8_t washDay = 0;
-// Режим вывода сообщения на экран. сбрасывается при нажатии кнопки КАКА
+// Р РµР¶РёРј РІС‹РІРѕРґР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅР° СЌРєСЂР°РЅ. СЃР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РљРђРљРђ
 bool isBannerMode = false;
 
 decode_results irResults;
@@ -223,7 +254,7 @@ void SaveLastKakTime(int cur_year, int cur_month, int cur_day, int cur_hour, int
 void LoadLastKakTime()
 {
 	uint16_t tmp = EEPROM[LAST_KAKA_TIME_EEPROM_ADDRESS];
-	// Если в память не записаны значения, там везде 0xff
+	// Р•СЃР»Рё РІ РїР°РјСЏС‚СЊ РЅРµ Р·Р°РїРёСЃР°РЅС‹ Р·РЅР°С‡РµРЅРёСЏ, С‚Р°Рј РІРµР·РґРµ 0xff
 	if (tmp == 0xff)
 	{
 		_MODBUSInputRegs[LAST_KAK_YEAR_MONTH_INPUT_REG] = 0;
@@ -245,14 +276,14 @@ void LoadLastKakTime()
 }
 
 void loop() {
-	if (Serial.available()) {
+	/*if (Serial.available()) {
 		auto inByte = Serial.peek();
 		if (inByte == 0xFB) //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		{
 			ResetArduino();
 			return;
 		}
-	}
+	}*/
 
 	if (irrecv.decode(&irResults)) {
 		_MODBUSHoldingRegs[IR_KEY_HI_HOLDING_REG] = irResults.value >> 16;
@@ -261,11 +292,10 @@ void loop() {
 			bitWrite(_MODBUSCoils, CALL_COIL, 1);
 		irrecv.resume(); // Receive the next value
 	}
+	// РѕР±СЂР°Р±РѕС‚РєР° СЃРѕРѕР±С‰РµРЅРёР№
+	state = ModbusPoll(_MODBUSDiscreteInputs, &_MODBUSCoils, _MODBUSInputRegs, modbusInputBufLen, _MODBUSHoldingRegs, modbusHoldingBufLen);
 
-	// обработка сообщений
-	state = slave.poll(_MODBUSDiscreteInputs, _MODBUSCoils, _MODBUSInputRegs, modbusInputBufLen, _MODBUSHoldingRegs, modbusHoldingBufLen);
-
-	//обновляем данные в регистрах Modbus и в пользовательской программе
+	//РѕР±РЅРѕРІР»СЏРµРј РґР°РЅРЅС‹Рµ РІ СЂРµРіРёСЃС‚СЂР°С… Modbus Рё РІ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕР№ РїСЂРѕРіСЂР°РјРјРµ
 	io_poll();
 	// ------------------------------------------------------------
 	auto curMillis = millis();
@@ -491,12 +521,32 @@ void ResetArduino()
 }
 
 void io_poll() {
-	// reset если в RESET_COIL было записано значение
-	if (bitRead(_MODBUSCoils, RESET_COIL))
+	// reset РµСЃР»Рё РІ RESET_COIL Р±С‹Р»Рѕ Р·Р°РїРёСЃР°РЅРѕ Р·РЅР°С‡РµРЅРёРµ
+//	if (bitRead(_MODBUSCoils, RESET_COIL))
+//	{
+//		ResetArduino();
+//		return;
+//	}
+
+	uint16_t lastAddress;
+	uint16_t lastEndAddress;
+	uint8_t lastCommand;
+	//uint16_t lastCount;
+	uint8_t *lastFunction = ModbusGetLastCommand(&lastAddress, &lastEndAddress, &lastCommand);
+	if (*lastFunction == MB_FC_NONE)
+		return;
+	lastEndAddress += lastAddress - 1;
+
+	uint8_t v1;
+	if (*lastFunction == MB_FC_SYSTEM_COMMAND)
 	{
-		ResetArduino();
+		if (lastCommand == MB_COMMAND_SET_ADDRESS)
+		{
+			//EEPROM.write(EE_MODBUS_ID, ModbusGetID());
+		}
 		return;
 	}
+
 
 	if (bitRead(_MODBUSCoils, CALL_COIL))
 	{
@@ -528,36 +578,6 @@ void io_poll() {
 		_MODBUSHoldingRegs[SET_KAKA_COUNT_HOLDING_REG] = 0;
 	}
 
-	// --------------- SET TIME -----------------------
-	auto hourMin = _MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG];
-	if (hourMin != 0 && hourMin != 0xFFFF)
-	{
-		auto daySec = _MODBUSHoldingRegs[DAY_SEC_HOLDING_REG];
-		auto yearMonth = _MODBUSHoldingRegs[YEAR_MONTH_HOLDING_REG];
-		time_t t1;
-		tmElements_t tm;
-		tm.Year = y2kYearToTm(yearMonth >> 8);
-		tm.Month = yearMonth & 0xFF;
-		tm.Day = daySec >> 8;
-		tm.Hour = hourMin >> 8;
-		tm.Minute = hourMin & 0xFF;
-		tm.Second = daySec & 0xFF;
-		t1 = makeTime(tm);
-
-		//setTime(hourMin >> 8, hourMin & 0xFF, daySec & 0xFF, daySec >> 8, yearMonth & 0xFF, tmYearToCalendar(yearMonth >> 8));
-
-
-		if (RTC.set(t1) == 0)
-		{ // Success
-			_MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG] = 0xFFFF;
-			InitRtc();
-		}
-		else
-			_MODBUSHoldingRegs[HOUR_MIN_HOLDING_REG] = 0x0000;
-
-		_MODBUSHoldingRegs[DAY_SEC_HOLDING_REG] = 0;
-		_MODBUSHoldingRegs[YEAR_MONTH_HOLDING_REG] = 0;
-	}
 
 
 
@@ -582,17 +602,17 @@ void io_poll() {
 	}
 	}*/
 
-	//Копируем Coil[1] в Discrete[0]
+	//РљРѕРїРёСЂСѓРµРј Coil[1] РІ Discrete[0]
 	//au16data[0] = au16data[1];
-	//Выводим значение регистра 1.3 на светодиод
+	//Р’С‹РІРѕРґРёРј Р·РЅР°С‡РµРЅРёРµ СЂРµРіРёСЃС‚СЂР° 1.3 РЅР° СЃРІРµС‚РѕРґРёРѕРґ
 	//digitalWrite( ledPin, bitRead( au16data[1], 3 ));
-	//Сохраняем состояние кнопки в регистр 0.3
+	//РЎРѕС…СЂР°РЅСЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРєРё РІ СЂРµРіРёСЃС‚СЂ 0.3
 	//bitWrite( au16data[0], 3, _moveDetected);//digitalRead( sensorPin )
-	//Копируем Holding[5,6,7] в Input[2,3,4]
+	//РљРѕРїРёСЂСѓРµРј Holding[5,6,7] РІ Input[2,3,4]
 
 	//au16data[3] = au16data[6];
 	//au16data[4] = au16data[7];
-	//Сохраняем в регистры отладочную информацию
+	//РЎРѕС…СЂР°РЅСЏРµРј РІ СЂРµРіРёСЃС‚СЂС‹ РѕС‚Р»Р°РґРѕС‡РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
 	//au16data[8] = slave.getInCnt();
 	//au16data[9] = slave.getOutCnt();
 	//au16data[10] = slave.getErrCnt();

@@ -23,6 +23,17 @@
                 <Grid>
 
                     <ListBox x:Name="LbLog" Margin="10,182,10,10.2"/>
+                    <Button x:Name="BGmail" Content="Gmail" HorizontalAlignment="Left" Height="68" Margin="108,71,0,0" VerticalAlignment="Top" Width="214" Click="BGmail_Click"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Skype">
+                <Grid>
+                    <StackPanel>
+                        <CheckBox x:Name="CbSkypeConnected" IsEnabled="False" Content="Skype connected" HorizontalAlignment="Left" VerticalAlignment="Top" Width="121"/>
+                        <CheckBox x:Name="CbSkypeUnreaded" IsEnabled="False" Content="Есть непрочитанные сообщения" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        
+                    </StackPanel>
 
                 </Grid>
             </TabItem>

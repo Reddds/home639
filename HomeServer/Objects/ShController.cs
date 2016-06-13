@@ -554,6 +554,8 @@ namespace HomeServer.Objects
             private ushort GetWordValue(HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue val,
                 IReadOnlyList<int> requestData)
             {
+                if (val == null)
+                    return 0;
                 switch (val.Type)
                 {
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SendCommand.WordValue.WordTypes.Zero:
@@ -766,6 +768,7 @@ namespace HomeServer.Objects
             // Пытаемся установить адрес
             if (!SetDesiredAddress(modbus))
                 return false;
+            Console.WriteLine($"Address for {_slaveId[0]}.{_slaveId[1]}.{_slaveId[2]}.{_slaveId[3]} changed to {SlaveAddress}");
 
             return CheckSlaveId(modbus, SlaveAddress) == true;
         }

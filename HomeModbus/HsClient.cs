@@ -144,7 +144,8 @@ namespace HomeModbus
         /// <param name="message"></param>
         public void SendMessage(string topic, string message)
         {
-            _mqttClient.Publish($"/{HsEnvelope.HomeServerTopic}/{topic}", Encoding.UTF8.GetBytes(message), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            var msgId = _mqttClient.Publish($"/{HsEnvelope.HomeServerTopic}/{topic}", Encoding.UTF8.GetBytes(message), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            Console.WriteLine($"MQTT sent/ Message Id = {msgId}");
         }
 
         Action<object> FindActionByParameterId(string actionId)

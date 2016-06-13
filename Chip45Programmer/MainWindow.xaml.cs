@@ -631,6 +631,26 @@ namespace Chip45Programmer
             RunWorker(_chip45.Program, arg: arg);
         }
 
+        private void BFillEepromClick(object sender, RoutedEventArgs e)
+        {
+            if (IudEepromBytesToRead.Value == null)
+            {
+                MessageBox.Show("Enter fbll size!");
+                return;
+            }
+            var arg = new Chip45.ProgramOptions
+            {
+                ProgramType = Chip45.ProgramTypes.FillEeprom,
+                EepromFillByte = 0xff,
+                EepromFillCount = IudEepromBytesToRead.Value.Value
+            };
+            if (CbEepromWriteDelay.IsChecked == true && IudEepromWriteDelay.Value != null)
+                arg.EepromWriteDelay = IudEepromWriteDelay.Value.Value;
+
+            RunWorker(_chip45.Program, arg: arg);
+        }
+
+
         private void BReadEepromClick(object sender, RoutedEventArgs e)
         {
             var sfd = new SaveFileDialog
@@ -1238,6 +1258,24 @@ namespace Chip45Programmer
                 sb.Append($"{b:X2} ");
             }
             MessageBox.Show(sb.ToString());
+        }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            // Flash
+            if (string.IsNullOrWhiteSpace(FpFlash.FileName))
+            {
+                LFlashFileModified.Content = null;
+                return;
+            }
+            if (!File.Exists(FpFlash.FileName))
+            {
+                LFlashFileModified.Content = null;
+                return;
+            }
+            var fi = new FileInfo(FpFlash.FileName);
+            LFlashFileModified.Content = fi.LastWriteTime.ToString("F");
+            
         }
     }
 }

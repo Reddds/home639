@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -14,7 +12,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Chip45ProgrammerLib;
 using DevExpress.Xpf.Charts;
+using DevExpress.Xpf.Docking;
 using DevExpress.Xpf.Gauges;
+using HomeBasePlugin;
 using HomeModbus.Controls;
 using HomeModbus.Models;
 using HomeModbus.Models.Base;
@@ -24,7 +24,8 @@ using log4net;
 using log4net.Config;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using LayoutGroup = DevExpress.Xpf.Docking.LayoutGroup;
+using SKYPE4COMLib;
+using Application = System.Windows.Application;
 
 // Import log4net classes.
 
@@ -192,6 +193,13 @@ namespace HomeModbus
 
             ConnectToServer();
 
+            // Starting plugins
+            if(_plugins != null)
+                foreach (var homePlugin in _plugins)
+                {
+                    homePlugin.Start();
+                }
+
             SystemEvents.PowerModeChanged += OnPowerChanged;
 
             LoadSoundJson();
@@ -279,6 +287,101 @@ namespace HomeModbus
 
         private void ApplySettings()
         {
+            ProcessPlugins();
+            ProcessRooms();
+
+        }
+
+        private Skype skype;
+
+
+        private List<IHomePlugin> _plugins;
+
+
+        void SendEcho(HomeClientSettings.Plugin.PluginEvent.EchoValue echo, string value)
+        {
+            var arguments = string.Empty;
+            if (echo.Arguments != null &&
+                echo.Arguments.Length > 0)
+            {
+                var tmpArg = new List<string>();
+                foreach (var argument in echo.Arguments)
+                {
+                    switch (argument.Type)
+                    {
+                        case HomeClientSettings.Plugin.PluginEvent.EchoValue.Argument.ArgumentTypes.Literal:
+                            tmpArg.Add(argument.Value.ToString());
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                arguments = "," + string.Join(",", tmpArg);
+            }
+            switch (echo.Type)
+            {
+
+                case HomeClientSettings.Plugin.PluginEvent.EchoValue.EchoTypes.Setter:
+                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{echo.Id}", $"{value}{arguments}");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+        }
+
+        private void ProcessPlugins()
+        {
+            foreach (var plugin in _homeSettings.Plugins)
+            {
+                if (plugin.Name == "Skype")
+                {
+                    skype = new Skype();
+                    try
+                    {
+                        foreach (var pluginEvent in plugin.Events)
+                        {
+                            if (pluginEvent.Name == "OnUnreadMessages")
+                            {
+                                //подписываемся на новые сообщения
+                                skype.MessageStatus += (message, status) =>
+                                {
+                                    SendEcho(pluginEvent.Echo, (skype.MissedMessages.Count > 0 || skype.MissedChats.Count > 0 ? 1 : 0).ToString());
+                                };
+                            }
+                        }
+                        //пытаемся присоединиться к скайпу. В данный момент вылезет окошко, где он у вас спросит разрешения на открытие доступа программе.
+                        //5 это версия протокола (идёт по-умолчанию), true - отключить ли отваливание по таймауту для запроса к скайпу.
+                        skype.Attach();
+                        Console.WriteLine("skype attached");
+                    }
+                    catch (Exception ex)
+                    {
+                        //выводим в консольку, если что-то не так
+                        Console.WriteLine("top lvl exception : " + ex);
+                    }
+
+                }
+                else if (plugin.Name == "GmailNotify")
+                {
+                    if (_plugins == null)
+                        _plugins = new List<IHomePlugin>();
+                    var gmailNotify = new GmailNotify.GmailNotify();
+                    foreach (var pluginEvent in plugin.Events)
+                    {
+                        gmailNotify.SetEventHendler(plugin.Events[0].Name, objects =>
+                        {
+                            SendEcho(pluginEvent.Echo, objects != null && objects.Length > 0 ? "1" : "0");
+                        });
+                    }
+                    _plugins.Add(gmailNotify);                    
+                }
+            }
+
+        }
+
+        private void ProcessRooms()
+        {
             foreach (var room in _homeSettings.Rooms)
             {
                 var roomTab = new RoomTab { Header = room.Name };
@@ -342,7 +445,7 @@ namespace HomeModbus
                 sendCommandSetter.BMain.Click += (sender, args) =>
                 {
                     _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}",
-                        $"{sendCommandSetter.IudCommand.Value},{sendCommandSetter.IudCommandData.Value},"+
+                        $"{sendCommandSetter.IudCommand.Value},{sendCommandSetter.IudCommandData.Value}," +
                         $"{sendCommandSetter.IudAdditionalData1.Value >> 8},{sendCommandSetter.IudAdditionalData1.Value & 0xff}," +
                         $"{sendCommandSetter.IudAdditionalData2.Value >> 8},{sendCommandSetter.IudAdditionalData2.Value & 0xff}," +
                         $"{sendCommandSetter.IudAdditionalData3.Value >> 8},{sendCommandSetter.IudAdditionalData3.Value & 0xff}");
@@ -913,7 +1016,7 @@ namespace HomeModbus
             {
                 var soundObjs = JsonConvert.DeserializeObject<TabloSounds[]>(TbSoundJson.Text);
                 File.WriteAllText(SoundJsonFile, TbSoundJson.Text);
-                bytes.Add((byte) soundObjs.Length);
+                bytes.Add((byte)soundObjs.Length);
 
                 var curOffset = 0;
                 for (var i = 0; i < soundObjs.Length; i++)
@@ -932,10 +1035,10 @@ namespace HomeModbus
                     }
                 }
 
-//                var strBytes = bytes.Select(b => $"{b:X}").ToList();
-//                var msg = string.Join(",", strBytes);
-//                _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
-//                MessageBox.Show("Звуки отправлены!");
+                //                var strBytes = bytes.Select(b => $"{b:X}").ToList();
+                //                var msg = string.Join(",", strBytes);
+                //                _client.SendMessage(HsEnvelope.ControllersSetValue + "/bolid_bi_write_all_sounds", msg);
+                //                MessageBox.Show("Звуки отправлены!");
             }
             catch (Exception ee)
             {
@@ -993,5 +1096,43 @@ namespace HomeModbus
             }
 
         }
+
+        private void BGmail_Click(object sender, RoutedEventArgs e)
+        {
+            //var gn = new GmailNotify.GmailNotify.GmailNotify();
+
+        }
+
+        //инициализируем объект класса Skype, с ним в дальнейшем и будем работать
+        /*
+                private void button_Click_2(object sender, RoutedEventArgs e)
+                {
+                    try
+                    {
+                        //подписываемся на новые сообщения
+                        skype.MessageStatus += OnMessageReceived;
+
+                        //пытаемся присоединиться к скайпу. В данный момент вылезет окошко, где он у вас спросит разрешения на открытие доступа программе.
+                        //5 это версия протокола (идёт по-умолчанию), true - отключить ли отваливание по таймауту для запроса к скайпу.
+                        skype.Attach();
+                        Console.WriteLine("skype attached");
+                    }
+                    catch (Exception ex)
+                    {
+                        //выводим в консольку, если что-то не так
+                        Console.WriteLine("top lvl exception : " + ex.ToString());
+                    }
+                }
+
+                private void OnMessageReceived(ChatMessage pmessage, TChatMessageStatus status)
+                {
+                    //суть такова, что для каждого сообщения меняется несколько статусов, поэтому мы ловим только те, у которых статус cmsReceived + это не позволит в будущем реагировать нашему боту на свои же сообщения
+                    //if (status == TChatMessageStatus.cmsReceived)
+                    {
+                        Console.WriteLine($"{status}: {pmessage.Body}");
+                    }
+                    Console.WriteLine($"Missed {skype.MissedMessages.Count}");
+                }
+        */
     }
 }

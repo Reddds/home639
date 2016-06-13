@@ -8,7 +8,7 @@
         xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
         mc:Ignorable="d"
         Title="Chip45boot2Program" Height="470.275" Width="858.851" Closed="Window_Closed" Closing="Window_Closing"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}" Icon="chip.ico">
+        DataContext="{Binding RelativeSource={RelativeSource Self}}" Icon="chip.ico" Activated="Window_Activated">
     <xctk:BusyIndicator x:Name="BiMain" BusyContent="{Binding}">
         <xctk:BusyIndicator.BusyContentTemplate>
             <DataTemplate DataType="local:MainWindow">
@@ -32,67 +32,77 @@
         </xctk:BusyIndicator.ProgressBarStyle>
 
         <Grid>
-            <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="104" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
-                <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Click="TogglePortClick">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Padding" Value="0"></Setter>
-                                    <!--<Setter Property="Template">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="520"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="115"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="100"/>
+                </Grid.RowDefinitions>
+                <GroupBox x:Name="GbConnection" HorizontalAlignment="Left" Height="104" Margin="10,10,0,0" VerticalAlignment="Top" Width="231">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Click="TogglePortClick">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Padding" Value="0"></Setter>
+                                        <!--<Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>
                                                 <ContentPresenter Content="{Binding Content}"/>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>-->
-                                </Style>
-                            </Button.Style>
-                            <Rectangle Width="16" Height="16" Stroke="Black">
-                                <Rectangle.Style>
-                                    <Style TargetType="Rectangle">
-                                        <Setter Property="Fill" Value="#FFF4F4F5"></Setter>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding PortOpened}" Value="True">
-                                                <Setter Property="Fill" Value="LimeGreen"></Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
                                     </Style>
-                                </Rectangle.Style>
+                                </Button.Style>
+                                <Rectangle Width="16" Height="16" Stroke="Black">
+                                    <Rectangle.Style>
+                                        <Style TargetType="Rectangle">
+                                            <Setter Property="Fill" Value="#FFF4F4F5"></Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding PortOpened}" Value="True">
+                                                    <Setter Property="Fill" Value="LimeGreen"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Rectangle.Style>
 
-                            </Rectangle>
+                                </Rectangle>
 
-                        </Button>
-                        <TextBlock Margin="5,0,0,0">Connection port</TextBlock>
-                    </StackPanel>
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.Style>
-                        <Style TargetType="Grid">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Connected}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="24"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="Select COM port" />
-                    <ListBox Grid.Row="1" Grid.Column="0" Margin="5" x:Name="LbPorts" SelectionChanged="SelectPort" />
-                    <Label Grid.Row="0" Grid.Column="1" Content="Baudrate" />
-                    <ListBox Grid.Row="1" Grid.Column="1" x:Name="LbBaudRates" SelectionChanged="SelectBaudrate" Margin="5" />
+                            </Button>
+                            <TextBlock Margin="5,0,0,0">Connection port</TextBlock>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Connected}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="24"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="Select COM port" />
+                        <ListBox Grid.Row="1" Grid.Column="0" Margin="5" x:Name="LbPorts" SelectionChanged="SelectPort" />
+                        <Label Grid.Row="0" Grid.Column="1" Content="Baudrate" />
+                        <ListBox Grid.Row="1" Grid.Column="1" x:Name="LbBaudRates" SelectionChanged="SelectBaudrate" Margin="5" />
 
 
-                </Grid>
-            </GroupBox>
-            <GroupBox Header="Mini Terminal" IsEnabled="{Binding PortOpened}" HorizontalAlignment="Left" Height="198" Margin="10,119,0,0" VerticalAlignment="Top" Width="312">
+                    </Grid>
+                </GroupBox>
+            <GroupBox Grid.Row="1" Header="Mini Terminal" IsEnabled="{Binding PortOpened}" Margin="5">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -110,7 +120,15 @@
                     <ListBox Grid.Row="2" x:Name="LbLog"  Margin="5" />
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Programming" HorizontalAlignment="Left" Height="385" Margin="327,10,0,0" VerticalAlignment="Top" Width="516">
+            <GroupBox Grid.Row="2" x:Name="groupBox" Header="Utils" Margin="5">
+                <StackPanel>
+                    <Button Width="250" Height="23" Click="Button_Click" Margin="10, 5">Convert from binary file to Intel Hex</Button>
+                    <Button Width="250" Height="23" Click="ConvertToUnfragmentedHexClick" Margin="10, 5">Convert Hex to UnfragmentedHex</Button>
+                </StackPanel>
+            </GroupBox>
+
+            </Grid>
+            <GroupBox Grid.Column="1" Header="Programming" Margin="5">
                 <StackPanel>
                     <GroupBox Header="Bootloaders">
                         <TabControl x:Name="TcBootloaders">
@@ -192,7 +210,7 @@
                                         <xctk:IntegerUpDown x:Name="IudByteAddress" Width="65" ParsingNumberStyle="HexNumber" FormatString="X" VerticalAlignment="Center" HorizontalAlignment="Center" Value="0x300000"/>
 
                                         <Button Click="Ds30ReadByteClick" Margin="5">Read byte</Button>
-                                        
+
                                         <Button Click="Ds30SendConfigByteClick" Margin="5">Send config byte</Button>
                                     </StackPanel>
                                 </StackPanel>
@@ -214,7 +232,7 @@
                             <rdControls:FilePicker Grid.Row="0" Grid.Column="1" x:Name="FpFlash" SettingKey="Prog" Filter="HEX|*.hex" FileSelected="FpFlash_FileSelected" />
 
                             <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="BProgramFlash" Content="Program Flash" HorizontalAlignment="Left" Height="23"  Width="150" Click="BProgramFlashClick"/>
-
+                            <Label Grid.Row="1" Grid.Column="1" x:Name="LFlashFileModified" HorizontalAlignment="Left"  VerticalAlignment="Center" Width="200" Content="" Margin="72,0,0,0" Foreground="Gray"/>
                         </Grid>
                     </GroupBox>
                     <GroupBox  IsEnabled="{Binding Connected}" Header="EEPROM" Height="115" >
@@ -233,7 +251,8 @@
 
                             <rdControls:FilePicker Grid.Row="0" Grid.Column="1" x:Name="FpEeprom" SettingKey="Eeprom" Filter="Eeprom|*.eep;*.hex" FileSelected="FpFlashEepromSelected" />
                             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                <Button x:Name="BProgramEeprom" Content="Program Eeprom" Height="23"  Width="150" Click="BProgramEepromClick" IsEnabled="False"/>
+                                <Button x:Name="BProgramEeprom" Content="Program Eeprom" Height="23"  Width="130" Click="BProgramEepromClick" IsEnabled="False"/>
+                                <Button x:Name="BFillEeprom" Content="Fill Eeprom" Height="23"  Width="90" Click="BFillEepromClick" Margin="10,0"/>
                                 <CheckBox x:Name="CbEepromWriteDelay" Content="Eeprom write delay" Margin="20,0,5,0" VerticalAlignment="Center" ToolTip="Delay between every line in hex file"/>
                                 <xctk:IntegerUpDown x:Name="IudEepromWriteDelay" Width="60" VerticalAlignment="Center" Maximum="5000" Minimum="0" Increment="100" DefaultValue="100" Text="100"  ToolTip="Delay between every line in hex file"/>
                                 <Label Content="ms" VerticalAlignment="Center"/>
@@ -241,7 +260,7 @@
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
                                 <Button  Content="Read Eeprom from chip" Height="23" Width="150" Click="BReadEepromClick"/>
-                                <Label Content="Bytes to read" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center"/>
+                                <Label Content="Bytes to read or fill" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center"/>
                                 <xctk:IntegerUpDown x:Name="IudEepromBytesToRead" VerticalAlignment="Center" Maximum="32767" Minimum="1" Increment="512" DefaultValue="512" Text="512"/>
 
                             </StackPanel>
@@ -249,12 +268,6 @@
                         </Grid>
                     </GroupBox>
 
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="groupBox" Header="Utils" HorizontalAlignment="Left" Height="89" Margin="10,322,0,0" VerticalAlignment="Top" Width="312">
-                <StackPanel>
-                    <Button Width="250" Height="23" Click="Button_Click" Margin="10, 5">Convert from binary file to Intel Hex</Button>
-                    <Button Width="250" Height="23" Click="ConvertToUnfragmentedHexClick" Margin="10, 5">Convert Hex to UnfragmentedHex</Button>
                 </StackPanel>
             </GroupBox>
         </Grid>

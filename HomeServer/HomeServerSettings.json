@@ -1,11 +1,12 @@
 ﻿{
     "ControllerGroups": [
-        /*{
+        {
             "Name": "Спальня",
             "Controllers": [
                 {
                     "Id": "con_2",
                     "Name": "Контроллер 1",
+                    "SlaveId": "2.1.1.0",
                     "ModbusAddress": 2,
                     "Parameters": [
                         {
@@ -47,7 +48,29 @@
                             "ModbusType": "Coil",
                             "ModbusIndex": 4,
                             "BoolDefault": false,
-                            "Retain": true
+                            "Retain": true,
+                            "Echo": {
+                                "Type": "Setter",
+                                "Id": "bolid_bi_light_status",
+                                "Arguments": [
+                                    {
+                                        "Type": "Literal", // Led num
+                                        "Value": 4
+                                    },
+                                    {
+                                        "Type": "Literal", // blink
+                                        "Value": 1
+                                    },
+                                    {
+                                        "Type": "Literal", // sound id
+                                        "Value": 1
+                                    },
+                                    {
+                                        "Type": "Literal", // sound duration
+                                        "Value": 0
+                                    }
+                                ]
+                            }
                         },
                         {
                             "Id": "ir_key",
@@ -77,6 +100,7 @@
                 {
                     "Id": "con_1",
                     "Name": "Контроллер 1",
+                    "SlaveId": "3.1.1.0",
                     "ModbusAddress": 1,
                     "Parameters": [
                         {
@@ -84,13 +108,35 @@
                             "Name": "Движение и свет",
                             "ModbusType": "Discrete",
                             "ModbusIndex": 3,
-                            "Retain": true
+                            "Retain": true,
+                            "Echo": {
+                                "Type": "Setter",
+                                "Id": "bolid_bi_light_status",
+                                "Arguments": [
+                                    {
+                                        "Type": "Literal", // Led num
+                                        "Value": 2
+                                    },
+                                    {
+                                        "Type": "Literal", // blink
+                                        "Value": 1
+                                    },
+                                    {
+                                        "Type": "Literal", // sound id
+                                        "Value": 0
+                                    },
+                                    {
+                                        "Type": "Literal", // sound duration
+                                        "Value": 0
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
             ]
         },
-        {
+       /* {
             "Name": "Ванна",
             "Controllers": [
                 {
@@ -120,12 +166,14 @@
 
 
         {
+            "Disabled": false,
             "Name": "Табло",
             "Controllers": [
                 {
+                    "Disabled": false,
                     "Id": "bolidBi",
                     "Name": "Блок индикации",
-                    "SlaveId": "1.1.1.1",//!!!!!!!!!
+                    "SlaveId": "1.1.1.0",
                     "ModbusAddress": 10,
                     "Parameters": [
                         {
@@ -250,9 +298,9 @@
                                 }
                             }
                         },
-                        /*{
-                            "Id": "bolid_bi_light_alarm",
-                            "Name": "Включение/выключение тревоги",
+                        {
+                            "Id": "bolid_bi_light_status",
+                            "Name": "Включение/выключение статусного светодиода",
                             "Type": "Command",
                             "Command": {
                                 "Id": {
@@ -265,14 +313,14 @@
                                         {
                                             "Index": 0,
                                             "Count": 3,
-                                            "Type": "Literal",
-                                            "Value": 2
+                                            "Type": "FromRequest",
+                                            "ParamIndex": 1
                                         },
                                         {
                                             "Index": 6,
                                             "Count": 1, // blink
-                                            "Type": "Literal",
-                                            "Value": 1
+                                            "Type": "FromRequest",
+                                            "ParamIndex": 2
                                         },
                                         {
                                             "Index": 7,
@@ -285,16 +333,16 @@
                                 "Additional1": {
                                     "Type": "TwoBytesFromRequest",
                                     "Hi": {
-                                        "Type": "Literal",
-                                        "Value": 0
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 3
                                     },
                                     "Lo": {
-                                        "Type": "Literal",
-                                        "Value": 0
+                                        "Type": "FromRequest",
+                                        "ParamIndex": 4
                                     }
                                 }
                             }
-                        },*/
+                        },
                         {
                             "Id": "bolid_bi_write_all_events",
                             "Name": "Запись всех событий таблицей",

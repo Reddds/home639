@@ -213,6 +213,65 @@
                 }
             ]
         }
+    ],
+    "Plugins": [
+        {
+            "Name": "Skype",
+            "Events": [
+                {
+                    "Name": "OnUnreadMessages",
+                    "Echo": {
+                        "Id": "bolid_bi_light_status",
+                        "Arguments": [
+                            {
+                                "Type": "Literal", // Led num
+                                "Value": 1
+                            },
+                            {
+                                "Type": "Literal", // blink
+                                "Value": 1
+                            },
+                            {
+                                "Type": "Literal", // sound id
+                                "Value": 1
+                            },
+                            {
+                                "Type": "Literal", // sound duration
+                                "Value": 0
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "Name": "GmailNotify",
+            "Events": [
+                {
+                    "Name": "OnUnreadMail",
+                    "Echo": {
+                        "Id": "bolid_bi_light_status",
+                        "Arguments": [
+                            {
+                                "Type": "Literal", // Led num
+                                "Value": 0
+                            },
+                            {
+                                "Type": "Literal", // blink
+                                "Value": 1
+                            },
+                            {
+                                "Type": "Literal", // sound id
+                                "Value": 1
+                            },
+                            {
+                                "Type": "Literal", // sound duration
+                                "Value": 0
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
     ]
-
 }

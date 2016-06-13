@@ -45,10 +45,12 @@ namespace Chip45ProgrammerLib
 {
     public class Chip45
     {
-        public enum ProgramTypes { Flash, Eeprom }
+        public enum ProgramTypes { Flash, Eeprom, FillEeprom }
         public class ProgramOptions
         {
             public ProgramTypes ProgramType { get; set; }
+            public byte EepromFillByte { get; set; }
+            public int EepromFillCount { get; set; }
             public string ProgramFile { get; set; }
             public int EepromWriteDelay { get; set; }
         }
@@ -61,7 +63,7 @@ namespace Chip45ProgrammerLib
 
         public class ReadEepromOptions
         {
-            public string EepromSaveFileName { get; set; } 
+            public string EepromSaveFileName { get; set; }
             public int BytesToRead { get; set; }
         }
 
@@ -80,37 +82,37 @@ namespace Chip45ProgrammerLib
             _log = log;
         }
 
-/*        /// <summary>
-        /// Если методы запускаются в одном потоке без BackgroundWorker,
-        /// то выводим прогресс в консоль
-        /// </summary>
-        /// <param name="worker"></param>
-        /// <param name="percent"></param>
-        /// <param name="msg"></param>
-        private void ConsoleProgress(BackgroundWorker worker, int percent, string msg = null)
-        {
-            if (worker != null && worker.WorkerReportsProgress)
-            {
-                worker.ReportProgress(percent, msg);
-                return;
-            }
-            Console.Write(".");
-/*
-            Console.Write("\r                                                                          ");
-            Console.Write("\r[");
-            var i = 0;
-            for (; i < percent; i += 5)
-            {
-                Console.Write("#");
-            }
-            for (; i < 100; i += 5)
-            {
-                Console.Write(".");
-            }
-            Console.Write($"] {msg}");
-#1#
+        /*        /// <summary>
+                /// Если методы запускаются в одном потоке без BackgroundWorker,
+                /// то выводим прогресс в консоль
+                /// </summary>
+                /// <param name="worker"></param>
+                /// <param name="percent"></param>
+                /// <param name="msg"></param>
+                private void ConsoleProgress(BackgroundWorker worker, int percent, string msg = null)
+                {
+                    if (worker != null && worker.WorkerReportsProgress)
+                    {
+                        worker.ReportProgress(percent, msg);
+                        return;
+                    }
+                    Console.Write(".");
+        /*
+                    Console.Write("\r                                                                          ");
+                    Console.Write("\r[");
+                    var i = 0;
+                    for (; i < percent; i += 5)
+                    {
+                        Console.Write("#");
+                    }
+                    for (; i < 100; i += 5)
+                    {
+                        Console.Write(".");
+                    }
+                    Console.Write($"] {msg}");
+        #1#
 
-        }*/
+                }*/
 
         /// <summary>
         /// Получаем количество миллисекунд, прошедших с определённого времени
@@ -125,29 +127,29 @@ namespace Chip45ProgrammerLib
         public void ConnectBootloader(object sender, DoWorkEventArgs e)
         {
             var worker = sender as BackgroundWorker;
- 
-            var opts = (ConnectOptions) e.Argument;
+
+            var opts = (ConnectOptions)e.Argument;
 
 
             if (opts.BytesBeforeConnect != null)
             {
-                if(worker != null)
+                if (worker != null)
                     worker.ReportProgress(0, "Send prestring...");
                 else
                     _log("Send prestring...");
                 _port.Write(opts.BytesBeforeConnect, 0, opts.BytesBeforeConnect.Length);
-                if(opts.PreStringTimeoutAfterMs > 0)
+                if (opts.PreStringTimeoutAfterMs > 0)
                     Thread.Sleep(opts.PreStringTimeoutAfterMs);
             }
 
             // How many ms to wait for bootloader prompt
             const int initialTimeOut = 60000; //60000;
-            const double progressStep = 100d / (initialTimeOut/1000d);
-            
-//            QTime t;
-//            t.start();
-//            QTime t2;
-//            t2.start();
+            const double progressStep = 100d / (initialTimeOut / 1000d);
+
+            //            QTime t;
+            //            t.start();
+            //            QTime t2;
+            //            t2.start();
             var avail = false;
 
             var prompt = string.Empty;
@@ -169,14 +171,14 @@ namespace Chip45ProgrammerLib
                 //  and falling edges of four consecutive characters 'U' at the host's baud to
                 //  determine its correct baud rate prescaler."
 
-//                port->putChar('U');
-//                port->putChar('U');
-//                port->putChar('U');
-//                port->putChar('U');
-//                port->putChar('\n');
-//
-//
-//                port->flushOutBuffer();
+                //                port->putChar('U');
+                //                port->putChar('U');
+                //                port->putChar('U');
+                //                port->putChar('U');
+                //                port->putChar('\n');
+                //
+                //
+                //                port->flushOutBuffer();
                 _port.Write("UUUU\n");
 
 
@@ -187,7 +189,7 @@ namespace Chip45ProgrammerLib
                     curProgress += progressStep;
 
                     if (worker != null)
-                        worker.ReportProgress((int) curProgress);
+                        worker.ReportProgress((int)curProgress);
                     else
                         Console.Write(".");// <<  << flush;
                     startTime2 = DateTime.Now;
@@ -218,7 +220,12 @@ namespace Chip45ProgrammerLib
                     }
                 }
             }
-            
+            if (worker != null && worker.CancellationPending)
+            {
+                _log("Connection aborted");
+                e.Result = false;
+                return;
+            }
             if (_debug)
                 _log("Read " + prompt.Length + " bytes: " + FormatControlChars(prompt));
             if (connected && _verbose)
@@ -243,7 +250,7 @@ namespace Chip45ProgrammerLib
                 _log("Bootloader " + prompt.Substring(5).Trim());
 
             // Flush
-            if(_verbose)
+            if (_verbose)
                 Console.WriteLine("Flush");
             SafetyReadExisting();
             Thread.Sleep(10);
@@ -297,17 +304,17 @@ namespace Chip45ProgrammerLib
         public void ReadEeprom(object sender, DoWorkEventArgs e)
         {
             var worker = sender as BackgroundWorker;
-            var opts = (ReadEepromOptions) e.Argument;
+            var opts = (ReadEepromOptions)e.Argument;
             var hexFile = new HexFile(_log, true);
 
             var readStr = new StringBuilder();
             var consoleWriteCounter = 0;
             for (var i = 0; i < opts.BytesToRead; ++i)
             {
-                if (i%16 == 0)
+                if (i % 16 == 0)
                 {
                     if (worker != null)
-                        worker.ReportProgress((int) (i*100d/opts.BytesToRead), "Reading Eeprom...");
+                        worker.ReportProgress((int)(i * 100d / opts.BytesToRead), "Reading Eeprom...");
                     else
                     {
                         if (consoleWriteCounter == 80)
@@ -351,18 +358,40 @@ namespace Chip45ProgrammerLib
         public void Program(object sender, DoWorkEventArgs e)
         {
             var worker = sender as BackgroundWorker;
-            var opts = (ProgramOptions) e.Argument;
+            var opts = (ProgramOptions)e.Argument;
 
-            var flashHexFile = new HexFile(_log, _verbose, emptyByte:0xff);
-                if (!flashHexFile.Load(opts.ProgramFile))
+            HexFile flashHexFile = null;
+            if (opts.ProgramType != ProgramTypes.FillEeprom)
+            {
+                flashHexFile = new HexFile(_log, _verbose, emptyByte: 0xff);
+                try
                 {
-                    _log("Failed to load file '" + opts.ProgramFile + "': " + flashHexFile.ErrorString);
+                    if (!flashHexFile.Load(opts.ProgramFile))
+                    {
+                        _log("Failed to load file '" + opts.ProgramFile + "': " + flashHexFile.ErrorString);
+                        e.Result = false;
+                        return;
+                    }
+
+                }
+                catch (Exception ee)
+                {
+                    _log($"Failed to load file '{opts.ProgramFile}': {ee}");
                     e.Result = false;
                     return;
                 }
+            }
+            else
+            {
+                flashHexFile = new HexFile(_log, _verbose);
+                for (var i = 0; i < opts.EepromFillCount; i++)
+                {
+                    flashHexFile.Add(opts.EepromFillByte);
+                }
+            }
 
             var writeDelay = 0;
-            if (opts.ProgramType == ProgramTypes.Eeprom)  // check hexfiles prior to doing COM stuff
+            if (opts.ProgramType == ProgramTypes.Eeprom || opts.ProgramType == ProgramTypes.FillEeprom)  // check hexfiles prior to doing COM stuff
             {
                 //                if (opt.isSet("-ed"))
                 //                    opt.get("-ed")->getInt(eepromWriteDelay);
@@ -396,16 +425,19 @@ namespace Chip45ProgrammerLib
             worker?.ReportProgress(0, msg);
 
             SafetyReadExisting();
-            var hexFileLines = flashHexFile.GetHexFile();
-            var lineNr = 0;
+
             var consoleWriteCounter = 0;
             var aHandredPercentWritedToLog = false;
+            var lineNr = 0;
+
+
+            var hexFileLines = flashHexFile.GetHexFile();
 
             foreach (var line in hexFileLines)
             {
                 ++lineNr;
-                var percent = (int) (lineNr*100d/hexFileLines.Length);
-                
+                var percent = (int)(lineNr * 100d / hexFileLines.Length);
+
                 if (worker != null)
                     worker.ReportProgress(percent, "Programming " + kind + $@" {lineNr} / {hexFileLines.Length} lines");
                 else
@@ -420,7 +452,7 @@ namespace Chip45ProgrammerLib
                     Console.Write(".");
                     consoleWriteCounter++;
                 }
-                
+
                 if (!_port.DownloadLine(line, _log, _verbose))
                 {
                     _log("Error: Failed to download line " + lineNr);
@@ -430,6 +462,8 @@ namespace Chip45ProgrammerLib
                 if (writeDelay > 0)
                     Thread.Sleep(writeDelay);
             }
+
+
             if (!aHandredPercentWritedToLog)
             {
                 Console.Write("100%");
@@ -440,7 +474,7 @@ namespace Chip45ProgrammerLib
             if (received.Contains("-"))
             {
                 _log("Something went wrong during programming");
-                _log("Reply: " + FormatControlChars(received) );
+                _log("Reply: " + FormatControlChars(received));
                 e.Result = false;
                 return;
             }
@@ -457,7 +491,7 @@ namespace Chip45ProgrammerLib
             var sb = new StringBuilder();
             foreach (var c in s)
             {
-                var b = Encoding.ASCII.GetBytes(new[] {c})[0];
+                var b = Encoding.ASCII.GetBytes(new[] { c })[0];
                 if (b < 0x20)
                 {
                     sb.Append($"<{b:X2}>");

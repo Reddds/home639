@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using HomeServer.Models;
 using HomeServer.Objects;
 using Newtonsoft.Json;
@@ -145,6 +146,8 @@ namespace HomeServer
 
             foreach (var controllerGroup in _homeServerSettings.ControllerGroups)
             {
+                if (controllerGroup.Disabled)
+                    continue;
                 var controllerGroupObject = new ControllerGroup();
                 if (ModbusMasterThread.ControolerObjects == null)
                     ModbusMasterThread.ControolerObjects = new List<ControllerGroup>();
@@ -152,6 +155,8 @@ namespace HomeServer
 
                 foreach (var controller in controllerGroup.Controllers)
                 {
+                    if (controller.Disabled)
+                        continue;
                     var controllerObject = new ShController(controller.Id, controller.SlaveId, controller.ModbusAddress);
                     if (controllerGroupObject.ShControllers == null)
                         controllerGroupObject.ShControllers = new List<ShController>();
@@ -204,12 +209,32 @@ namespace HomeServer
                                            _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", state.ToString(), true);
                                            if (parameter.Echo != null)
                                            {
+
+                                               var arguments = string.Empty;
+                                               if (parameter.Echo.Arguments != null &&
+                                                   parameter.Echo.Arguments.Length > 0)
+                                               {
+                                                   var tmpArg = new List<string>();
+                                                   foreach (var argument in parameter.Echo.Arguments)
+                                                   {
+                                                       switch (argument.Type)
+                                                       {
+                                                           case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.Argument.ArgumentTypes.Literal:
+                                                               tmpArg.Add(argument.Value.ToString());
+                                                               break;
+                                                           default:
+                                                               throw new ArgumentOutOfRangeException();
+                                                       }
+                                                   }
+                                                   arguments = "," + string.Join(",", tmpArg);
+                                               }
                                                switch (parameter.Echo.Type)
                                                {
+
                                                    case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
                                                        ClienSocketWorker.ProceedSetValue(
                                                            new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id},
-                                                           state.ToString());
+                                                           state.ToString() + arguments);
 //                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
 
                                                        break;
