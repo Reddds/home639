@@ -1,0 +1,19 @@
+#pragma once
+
+#define DEVICE_TYPE_COMMON_CONTROLLER 0x02
+
+#define SLAVE_ID_DEVICE_TYPE DEVICE_TYPE_COMMON_CONTROLLER 
+#define SLAVE_ID_DEVICE_SUB_TYPE 0x02 // BathRoom 
+#define SLAVE_ID_DEVICE_REVISION 0x01
+#define SLAVE_ID_DEVICE_NUMBER 0x00
+
+
+#define DEVICE_NEED_TIME_SET 0
+
+#define VENDOR_NAME "Arduino"
+#define PRODUCT_CODE "Mini Pro 5v"
+#define MAJOR_MINOR_REVISION "1.00"
+#define VENDOR_URL "http://arduino.cc"
+#define PRODUCT_NAME "Bath room"
+#define MODEL_NAME "MMM"
+#define USER_APPLICATION_NAME "MyController"

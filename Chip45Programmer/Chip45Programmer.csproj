@@ -105,6 +105,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ConsoleManager.cs" />
+    <Compile Include="Ds30.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Windows\ByteFromBitsWindow.xaml.cs">
       <DependentUpon>ByteFromBitsWindow.xaml</DependentUpon>

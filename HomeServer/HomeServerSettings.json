@@ -136,12 +136,13 @@
                 }
             ]
         },
-       /* {
+        {
             "Name": "Ванна",
             "Controllers": [
                 {
                     "Id": "con_3",
                     "Name": "Контроллер 1",
+                    "SlaveId": "2.2.1.0",
                     "ModbusAddress": 3,
                     "Parameters": [
                         {
@@ -149,7 +150,7 @@
                             "Name": "Дверь открыта",
                             "ModbusType": "Discrete",
                             "ModbusIndex": 0,
-                            "Retain":  true
+                            "Retain": true
                         },
                         {
                             "Id": "bath_2",
@@ -162,7 +163,7 @@
                 }
             ]
 
-        },*/
+        },
 
 
         {

@@ -19,5 +19,10 @@ namespace HomeBasePlugin
         /// Начало работы
         /// </summary>
         void Start();
+
+        /// <summary>
+        /// Вызывается поле пробуждения компьютера
+        /// </summary>
+        void ResumeFromSleep();
     }
 }

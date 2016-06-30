@@ -170,9 +170,6 @@ namespace HomeModbus
 
             MyNotifyIcon.ShowCustomBalloon(_balloonStack, PopupAnimation.Slide, null);
 
-
-
-
             var bright = new Dictionary<string, int>();
             var p = 100d;
             for (var i = 0xf; i >= 0; i--)
@@ -292,7 +289,7 @@ namespace HomeModbus
 
         }
 
-        private Skype skype;
+        private Skype _skype;
 
 
         private List<IHomePlugin> _plugins;
@@ -336,7 +333,7 @@ namespace HomeModbus
             {
                 if (plugin.Name == "Skype")
                 {
-                    skype = new Skype();
+                    _skype = new Skype();
                     try
                     {
                         foreach (var pluginEvent in plugin.Events)
@@ -344,15 +341,15 @@ namespace HomeModbus
                             if (pluginEvent.Name == "OnUnreadMessages")
                             {
                                 //подписываемся на новые сообщения
-                                skype.MessageStatus += (message, status) =>
+                                _skype.MessageStatus += (message, status) =>
                                 {
-                                    SendEcho(pluginEvent.Echo, (skype.MissedMessages.Count > 0 || skype.MissedChats.Count > 0 ? 1 : 0).ToString());
+                                    SendEcho(pluginEvent.Echo, (_skype.MissedMessages.Count > 0 || _skype.MissedChats.Count > 0 ? 1 : 0).ToString());
                                 };
                             }
                         }
                         //пытаемся присоединиться к скайпу. В данный момент вылезет окошко, где он у вас спросит разрешения на открытие доступа программе.
                         //5 это версия протокола (идёт по-умолчанию), true - отключить ли отваливание по таймауту для запроса к скайпу.
-                        skype.Attach();
+                        _skype.Attach();
                         Console.WriteLine("skype attached");
                     }
                     catch (Exception ex)
@@ -734,8 +731,14 @@ namespace HomeModbus
         {
             //AsynchronousClient.Start();
             _client.ConnectToServer(ServerName);
+            // Восстановление плагинов
+            if(_plugins != null)
+                foreach (var plugin in _plugins)
+                {
+                    plugin.ResumeFromSleep();
+                }
 
-
+            _skype.Attach();
         }
 
         private void Window_Closed(object sender, EventArgs e)

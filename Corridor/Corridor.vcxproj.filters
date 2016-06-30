@@ -30,5 +30,8 @@
     <ClInclude Include="ControllerSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\BathRoom\__vm\.BathRoom.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -125,14 +125,14 @@ int demoModeLastLed = -1;
 unsigned long demoModeLastTime = 0;
 
 void loop() {
-	if (Serial.available()) {
-		int inByte = Serial.peek();
-		if (inByte == 0xFA)
-		{
-			ResetArduino();
-			return;
-		}
-	}
+//	if (Serial.available()) {
+//		int inByte = Serial.peek();
+//		if (inByte == 0xFA)
+//		{
+//			ResetArduino();
+//			return;
+//		}
+//	}
 	if (_currentMode == ModeMoveSensor)
 	{
 		//------- Обработка сенсора --------------------------------
@@ -197,21 +197,21 @@ void LightOff()
 	digitalWrite(led4Pin, LOW);
 }
 
-void softwareReset(uint8_t prescaller) {
-	// start watchdog with the provided prescaller
-	wdt_enable(prescaller);
-	// wait for the prescaller time to expire
-	// without sending the reset signal by using
-	// the wdt_reset() method
-	while (1) {}
-}
+//void softwareReset(uint8_t prescaller) {
+//	// start watchdog with the provided prescaller
+//	wdt_enable(prescaller);
+//	// wait for the prescaller time to expire
+//	// without sending the reset signal by using
+//	// the wdt_reset() method
+//	while (1) {}
+//}
 
-void ResetArduino()
-{
-	// restart in 60 milliseconds
-	softwareReset(WDTO_60MS);
-	digitalWrite(RESET_PIN, LOW);
-}
+//void ResetArduino()
+//{
+//	// restart in 60 milliseconds
+//	softwareReset(WDTO_60MS);
+//	digitalWrite(RESET_PIN, LOW);
+//}
 
 
 void io_poll() {

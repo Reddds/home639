@@ -235,7 +235,7 @@
                             <Label Grid.Row="1" Grid.Column="1" x:Name="LFlashFileModified" HorizontalAlignment="Left"  VerticalAlignment="Center" Width="200" Content="" Margin="72,0,0,0" Foreground="Gray"/>
                         </Grid>
                     </GroupBox>
-                    <GroupBox  IsEnabled="{Binding Connected}" Header="EEPROM" Height="115" >
+                    <GroupBox Header="EEPROM" Height="115" >
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition/>

@@ -47,30 +47,6 @@ namespace GmailNotify
                 HttpClientInitializer = credential,
                 ApplicationName = ApplicationName,
             });
-
-
-
-/*            // Define parameters of request.
-            var request = service.Users.Labels.List("me");
-
-            // List labels.
-            var labels = request.Execute().Labels;
-            Console.WriteLine("Labels:");
-            if (labels != null && labels.Count > 0)
-            {
-                foreach (var labelItem in labels)
-                {
-                    Console.WriteLine("{0}", labelItem.Name);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No labels found.");
-            }*/
-
-
-
-
         }
 
         private void CheckMail()
@@ -129,6 +105,11 @@ namespace GmailNotify
             {
                 CheckMail();
             }, null, 0, 60000);
+        }
+
+        public void ResumeFromSleep()
+        {
+            
         }
     }
 }

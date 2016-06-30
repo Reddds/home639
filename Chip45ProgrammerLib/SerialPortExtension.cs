@@ -40,6 +40,17 @@ namespace Chip45ProgrammerLib
             return data.ToString();
         }
 
+        public static void MyWait(this SerialPort port)
+        {
+            var readStartTime = DateTime.Now;
+            var timeout = TimeSpan.FromMilliseconds(port.ReadTimeout);
+            while (port.BytesToRead == 0)
+            {
+                Thread.Sleep(10);
+                if (DateTime.Now.Subtract(readStartTime) > timeout)
+                    throw new Exception("Read timeout!");
+            }
+        }
         public static bool DownloadLine(this SerialPort port, string s, Action<string> log = null, bool verbose = false)
         {
             // Send the hex record
@@ -50,13 +61,13 @@ namespace Chip45ProgrammerLib
 
             // read until XON, 10 characters or timeout
             Thread.Sleep(8);
-
-            var r = port.ReadUntil(XON, 10);
+            port.MyWait();
+            var r = port.ReadUntil(XON, 256); //!!!!!10
             //cout << "REPLY " << QString(r).toLatin1().data() << endl;
             // The bootloader replies with '.' on success...
             if (r.Contains("-"))
             {
-                log?.Invoke("Something went wrong during programming ");
+                log?.Invoke($"Something went wrong during programming ({Chip45.FormatControlChars(r)})");
                 return false;
             }
             if (!r.Contains(".") && !r.Contains("*"))

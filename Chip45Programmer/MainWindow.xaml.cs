@@ -235,6 +235,7 @@ namespace Chip45Programmer
                     Parity = Parity.None,
                     StopBits = StopBits.One,
                     ReadTimeout = 2000,
+                    Encoding = Encoding.GetEncoding("Windows-1251")
                 };
             }
             else
@@ -254,6 +255,8 @@ namespace Chip45Programmer
                 }
                 OnPropertyChanged("PortOpened");
             }
+
+            Ds30.Port = _port;
             return true;
         }
 
@@ -417,7 +420,7 @@ namespace Chip45Programmer
             }
             else if (Equals(TcBootloaders.SelectedItem, TiDs30))
             {
-                Ds30ProgramFlash();
+                Ds30.Ds30ProgramFlash(WriteLog, FpFlash.FileName, (int)CbDs30RowSize.SelectionBoxItem, (int)CbDs30PageSize.SelectionBoxItem);
             }
         }
 
@@ -665,23 +668,40 @@ namespace Chip45Programmer
             Properties.Settings.Default.EepromReadBytes = IudEepromBytesToRead.Value ?? 512;
             Properties.Settings.Default.Save();
 
-            var arg = new Chip45.ReadEepromOptions
+            if (Equals(TcBootloaders.SelectedItem as TabItem, TiChip45))
             {
-                EepromSaveFileName = sfd.FileName,
-                BytesToRead = IudEepromBytesToRead.Value ?? 512
-            };
+                var arg = new Chip45.ReadEepromOptions
+                {
+                    EepromSaveFileName = sfd.FileName,
+                    BytesToRead = IudEepromBytesToRead.Value ?? 512
+                };
 
-            RunWorker(_chip45.ReadEeprom, true, arg, complete: (o, args) =>
+                RunWorker(_chip45.ReadEeprom, true, arg, complete: (o, args) =>
+                {
+                    if (args.Result != null && (bool) args.Result)
+                    {
+                        MessageBox.Show("Read Eeprom completed");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error reading Eeprom");
+                    }
+                });
+            }
+            else if (Equals(TcBootloaders.SelectedItem as TabItem, TiDs30))
             {
-                if (args.Result != null && (bool)args.Result)
+                if (!CreatePort())
+                    return;
+
+                var helloResult = Ds30.Ds30FirstConnect();
+                if (helloResult == null || helloResult.Item5 != Ds30.Ds30Ok)
                 {
-                    MessageBox.Show("Read Eeprom completed");
+                    MessageBox.Show("Status is not Ok!");
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("Error reading Eeprom");
-                }
-            });
+
+
+            }
 
         }
 
@@ -745,38 +765,32 @@ namespace Chip45Programmer
         }
 
 
-        private const byte Ds30Hello = 0xC1;
-        private const byte Ds30Ok = 0x4B; //erase/write ok
-        private const byte Ds30CheckSumErr = 0x4e; // checksum error
-        private const byte Ds30VerFail = 0x56; // verification failed
-        private const byte Ds30BlProt = 0x50; // bl protection tripped
-        private const byte Ds30UnknownCommand = 0x55;//'U'
 
 
         private void Ds30TestConnect(object sender, RoutedEventArgs e)
         {
-            var helloResult = Ds30FirstConnect();
-            if (helloResult == null || helloResult.Item5 != Ds30Ok)
+            if (!CreatePort())
+                return;
+
+            var helloResult = Ds30.Ds30FirstConnect();
+            if (helloResult == null || helloResult.Item5 != Ds30.Ds30Ok)
                 MessageBox.Show("Status is not Ok!");
             else
                 MessageBox.Show($"Connected!\nDeviceId={helloResult.Item1}\nVersion={helloResult.Item2}.{helloResult.Item3}.{helloResult.Item4}");
         }
 
-        enum Ds30Commands { ErasePage, WriteInCode, WriteInEeprom, WriteConfig, ReadCodeMem }
 
-        TimeSpan helloWaitTime = TimeSpan.FromSeconds(15);
 
+/*
         Tuple<int, byte, byte, byte, int> Ds30FirstConnect()
         {
-            
-
             if (!PortOpened)
                 return null;
             var buf = new byte[1];
             buf[0] = Ds30Hello;
             try
             {
-                _port.ReadExisting();
+                _port.DiscardInBuffer();
                 var startTime = DateTime.Now;
                 do
                 {
@@ -785,7 +799,7 @@ namespace Chip45Programmer
                     if (_port.BytesToRead > 0)
                         break;
                     Thread.Sleep(20);
-                } while (DateTime.Now.Subtract(startTime) < helloWaitTime);
+                } while (DateTime.Now.Subtract(startTime) < _helloWaitTime);
 
 
                 ushort deviceId = 0;
@@ -808,7 +822,9 @@ namespace Chip45Programmer
             }
             return null;
         }
+*/
 
+/*
         void Ds30ProgramFlash()
         {//FpFlash
             var curPos = 0;
@@ -873,7 +889,9 @@ namespace Chip45Programmer
                 MessageBox.Show(ee.ToString());
             }
         }
+*/
 
+/*
         byte[] Ds30ReadCodeMem(int startAddress, int length)
         {
             var rowSize = (int) CbDs30RowSize.SelectionBoxItem;
@@ -896,8 +914,9 @@ namespace Chip45Programmer
             return retBuf;
             
         }
+*/
 
-        Tuple<int, byte[]> Ds30WriteCommand(Ds30Commands command, int address, byte[] bufBytes)
+/*        Tuple<int, byte[]> Ds30WriteCommand(Ds30Commands command, int address, byte[] bufBytes)
         {
 
             byte[] buf = null;
@@ -987,17 +1006,17 @@ namespace Chip45Programmer
                 }
             }
             return new Tuple<int, byte[]>(_port.ReadByte(), null);
-        }
+        }*/
 
         private void Ds30TestRead(object sender, RoutedEventArgs e)
         {
-            var helloResult = Ds30FirstConnect();
-            if (helloResult == null || helloResult.Item5 != Ds30Ok)
+            var helloResult = Ds30.Ds30FirstConnect();
+            if (helloResult == null || helloResult.Item5 != Ds30.Ds30Ok)
             {
                 MessageBox.Show("Status is not Ok!");
                 return;
             }
-            var readed = Ds30ReadCodeMem(0, 0x1000);
+            var readed = Ds30.Ds30ReadCodeMem(0, 0x1000, (int)CbDs30RowSize.SelectionBoxItem);
 
             if (readed == null)
             {
@@ -1012,252 +1031,24 @@ namespace Chip45Programmer
 
         private void Ds30ReadConfigs(object sender, RoutedEventArgs e)
         {
-            var helloResult = Ds30FirstConnect();
-            if (helloResult == null || helloResult.Item5 != Ds30Ok)
-            {
-                MessageBox.Show("Status is not Ok!");
-                return;
-            }
-
-            var configs = Ds30ReadCodeMem(0x300000, 16);
-            if (configs == null)
-            {
-                MessageBox.Show("Error reading config!");
-                return;
-            }
-
-            var configStr = new StringBuilder();
-
-            var CONFIG1H = configs[1];
-            var CONFIG2L = configs[2];
-            var CONFIG2H = configs[3];
-            var CONFIG3L = configs[4];
-            var CONFIG3H = configs[5];
-            var CONFIG4L = configs[6];
-            var CONFIG4H = configs[7];
-            var CONFIG5L = configs[8];
-            var CONFIG5H = configs[9];
-            var CONFIG6L = configs[0xA];
-            var CONFIG6H = configs[0xB];
-            var CONFIG7L = configs[0xC];
-            var CONFIG7H = configs[0xD];
-
-            
-            configStr.Append("OSCEN = ");
-            configStr.Append(bitRead(CONFIG1H, 5) ? "OFF" : "ON");
-            configStr.AppendLine(" // Oscillator System Clock");
-
-            var FOSC = CONFIG1H & 0x7;
-            configStr.Append("FOSC = ");
-            switch (FOSC)
-            {
-                case 0x00:
-                    configStr.AppendLine("LP oscillator");
-                    break;
-                case 0x01:
-                    configStr.AppendLine("XT oscillator");
-                    break;
-                case 0x02:
-                    configStr.AppendLine("HS oscillator");
-                    break;
-                case 0x03:
-                    configStr.AppendLine("RC oscillator");
-                    break;
-                case 0x04:
-                    configStr.AppendLine("EC oscillator w/ OSC2 configured as divide-by-4 clock output");
-                    break;
-                case 0x05:
-                    configStr.AppendLine("EC oscillator w/ OSC2 configured as RA6");
-                    break;
-                case 0x06:
-                    configStr.AppendLine("HS oscillator with PLL enabled/Clock frequency = (4 x FOSC)");
-                    break;
-                case 0x07:
-                    configStr.AppendLine("RC oscillator w/ OSC2 configured as RA6");
-                    break;
-            }
-
-            //Brown-out Reset Voltage
-            var BORV = (CONFIG2L >> 2) & 0x3;
-            configStr.Append("BORV = ");
-            switch (BORV)
-            {
-                case 0x00:
-                    configStr.Append("4.5");
-                    break;
-                case 0x01:
-                    configStr.Append("4.2");
-                    break;
-                case 0x02:
-                    configStr.Append("2.7");
-                    break;
-                case 0x03:
-                    configStr.Append("2.5");
-                    break;
-            }
-            configStr.AppendLine("V // Brown-out Reset Voltage");
-
-
-            configStr.Append("BOREN = ");
-            configStr.Append(bitRead(CONFIG2L, 1) ? "ON" : "OFF");
-            configStr.AppendLine(" // Brown-out Reset");
-
-            configStr.Append("PWRTE = ");
-            configStr.Append(bitRead(CONFIG2L, 0) ? "OFF" : "ON");
-            configStr.AppendLine(" // Power-up Timer");
-
-            var WDTPS = (CONFIG2H >> 1) & 0x7;
-            configStr.Append("WDTPS = 1:");
-            configStr.Append(1 << WDTPS);
-            configStr.AppendLine(" // Watchdog Timer Postscale Select");
-
-            configStr.Append("WDTEN = ");
-            configStr.Append(bitRead(CONFIG2H, 0) ? "ON" : "OFF");
-            configStr.AppendLine(" // Watchdog Timer");
-
-            configStr.Append("CCP2MX = ");
-            if (bitRead(CONFIG3H, 0))
-                configStr.AppendLine("ON // CCP2 input/output is multiplexed with RC1");
-            else
-                configStr.AppendLine("OFF // CCP2 input/output is multiplexed with RB3");
-
-
-            configStr.Append("BKBUG = ");
-            configStr.Append(bitRead(CONFIG4L, 7) ? "OFF" : "ON");
-            configStr.AppendLine(" // Background Debugger");
-
-            configStr.Append("LVP = ");
-            configStr.Append(bitRead(CONFIG4L, 2) ? "ON" : "OFF");
-            configStr.AppendLine(" // Low Voltage ICSP");
-
-            configStr.Append("STVREN = ");
-            configStr.Append(bitRead(CONFIG4L, 0) ? "ON" : "OFF");
-            configStr.AppendLine(" // Stack Full/Underflow Reset");
-
-            configStr.Append("CP3 = ");
-            configStr.Append(bitRead(CONFIG5L, 3) ? "OFF" : "ON");
-            configStr.AppendLine(" // Code Protection Block 3 (006000-007FFFh)");
-            configStr.Append("CP2 = ");
-            configStr.Append(bitRead(CONFIG5L, 2) ? "OFF" : "ON");
-            configStr.AppendLine(" // Code Protection Block 2 (004000-005FFFh)");
-            configStr.Append("CP1 = ");
-            configStr.Append(bitRead(CONFIG5L, 1) ? "OFF" : "ON");
-            configStr.AppendLine(" // Code Protection Block 1 (002000-003FFFh)");
-            configStr.Append("CP0 = ");
-            configStr.Append(bitRead(CONFIG5L, 0) ? "OFF" : "ON");
-            configStr.AppendLine(" // Code Protection Block 0 (000200-001FFFh)");
-
-            configStr.Append("CPD = ");
-            configStr.Append(bitRead(CONFIG5H, 7) ? "OFF" : "ON");
-            configStr.AppendLine(" // Data EEPROM Code Protection");
-            configStr.Append("CPB = ");
-            configStr.Append(bitRead(CONFIG5H, 6) ? "OFF" : "ON");
-            configStr.AppendLine(" // Boot Block Code Protection (000000-0001FFh)");
-
-            configStr.Append("WRT3 = ");
-            configStr.Append(bitRead(CONFIG6L, 3) ? "OFF" : "ON");
-            configStr.AppendLine(" // Write Protection Block 3 (006000-007FFFh)");
-            configStr.Append("WRT2 = ");
-            configStr.Append(bitRead(CONFIG6L, 2) ? "OFF" : "ON");
-            configStr.AppendLine(" // Write Protection Block 2 (004000-005FFFh)");
-            configStr.Append("WRT1 = ");
-            configStr.Append(bitRead(CONFIG6L, 1) ? "OFF" : "ON");
-            configStr.AppendLine(" // Write Protection Block 1 (002000-003FFFh)");
-            configStr.Append("WRT0 = ");
-            configStr.Append(bitRead(CONFIG6L, 0) ? "OFF" : "ON");
-            configStr.AppendLine(" // Write Protection Block 0 (000200h-001FFFh)");
-
-            configStr.Append("WRTD = ");
-            configStr.Append(bitRead(CONFIG6H, 7) ? "OFF" : "ON");
-            configStr.AppendLine(" // Data EEPROM Write Protection");
-            configStr.Append("WRTB = ");
-            configStr.Append(bitRead(CONFIG6H, 6) ? "OFF" : "ON");
-            configStr.AppendLine(" // Boot Block Write Protection (000000-0001FFh)");
-            configStr.Append("WRTC = ");
-            configStr.Append(bitRead(CONFIG6H, 5) ? "OFF" : "ON");
-            configStr.AppendLine(" // Configuration Register Write Protection (300000-3000FFh)");
-
-            configStr.Append("EBTR3 = ");
-            configStr.Append(bitRead(CONFIG7L, 3) ? "OFF" : "ON");
-            configStr.AppendLine(" // Table Read Protection Block 3 (006000-007FFFh)");
-            configStr.Append("EBTR2 = ");
-            configStr.Append(bitRead(CONFIG7L, 2) ? "OFF" : "ON");
-            configStr.AppendLine(" // Table Read Protection Block 2 (004000-005FFFh)");
-            configStr.Append("EBTR1 = ");
-            configStr.Append(bitRead(CONFIG7L, 1) ? "OFF" : "ON");
-            configStr.AppendLine(" // Table Read Protection Block 1 (002000-003FFFh)");
-            configStr.Append("EBTR0 = ");
-            configStr.Append(bitRead(CONFIG7L, 0) ? "OFF" : "ON");
-            configStr.AppendLine(" // Table Read Protection Block 0 (000200h-001FFFh)");
-
-            configStr.Append("EBTRB = ");
-            configStr.Append(bitRead(CONFIG7H, 6) ? "OFF" : "ON");
-            configStr.AppendLine(" // Boot Block Table Read Protection (000000-0001FFh)");
-
-            MessageBox.Show(configStr.ToString());
+            Ds30.Ds30ReadConfigs((int)CbDs30RowSize.SelectionBoxItem);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
-        /// <param name="bitNumber">Номер бита от 0</param>
-        /// <returns></returns>
-        bool bitRead(int val, int bitNumber)
-        {
-            return (val & (1 << bitNumber)) != 0;
-        }
+
 
         private void Ds30SendConfigByteClick(object sender, RoutedEventArgs e)
         {
-            var bfbWin = new ByteFromBitsWindow();
-            if (bfbWin.ShowDialog() != true)
-                return;
-            var configByte = bfbWin.GetResultByte();
-            var address = bfbWin.Address;
-            if (address == null)
-            {
-                MessageBox.Show("Please enter valid address");
-                return;
-            }
-            // Временная защита
-            if (address.Value < 0x300000)
-            {
-                MessageBox.Show("Address is less then 0x300000!");
-                return;
-            }
-            if (Ds30WriteCommand(Ds30Commands.WriteConfig, address.Value, new[] {configByte}).Item1 != Ds30Ok)
-            {
-                MessageBox.Show("Error writing config!");
-            }
-            else
-            {
-                MessageBox.Show("Config succesfully writed!");
-            }
+            Ds30.Ds30SendConfigByte();
         }
 
         private void Ds30ReadByteClick(object sender, RoutedEventArgs e)
         {
-            var helloResult = Ds30FirstConnect();
-            if (helloResult == null || helloResult.Item5 != Ds30Ok)
-            {
-                MessageBox.Show("Status is not Ok!");
-                return;
-            }
             if (IudByteAddress.Value == null)
             {
                 MessageBox.Show("Please enter valid address!");
                 return;
             }
-
-
-            var readed = Ds30ReadCodeMem(IudByteAddress.Value.Value, 1);
-            var sb = new StringBuilder();
-            foreach (var b in readed)
-            {
-                sb.Append($"{b:X2} ");
-            }
-            MessageBox.Show(sb.ToString());
+            Ds30.Ds30ReadByte(IudByteAddress.Value.Value, (int)CbDs30RowSize.SelectionBoxItem);
         }
 
         private void Window_Activated(object sender, EventArgs e)
