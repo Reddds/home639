@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using HomeServer;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
@@ -10,7 +11,10 @@ namespace HomeModbus
 {
     class HsClient
     {
+        private readonly Action<string> _writeToLog;
         private MqttClient _mqttClient;
+
+        Timer CheckConnectionTimer;
 
         //        private readonly ConcurrentQueue<HsEnvelope> _messageQueue;
         private readonly Dictionary<string, Action<object>> _registeredActions;
@@ -19,12 +23,21 @@ namespace HomeModbus
         /// </summary>
         private readonly Dictionary<string, Action<bool>> _setterResultActions;
 
-        public HsClient()
+        public HsClient(string address, Action<string> writeToLog)
         {
+            _writeToLog = writeToLog;
 
             _registeredActions = new Dictionary<string, Action<object>>();
             _setterResultActions = new Dictionary<string, Action<bool>>();
             //            _messageQueue = new ConcurrentQueue<HsEnvelope>();
+
+            CheckConnectionTimer = new Timer((state) =>
+            {
+              if (_mqttClient == null || !_mqttClient.IsConnected)
+                {
+                    ConnectToServer(address);
+                }
+            }, null, Timeout.Infinite, 60000);
         }
 
         public void ConnectToServer(string address)
@@ -43,11 +56,15 @@ namespace HomeModbus
             {
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersResult}/#",
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersSetterResult}/#",
+                $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.LogMessage}/#",
             }, new[]
             {
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
+                MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
             });
+
+            CheckConnectionTimer.Change(0, 60000);
         }
 
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
@@ -58,7 +75,12 @@ namespace HomeModbus
 
             var topicSplit = e.Topic.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             if (topicSplit.Length < 3)
+            {
+                if(topicSplit.Length == 2 && topicSplit[1] == HsEnvelope.LogMessage)
+                    _writeToLog?.Invoke(strMessage);
+
                 return;
+            }
 
             var resultKind = topicSplit[1];
             var parameterId = topicSplit[2];
@@ -68,6 +90,7 @@ namespace HomeModbus
 
                 switch (resultKind)
                 {
+
                     case HsEnvelope.ControllersResult:
                         if (topicSplit.Length < 4)
                             return;
@@ -86,6 +109,13 @@ namespace HomeModbus
                                 ushort uint16Value;
                                 if (ushort.TryParse(strMessage, out uint16Value))
                                     action?.Invoke(uint16Value);
+                                break;
+                            case HsEnvelope.DoubleResult:
+                                double doubleValue;
+
+
+                                if (double.TryParse(strMessage, NumberStyles.Number, CultureInfo.InvariantCulture, out doubleValue))
+                                    action?.Invoke(doubleValue);
                                 break;
                             case HsEnvelope.StringResult:
                                 action?.Invoke(strMessage);

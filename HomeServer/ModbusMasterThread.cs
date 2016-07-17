@@ -244,41 +244,43 @@ namespace HomeServer
                                 if (controller.ErrorCount >= 30)
                                 {
                                     // теперь опрашиваем текущий контроллер только раз в 30 минут
-                                    if (now.Subtract(controller.LactAccess).TotalMinutes < 30)
+                                    if (now.Subtract(controller.LastAccess).TotalMinutes < 30)
                                         continue;
                                 }
                                 if (controller.ErrorCount >= 5)
                                 {
                                     // теперь опрашиваем текущий контроллер только раз в минуту
-                                    if (now.Subtract(controller.LactAccess).TotalMinutes < 1)
+                                    if (now.Subtract(controller.LastAccess).TotalMinutes < 1)
                                         continue;
                                 }
-                                controller.LactAccess = now;
+                                controller.LastAccess = now;
                                 currentControllerAddress = controller.SlaveAddress;
 
                                 try
                                 {
                                     curAction = "GetStatus";
-                                    controller.GetStatus(_modbus);
+                                    if (!controller.GetStatus(_modbus))
+                                    {
+                                        BanController(controller, currentControllerAddress);
+                                        continue;
+                                    }
                                     Thread.Sleep(20);
                                     curAction = "DoActions";
                                     controller.DoActions(_modbus);
                                     Thread.Sleep(20);
-                                    controller.ErrorCount = 0;
+                                    if (controller.ErrorCount > 0)
+                                    {
+                                        Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
+                                        WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
+
+                                        controller.ErrorCount = 0;
+                                    }
                                 }
                                 catch (Exception eee)
                                 {
-                                    controller.ErrorCount++;
-                                    Console.WriteLine($"Address = {currentControllerAddress}; Action: {curAction}; {eee}");
-                                    WriteToLog?.Invoke(null, $"Address = {currentControllerAddress}; Action: {curAction}; {eee}");
-                                    if (controller.ErrorCount == 5)
-                                    {
-                                        Console.WriteLine($"Now access to Address {currentControllerAddress} every minute");
-                                    }
-                                    if (controller.ErrorCount == 20)
-                                    {
-                                        Console.WriteLine($"Now access to Address {currentControllerAddress} every 30 minutes");
-                                    }
+                                    Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress}; Action: {curAction}; {eee}");
+                                    WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress}; Action: {curAction}; {eee}");
+                                    BanController(controller, currentControllerAddress);
                                 }
                                 //Console.WriteLine("Iteration Controller Address: " + controller.SlaveAddress);
                             }
@@ -297,6 +299,22 @@ namespace HomeServer
                     WriteToLog?.Invoke(null, $"Address = {currentControllerAddress}; Action: {curAction}; {ee}");
                 }
             } while (true);
+
+        }
+
+        private static void BanController(ShController controller, int currentControllerAddress)
+        {
+            controller.ErrorCount++;
+            if (controller.ErrorCount == 5)
+            {
+                Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} Now access every minute");
+                WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} Now access every minute");
+            }
+            if (controller.ErrorCount == 20)
+            {
+                Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} Now access every 30 minutes");
+                WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} Now access every 30 minutes");
+            }
 
         }
 

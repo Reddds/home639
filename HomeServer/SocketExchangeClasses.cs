@@ -94,6 +94,7 @@ namespace HomeServer
         public const string BoolResult = "boolresult";
         public const string UInt16Result = "uint16result";
         public const string ULongResult = "ulongresult";
+        public const string DoubleResult = "doubleresult";
         public const string StringResult = "stringresult";
 
         public const string DateTimeResult = "datetimeresult";
@@ -104,7 +105,7 @@ namespace HomeServer
 
         public const string ResetParameter = "resetparameter";
 
-
+        public const string LogMessage = "logmessage";
 
         public const string DateTimeFormat = "O";
 /*

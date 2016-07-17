@@ -81,7 +81,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientWorker.cs" />
+    <Compile Include="MqttClientWorker.cs" />
     <Compile Include="ModbusCustomMessages\WriteSysUserCommand.cs" />
     <Compile Include="ModbusCustomMessages\ReadDeviceIdentification.cs" />
     <Compile Include="ModbusCustomMessages\ReadDeviceStatus.cs" />

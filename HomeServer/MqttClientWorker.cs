@@ -10,7 +10,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace HomeServer
 {
-    class ClienSocketWorker
+    class MqttClienWorker
     {
         private readonly MqttClient _mqttClient;
 //        private readonly List<ShController> _allControllers;
@@ -28,7 +28,7 @@ namespace HomeServer
         /// </summary>
         public static Dictionary<string, ShController.ModbusSetter> Setters = new Dictionary<string, ShController.ModbusSetter>();
 
-        public ClienSocketWorker(string address, List<ShController> allControllers, HomeServerSettings.ControllerGroup[] controllerGroups)
+        public MqttClienWorker(string address, List<ShController> allControllers, HomeServerSettings.ControllerGroup[] controllerGroups)
         {
 //            _allControllers = allControllers;
 //            _controllerGroups = controllerGroups;

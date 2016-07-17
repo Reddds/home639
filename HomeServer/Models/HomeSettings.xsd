@@ -131,7 +131,7 @@
   <xs:simpleType name="DataTypes">
     <xs:restriction base="xs:string">
       <xs:enumeration value="UInt16"/>
-      <xs:enumeration value="Float" />
+      <xs:enumeration value="Double" />
       <xs:enumeration value="ULong">
         <xs:annotation>
           <xs:documentation>

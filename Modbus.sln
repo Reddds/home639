@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RdControls", "..\..\..\Utils\Components\RdControls\RdControls.csproj", "{FE111CA0-79D5-494A-9CE4-3816DE2FFC57}"
 EndProject
@@ -36,6 +36,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmailNotify", "GmailNotify\GmailNotify.csproj", "{95BD16E7-21DA-4DB9-8A7C-0FD8D6ECBC8B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeBasePlugin", "Plugins\HomeBasePlugin\HomeBasePlugin.csproj", "{458CEE34-EA53-4CB8-A74A-1E7D37737638}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers Firmware", "Controllers Firmware", "{E06E738D-4893-46E1-9FA8-74D1411ADD0F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Meteostation", "Meteostation\Meteostation.vcxproj", "{27772400-5357-4B24-9D36-F1DFA790F300}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -415,12 +419,34 @@ Global
 		{458CEE34-EA53-4CB8-A74A-1E7D37737638}.SignedRelease|x64.Build.0 = Release|Any CPU
 		{458CEE34-EA53-4CB8-A74A-1E7D37737638}.SignedRelease|x86.ActiveCfg = Release|Any CPU
 		{458CEE34-EA53-4CB8-A74A-1E7D37737638}.SignedRelease|x86.Build.0 = Release|Any CPU
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Debug|ARM.ActiveCfg = Debug|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Debug|x64.ActiveCfg = Debug|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Debug|x86.ActiveCfg = Debug|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Debug|x86.Build.0 = Debug|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Release|Any CPU.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Release|ARM.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Release|x64.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Release|x86.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.Release|x86.Build.0 = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|Any CPU.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|Any CPU.Build.0 = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|ARM.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|ARM.Build.0 = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|x64.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|x64.Build.0 = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|x86.ActiveCfg = Release|Win32
+		{27772400-5357-4B24-9D36-F1DFA790F300}.SignedRelease|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88} = {E06E738D-4893-46E1-9FA8-74D1411ADD0F}
+		{6B570D61-9E8B-4EB0-8433-B26A9BC7A3EF} = {E06E738D-4893-46E1-9FA8-74D1411ADD0F}
+		{18808E2D-10A8-49A0-AFDF-A1621742993F} = {E06E738D-4893-46E1-9FA8-74D1411ADD0F}
 		{95BD16E7-21DA-4DB9-8A7C-0FD8D6ECBC8B} = {BFF43240-6BBC-4A3D-9EC9-9A14A851FFF7}
 		{458CEE34-EA53-4CB8-A74A-1E7D37737638} = {BFF43240-6BBC-4A3D-9EC9-9A14A851FFF7}
+		{27772400-5357-4B24-9D36-F1DFA790F300} = {E06E738D-4893-46E1-9FA8-74D1411ADD0F}
 	EndGlobalSection
 EndGlobal

@@ -28,6 +28,8 @@ namespace HomeServer.Objects
         private const int MaxDeviceStatusIndex = 7;
         private const ushort CommandHoldingRegister = 0;
 
+        public string ControllerGroupName;
+        public string Name;
 
         /// <summary>
         /// Количество ошибок обращения к контроллеру
@@ -38,7 +40,7 @@ namespace HomeServer.Objects
         /// <summary>
         /// Время последнего опроса
         /// </summary>
-        public DateTime LactAccess;
+        public DateTime LastAccess;
 
         interface IResetParameter
         {
@@ -199,6 +201,7 @@ namespace HomeServer.Objects
                     return false;
                 _currentValue = newValue;
                 _lastCheck = DateTime.Now;
+                
                 if (UInt16Default != null && _currentValue == UInt16Default.Value)
                     return false;
                 CallBack?.Invoke(newValue);
@@ -431,13 +434,15 @@ namespace HomeServer.Objects
             public bool IsPending { get; private set; }
             private object _pendingObject;
             private readonly HomeServerSettings.ControllerGroup.Controller.Setter _setter;
+            private readonly Action<string> _writeToLog;
             private readonly Action<bool> _resultAction;
 
-            public ModbusSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, Action<bool> resultAction = null)
+            public ModbusSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, Action<string> writeToLog, Action<bool> resultAction = null)
             {
                 Index = setter.ModbusIndex;
                 SetterType = setter.Type;
                 _setter = setter;
+                _writeToLog = writeToLog;
                 _resultAction = resultAction;
             }
 
@@ -460,7 +465,7 @@ namespace HomeServer.Objects
                 switch (SetterType)
                 {
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.RealDateTime:
-                        var resultStatus = SendTime(modbus, slaveAddress);
+                        var resultStatus = SendCurrentTime(modbus, slaveAddress);
                         _resultAction?.Invoke(resultStatus);
                         return resultStatus;
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.UInt16:
@@ -606,10 +611,12 @@ namespace HomeServer.Objects
                 return respCheck.ExceptionStatusBits[0];
             }
 
-            private bool SendTime(ModbusSerialMaster modbus, byte slaveAddress)
+            private bool SendCurrentTime(ModbusSerialMaster modbus, byte slaveAddress)
             {
+                SetCurrentTime(modbus, slaveAddress, _writeToLog);
+/*
                 var curTime = DateTime.Now;
-                var msg = new WriteSysUserCommandRequest(slaveAddress, true,
+                var msg = new WriteSysUserCommandRequest(SlaveAddress, true,
                     
                     0x10, 0x00,
                     (byte) curTime.Hour,//23,//
@@ -620,6 +627,7 @@ namespace HomeServer.Objects
                     (byte)curTime.Month);
 
                 var resp = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
+*/
                 Thread.Sleep(500);
 
                 var msgCheck = new ReadExceptionStatusRequest(slaveAddress);
@@ -698,12 +706,14 @@ namespace HomeServer.Objects
 
         public readonly string Id;
         public byte SlaveAddress;
-        private byte[] _slaveId;
+        private readonly Action<string> _writeToLog;
+        private readonly byte[] _slaveId;
 
-        public ShController(string id, string slaveId, byte slaveAddress)
+        public ShController(string id, string slaveId, byte slaveAddress, Action<string> writeToLog)
         {
             Id = id;
             SlaveAddress = slaveAddress;
+            _writeToLog = writeToLog;
 
             if(string.IsNullOrEmpty(slaveId))
                 return;
@@ -768,6 +778,7 @@ namespace HomeServer.Objects
             // Пытаемся установить адрес
             if (!SetDesiredAddress(modbus))
                 return false;
+            WriteToLog($"Address changed to {SlaveAddress}");
             Console.WriteLine($"Address for {_slaveId[0]}.{_slaveId[1]}.{_slaveId[2]}.{_slaveId[3]} changed to {SlaveAddress}");
 
             return CheckSlaveId(modbus, SlaveAddress) == true;
@@ -792,21 +803,49 @@ namespace HomeServer.Objects
             return resp.ReseivedId;
         }
 
-        private bool _addresIsSet;
+        private void WriteToLog(string message)
+        {
+            var id = string.Empty;
+            if (_slaveId != null)
+                id = string.Join(".", _slaveId);
+            _writeToLog?.Invoke($"{ControllerGroupName} / {Name} : {id}: {message}");
+        }
 
-        public virtual void GetStatus(ModbusSerialMaster modbus)
+        private bool _addresIsSet;
+        private bool _needTimeSet;
+        private int _lastTimeSetHour = -1;
+
+        public virtual bool GetStatus(ModbusSerialMaster modbus)
         {
             var curOperation = string.Empty;
             if (_slaveId != null && !_addresIsSet)
             {
                 curOperation = "Checking address";
                 _addresIsSet = AssignAddress(modbus);
-                if(_addresIsSet == false)
-                    throw new Exception("Error assigning address");
+                if (_addresIsSet == false)
+                {
+                    WriteToLog("Error assigning address");
+                    return false;
+                }
+                GetDeviceStatus(modbus);
+                if (_needTimeSet)
+                    SetCurrentTime(modbus, SlaveAddress, WriteToLog);
             }
 
             try
             {
+                // Установка времени если сменился час
+                if (_needTimeSet)
+                { 
+                    var curHour = DateTime.Now.Hour;
+                    if (curHour != _lastTimeSetHour)
+                    {
+                        SetCurrentTime(modbus, SlaveAddress, WriteToLog);
+                        // Ответ не ждём
+                        _lastTimeSetHour = curHour;
+                    }
+                }
+
                 // Дискретные
                 if (_discreteChecks != null)
                 {
@@ -938,6 +977,34 @@ namespace HomeServer.Objects
             {
                 throw new Exception($"{curOperation} " + ee);//.Message
             }
+            return true;
+        }
+
+        private static WriteSysUserCommand SetCurrentTime(ModbusSerialMaster modbus, byte slaveAddress, Action<string> writeToLog)
+        {
+            var curTime = DateTime.Now;
+            var msg = new WriteSysUserCommandRequest(slaveAddress, true,
+
+                0x10, 0x00,
+                (byte)curTime.Hour,//23,//
+                (byte)curTime.Minute,//59,//
+                (byte)curTime.Day,
+                (byte)curTime.Second,
+                (byte)(curTime.Year % 100),
+                (byte)curTime.Month);
+
+            writeToLog("Time sync send");
+            return modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
+        }
+
+        private const int InputTimeSetBit = 0;
+        private const int InputNeedTimeSetBit = 1;
+        private void GetDeviceStatus(ModbusSerialMaster modbus)
+        {
+            //curOperation = $"Check Device Status ";
+            var msg = new ReadDeviceStatusRequest(SlaveAddress);
+            var resp = modbus.ExecuteCustomMessage<ReadDeviceStatus>(msg);
+            _needTimeSet = resp.DeviceStatusBits[InputNeedTimeSetBit];
         }
 
         /// <summary>
@@ -1099,7 +1166,7 @@ namespace HomeServer.Objects
         /// <returns>Reset action</returns>
         public Action SetActionOnRegister(bool isHolding, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
             Action<uint> uLongCallback,
-            bool raiseOlwais = false, TimeSpan? checkInterval = null, bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0)
+            bool raiseOlwais = false, TimeSpan? checkInterval = null, bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0, double doubleDefault = 0)
         {
             if (callback == null && uLongCallback == null)
                 throw new ArgumentNullException(nameof(callback) + " and " + nameof(uLongCallback));
@@ -1108,7 +1175,7 @@ namespace HomeServer.Objects
             {
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
                     break;
-                case HomeServerSettings.ControllerGroup.Controller.DataTypes.Float:
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.Double:
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
                     endIndex = (ushort)(index + 1);
@@ -1220,7 +1287,7 @@ namespace HomeServer.Objects
         {
             if (_setters == null)
                 _setters = new List<ModbusSetter>();
-            var newSetter = new ModbusSetter(setter, result);
+            var newSetter = new ModbusSetter(setter, WriteToLog, result);
             _setters.Add(newSetter);
             return newSetter;
         }

@@ -140,7 +140,7 @@ namespace HomeModbus
 
             ExecDispatched(() =>
             {
-                LbLog.Items.Add(msg);
+                LbLog.Items.Add($"{DateTime.Now.ToString("F")} {msg}");
                 LbLog.SelectedIndex = LbLog.Items.Count - 1;
                 LbLog.ScrollIntoView(LbLog.SelectedItem);
             });
@@ -183,7 +183,8 @@ namespace HomeModbus
 
             _demoView.Source = _demoCommands;
             LbDemoCommands.ItemsSource = _demoView.View;
-            _client = new HsClient();
+
+            _client = new HsClient(ServerName, WriteToLog);
 
             if (LoadSettings())
                 ApplySettings();
@@ -629,7 +630,7 @@ namespace HomeModbus
                     if (analogControl != null)
                     {
                         if (value.GetType().IsPrimitive)
-                            analogControl.Value = (ushort)value;
+                            analogControl.Value = Convert.ToDouble(value);
                     }
                     if (lastTimeControl != null)
                     {
@@ -648,13 +649,13 @@ namespace HomeModbus
                     if (simpleIndicator != null)
                     {
                         if (value.GetType().IsPrimitive)
-                            simpleIndicator.Value = (ushort)value;
+                            simpleIndicator.Value = Convert.ToDouble(value);
                     }
                     if (chartSerie != null)
                     {
                         var curTime = DateTime.Now;
                         if (value.GetType().IsPrimitive)
-                            chartSerie.Points.Add(new SeriesPoint(curTime, (ushort)value));
+                            chartSerie.Points.Add(new SeriesPoint(curTime, Convert.ToDouble(value)));
 
                     }
 
@@ -1137,5 +1138,10 @@ namespace HomeModbus
                     Console.WriteLine($"Missed {skype.MissedMessages.Count}");
                 }
         */
+
+        private void ClearLogClick(object sender, RoutedEventArgs e)
+        {
+            LbLog.Items.Clear();
+        }
     }
 }

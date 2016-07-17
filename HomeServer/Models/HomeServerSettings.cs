@@ -15,7 +15,7 @@ namespace HomeServer.Models
                     /// <remarks/>
                     UInt16,
                     /// <remarks/>
-                    Float,
+                    Double,
                     /// <remarks/>
                     ULong,
                     /// <remarks/>
@@ -193,6 +193,8 @@ namespace HomeServer.Models
                         }
                     }
 
+                    public double DoubleDefault { get; set; }
+
                     public bool ResetAfterRead
                     {
                         get
@@ -202,21 +204,6 @@ namespace HomeServer.Models
                         set
                         {
                             this._resetAfterRead = value;
-                        }
-                    }
-
-                    public bool ResetAfterReadSpecified
-                    {
-                        get
-                        {
-                            return this._resetAfterRead.HasValue;
-                        }
-                        set
-                        {
-                            if (value == false)
-                            {
-                                this._resetAfterRead = null;
-                            }
                         }
                     }
 
@@ -231,23 +218,12 @@ namespace HomeServer.Models
                         }
                     }
 
-                    public bool RetainSpecified
-                    {
-                        get
-                        {
-                            return this._retain.HasValue;
-                        }
-                        set
-                        {
-                            if (value == false)
-                            {
-                                this._retain = null;
-                            }
-                        }
-                    }
-
                     public string Value { get; set; }
 
+                    /// <summary>
+                    /// Коэффициент преобразования значения для числовых типов
+                    /// </summary>
+                    public double Multiple { get; set; }
                     public EchoValue Echo { get; set; }
                 }
 

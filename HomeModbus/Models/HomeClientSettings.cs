@@ -67,15 +67,15 @@ namespace HomeModbus.Models
                     {
                         public partial class Range
                         {
-                            public byte StartValue { get; set; }
-                            public byte EndValue { get; set; }
+                            public int StartValue { get; set; }
+                            public int EndValue { get; set; }
                         }
                         public List<Range> Ranges { get; set; }
-                        public byte Min { get; set; }
-                        public byte Max { get; set; }
-                        public byte? MajorCount { get; set; }
-                        public byte? MinorCount { get; set; }
-                        public byte? GoodValue { get; set; }
+                        public int Min { get; set; }
+                        public int Max { get; set; }
+                        public int? MajorCount { get; set; }
+                        public int? MinorCount { get; set; }
+                        public int? GoodValue { get; set; }
 
                     }
                     public ScaleClass Scale { get; set; }

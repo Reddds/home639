@@ -122,6 +122,129 @@
             ]
         },
         {
+            "Name": "Балкон",
+            "LayoutGroups": [
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "ParameterId": "meteo_temp_common",
+                            "Name": "Вычисленная температура",
+                            "Icon": "ThermometreSmall.png",
+                            "DigitalIndicator": { },
+                            "AnalogIndicator": {
+                                "Icon": "Thermometre.png",
+                                "Scale": {
+                                    "Min": -30,
+                                    "Max": 45,
+                                    "MajorCount": 5,
+                                    "MinorCount": 5,
+                                    "GoodValue": 20,
+                                    "Ranges": [
+                                        {
+                                            "StartValue": 18,
+                                            "EndValue": 24
+                                        },
+                                        {
+                                            "StartValue": -30,
+                                            "EndValue": 18
+                                        },
+                                        {
+                                            "StartValue": 24,
+                                            "EndValue": 45
+                                        }
+                                    ]
+                                }
+                            },
+                            "Chart": { }
+
+
+                        },
+                        {
+                            "ParameterId": "meteo_temp_dht",
+                            "Name": "Температура на датчике влажности",
+                            "DigitalIndicator": { }
+                        },
+                        {
+                            "ParameterId": "meteo_temp_bmp",
+                            "Name": "Температура на датчике давления",
+                            "DigitalIndicator": { }
+                        }
+                    ]
+                },
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "ParameterId": "meteo_hymidity",
+                            "Icon": "HumiditySmall.png",
+                            "Name": "Влажность",
+                            "DigitalIndicator": { },
+                            "AnalogIndicator": {
+                                "Icon": "Humidity.png",
+                                "Scale": {
+                                    "Min": 0,
+                                    "Max": 100,
+                                    "MinorCount": 5,
+                                    "GoodValue": 50,
+                                    "Ranges": [
+                                        {
+                                            "StartValue": 30,
+                                            "EndValue": 60
+                                        },
+                                        {
+                                            "StartValue": 60,
+                                            "EndValue": 100
+                                        },
+                                        {
+                                            "StartValue": 0,
+                                            "EndValue": 30
+                                        }
+                                    ]
+                                }
+                            },
+                            "Chart": { }
+                        }
+                    ]
+                },
+                {
+                    "Orientation": "Vertical",
+                    "Visibilities": [
+                        {
+                            "ParameterId": "meteo_pressure",
+                            "Icon": "HumiditySmall.png",
+                            "Name": "Давление",
+                            "DigitalIndicator": { },
+                            "AnalogIndicator": {
+                                "Icon": "Humidity.png",
+                                "Scale": {
+                                    "Min": 735,
+                                    "Max": 765,
+                                    "MinorCount": 5,
+                                    "GoodValue": 747,
+                                    "Ranges": [
+                                        {
+                                            "StartValue": 750,
+                                            "EndValue": 765
+                                        },
+                                        {
+                                            "StartValue": 740,
+                                            "EndValue": 750
+                                        },
+                                        {
+                                            "StartValue": 735,
+                                            "EndValue": 740
+                                        }
+                                    ]
+                                }
+                            },
+                            "Chart": { }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "Name": "Ванна",
             "Visibilities": [
                 {

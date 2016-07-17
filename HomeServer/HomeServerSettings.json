@@ -92,7 +92,70 @@
                 }
             ]
         },
+        {
+            "Name": "Балкон",
+            "Controllers": [
+                {
+                    "Id": "meteo_con_1",
+                    "Name": "Контроллер 1",
+                    "SlaveId": "5.1.1.0",
+                    "ModbusAddress": 15,
+                    "Parameters": [
+                        {
+                            "Id": "meteo_temp_common",
+                            "Name": "Вычисленная температура * 10",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 1,
+                            "Multiple": 0.1,
+                            "DataType": "Double",
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "meteo_temp_bmp",
+                            "Name": "Температура на датчике давления * 10",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 2,
+                            "Multiple": 0.1,
+                            "DataType": "Double",
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "meteo_temp_dht",
+                            "Name": "Температура на датчике влажности * 10",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 3,
+                            "Multiple": 0.1,
+                            "DataType": "Double",
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "meteo_hymidity",
+                            "Name": "Влажность * 10",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 4,
+                            "Multiple": 0.1,
+                            "DataType": "Double",
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        },
+                        {
+                            "Id": "meteo_pressure",
+                            "Name": "Давление, мм рт.ст. * 10",
+                            "ModbusType": "InputRegister",
+                            "ModbusIndex": 5,
+                            "Multiple": 0.1,
+                            "DataType": "Double",
+                            "RefreshRate": "0:1:0",
+                            "Retain": true
+                        }
 
+                    ]
+                }
+            ]
+        },
 
         {
             "Name": "Коридор",

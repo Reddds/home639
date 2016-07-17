@@ -16,7 +16,7 @@
 #define sensorPin  2   // номер входа, подключенный к кнопке
 #define stlPin  13  // номер выхода индикатора работы
 // расположен на плате Arduino
-
+#define T_PIN 7 // Конрпус открыт
 
 #define WATCHING_TIME_MS 5000
 
@@ -82,7 +82,8 @@ MyDeviceInfoTag myDeviceInfo =
 	USER_APPLICATION_NAME
 };
 
-void setup() {
+void setup() 
+{
 	Modbus(0, TXEN, &myDeviceInfo);
 	ResetMoveDetection();
 	// настраиваем входы и выходы

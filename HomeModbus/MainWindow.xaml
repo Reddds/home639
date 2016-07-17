@@ -9,6 +9,7 @@
         xmlns:commands="clr-namespace:HomeModbus.Commands"
         xmlns:tooltip="clr-namespace:HomeModbus.Tooltip"
     xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
+    xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
     x:Class="HomeModbus.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed"
@@ -21,9 +22,11 @@
         <TabControl x:Name="MainTabs">
             <TabItem Header="Основное">
                 <Grid>
+                    <Button Content="Очистить лог" Height="28" Width="104" Margin="777,149,10.2,219.8" Click="ClearLogClick" HorizontalAlignment="Right" />
 
                     <ListBox x:Name="LbLog" Margin="10,182,10,10.2"/>
                     <Button x:Name="BGmail" Content="Gmail" HorizontalAlignment="Left" Height="68" Margin="108,71,0,0" VerticalAlignment="Top" Width="214" Click="BGmail_Click"/>
+
 
                 </Grid>
             </TabItem>
@@ -32,6 +35,7 @@
                     <StackPanel>
                         <CheckBox x:Name="CbSkypeConnected" IsEnabled="False" Content="Skype connected" HorizontalAlignment="Left" VerticalAlignment="Top" Width="121"/>
                         <CheckBox x:Name="CbSkypeUnreaded" IsEnabled="False" Content="Есть непрочитанные сообщения" HorizontalAlignment="Left" VerticalAlignment="Top" />
+
                         
                     </StackPanel>
 
@@ -82,9 +86,9 @@
                     </Grid.RowDefinitions>
                     <GroupBox Header="Настройки">
                         <Grid>
-                            <xctk:IntegerUpDown x:Name="IudInfoPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Minimum="0" Maximum="255" Value="50"></xctk:IntegerUpDown>
+                            <xctk:IntegerUpDown x:Name="IudInfoPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Minimum="0" Maximum="255" Value="50"/>
                             <xctk:IntegerUpDown x:Name="IudAlarmPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="81,10,0,0" Minimum="0" Maximum="255" Value="50"/>
-                        <Button Content="Записать настройки" Click="WriteBiSettingsClick" HorizontalAlignment="Left" Height="37" Margin="637,29,0,-2" VerticalAlignment="Top" Width="199"/>
+                            <Button Content="Записать настройки" Click="WriteBiSettingsClick" HorizontalAlignment="Left" Height="37" Margin="637,29,0,-2" VerticalAlignment="Top" Width="199"/>
                         </Grid>
                     </GroupBox>
                     <GroupBox Grid.Row="1" Header="Звуки">
@@ -93,9 +97,9 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
-                        <TextBox x:Name="TbSoundJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"></TextBox>
+                            <TextBox x:Name="TbSoundJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
                         </Grid>
-                        
+
                     </GroupBox>
                     <GroupBox Grid.Row="2" Header="Расписание">
                         <Grid>
@@ -103,10 +107,10 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TbDiaryJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"></TextBox>
+                            <TextBox x:Name="TbDiaryJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
                             <Button Click="UploadDiaryClick" Margin="10,0,0,0" Grid.Column="1" Height="54">
 
-                                <TextBlock>Загрузить Расписание<LineBreak/> и звуки</TextBlock>
+                                <TextBlock><Run Text="Загрузить Расписание"/><LineBreak/><Run Text="и звуки"/></TextBlock>
                             </Button>
                         </Grid>
 
@@ -114,6 +118,7 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
+           
         </TabControl>
         <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" >
             <dxc:ChartControl.Legend>

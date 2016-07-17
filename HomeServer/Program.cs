@@ -17,7 +17,7 @@ namespace HomeServer
 
         private static List<ShController> _allControllers;
 
-        private static ClienSocketWorker _clientWorker;
+        private static MqttClienWorker _clientWorker;
 
         public static bool IsLinux => Environment.OSVersion.Platform == PlatformID.Unix;
 
@@ -51,6 +51,10 @@ namespace HomeServer
             if (LoadSettings())
                 ApplySettings();
             ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeServerSettings.HeartBeatMs);
+            ModbusMasterThread.WriteToLog += (sender, s) =>
+            {
+                WriteToLog(s);
+            };
             //            CreateSocket();
             try
             {
@@ -70,9 +74,15 @@ namespace HomeServer
             //            
         }
 
+        private static void WriteToLog(string msg)
+        {
+            _clientWorker.SendMessage($"{HsEnvelope.LogMessage}", msg, false);
+
+        }
+
         private static void CreateMqttClient(string serverAddress)
         {
-            _clientWorker = new ClienSocketWorker(serverAddress, _allControllers, _homeServerSettings.ControllerGroups);
+            _clientWorker = new MqttClienWorker(serverAddress, _allControllers, _homeServerSettings.ControllerGroups);
         }
 
         private static bool LoadSettings()
@@ -143,7 +153,12 @@ namespace HomeServer
         private static void ApplySettings()
         {
             _allControllers = new List<ShController>();
-
+            if (Options.Current.Verbose)
+            {
+                Console.WriteLine($"{"Action",-25} {"Id",-30} {"Name",-50} Rate");
+                Console.WriteLine(
+                    $"~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~");
+            }
             foreach (var controllerGroup in _homeServerSettings.ControllerGroups)
             {
                 if (controllerGroup.Disabled)
@@ -153,11 +168,19 @@ namespace HomeServer
                     ModbusMasterThread.ControolerObjects = new List<ControllerGroup>();
                 ModbusMasterThread.ControolerObjects.Add(controllerGroupObject);
 
+
+
                 foreach (var controller in controllerGroup.Controllers)
                 {
                     if (controller.Disabled)
                         continue;
-                    var controllerObject = new ShController(controller.Id, controller.SlaveId, controller.ModbusAddress);
+                    var controllerObject = new ShController(controller.Id, controller.SlaveId, controller.ModbusAddress,
+                        WriteToLog)
+                    {
+                        ControllerGroupName = controllerGroup.Name,
+                        Name = controller.Name
+                    };
+
                     if (controllerGroupObject.ShControllers == null)
                         controllerGroupObject.ShControllers = new List<ShController>();
                     controllerGroupObject.ShControllers.Add(controllerObject);
@@ -232,7 +255,7 @@ namespace HomeServer
                                                {
 
                                                    case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
-                                                       ClienSocketWorker.ProceedSetValue(
+                                                       MqttClienWorker.ProceedSetValue(
                                                            new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id},
                                                            state.ToString() + arguments);
 //                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
@@ -244,7 +267,7 @@ namespace HomeServer
                                            }
                                        }, parameter.BoolDefault);
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DiscreteOrCoil    {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
+                        Console.WriteLine($"Created DiscreteOrCoil    {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.InputRegister:
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.HoldingRegister:
@@ -254,21 +277,39 @@ namespace HomeServer
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
                             reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, value =>
                             {
-                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", value.ToString(), parameter.Retain);
+                                double resValue = value;
+                                if (parameter.Multiple != 0)
+                                    resValue *= parameter.Multiple;
+
+                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
                             }, null, false, interval, uInt16Default: parameter.UintDefault);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created Register          {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
+                                Console.WriteLine($"Created Register          {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
 
                             break;
-                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.Float:
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.Double:
+                            reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, value =>
+                            {
+                                double resValue = value;
+                                if (parameter.Multiple != 0)
+                                    resValue *= parameter.Multiple;
+                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DoubleResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
+                            }, null, false, interval, resetAfterRead: parameter.ResetAfterRead, doubleDefault: parameter.DoubleDefault);
+                            if (Options.Current.Verbose)
+                                Console.WriteLine($"Created Double Register   {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
+
+
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
                             reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, null, value =>
                             {
-                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.ULongResult}", value.ToString(), parameter.Retain);
+                                double resValue = value;
+                                if (parameter.Multiple != 0)
+                                    resValue *= parameter.Multiple;
+                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.ULongResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
                             }, false, interval, resetAfterRead: parameter.ResetAfterRead, uLongDefault: parameter.ULongDefault);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created Long Register     {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
+                                Console.WriteLine($"Created Long Register     {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
@@ -278,7 +319,7 @@ namespace HomeServer
                                     _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DateTimeResult}", value.ToString(HsEnvelope.DateTimeFormat), true);
                                 }, false, interval);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created DateTime Register {parameter.Id} \t{parameter.Name} \t{parameter.RefreshRate}");
+                                Console.WriteLine($"Created DateTime Register {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdTime:
@@ -290,7 +331,7 @@ namespace HomeServer
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.DeviceId:
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DeviceId Reseiver {parameter.Id} \t{parameter.Name}");
+                        Console.WriteLine($"Created DeviceId Reseiver {parameter.Id,-30} {parameter.Name,-50}");
 
                     controllerObject.SetActionOnSlaveId(value =>
                     {
@@ -311,7 +352,7 @@ namespace HomeServer
                            switch (parameter.Echo.Type)
                            {
                                case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
-                                   ClienSocketWorker.ProceedSetValue(
+                                   MqttClienWorker.ProceedSetValue(
                                        new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id },
                                        state.ToString());
                                                        //                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
@@ -323,14 +364,14 @@ namespace HomeServer
                        }
                    }, parameter.BoolDefault);
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DeviceStatus Reseiver {parameter.Id} \t{parameter.Name}");
+                        Console.WriteLine($"Created DevStat Reseiver  {parameter.Id,-30} {parameter.Name,-50}");
 
                     break;
                 //                default:
                 //                    throw new ArgumentOutOfRangeException();
             }
             if (reserAction != null)
-                ClienSocketWorker.ParameterResets.Add(parameter.Id, reserAction);
+                MqttClienWorker.ParameterResets.Add(parameter.Id, reserAction);
         }
 
         private static void CreateSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, ShController controllerObject)
@@ -340,9 +381,9 @@ namespace HomeServer
                 _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), false);
                 Console.WriteLine($"Set value '{setter.Id}' status  \t{resultStatus}");
             });
-            ClienSocketWorker.Setters.Add(setter.Id, setterObj);
+            MqttClienWorker.Setters.Add(setter.Id, setterObj);
             if (Options.Current.Verbose)
-                Console.WriteLine($"Created Setter            {setter.Id} \t{setter.Name}");
+                Console.WriteLine($"Created Setter            {setter.Id,-30} {setter.Name,-50}");
 
             /*
                         switch (setter.Type)
@@ -353,7 +394,7 @@ namespace HomeServer
                                     _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), false);
                                     Console.WriteLine($"Set value '{setter.Id}' status  \t{resultStatus}");
                                 });
-                                ClienSocketWorker.Setters.Add(setter.Id, setterObj);
+                                MqttClienWorker.Setters.Add(setter.Id, setterObj);
                                 if (Options.Current.Verbose)
                                     Console.WriteLine($"Created Setter            {setter.Id} \t{setter.Name}");
 
@@ -364,7 +405,7 @@ namespace HomeServer
                                     _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), false);
                                     Console.WriteLine($"Set value '{setter.Id}' status  \t{resultStatus}");
                                 });
-                                ClienSocketWorker.Setters.Add(setter.Id, setterUInt16Obj);
+                                MqttClienWorker.Setters.Add(setter.Id, setterUInt16Obj);
                                 if (Options.Current.Verbose)
                                     Console.WriteLine($"Created Setter            {setter.Id} \t{setter.Name}");
 

@@ -38,6 +38,7 @@ Reset bytes 02 64 7F 00 00 00 00 00 00 00 0C 6B
 char compileTime[] = __TIME__; //"hh:mm:ss"
 char compileDate[] = __DATE__; //"hh:mm:ss"
 
+// Pins ----------------------------------------
 #define DHTPIN 6
 #define DHTTYPE DHT22
 #define KAKA_PIN 8
@@ -47,6 +48,12 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 
 #define CALL_LED_PIN 13
 
+#define DS1302_SCLK_PIN   A2    // Arduino pin for the Serial Clock
+#define DS1302_IO_PIN     A1    // Arduino pin for the Data I/O
+#define DS1302_CE_PIN     A0    // Arduino pin for the Chip Enable
+
+
+// MODBUS ----------------------------------------------
 #define KAKA_EEPROM_ADDRESS 10
 #define LAST_KAKA_TIME_EEPROM_ADDRESS 2
 
@@ -137,7 +144,7 @@ void setup() {
 	//Задаём ведомому адрес, последовательный порт, выход управления TX
 
 	
-
+	StartRtc(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
 
 	Modbus(0, TXEN, &myDeviceInfo);
 
