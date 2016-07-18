@@ -263,7 +263,7 @@ namespace HomeModbus
         }
 
 
-        private ImageSource GetImageSource(string imageName, string defaultImage = null, double height = -1)
+        public static ImageSource GetImageSource(string imageName, string defaultImage = null, double height = -1)
         {
             var workDir = AppDomain.CurrentDomain.BaseDirectory;
             var imagesPath = Path.Combine(workDir, @"Assets\Images\Objects");
@@ -478,6 +478,7 @@ namespace HomeModbus
             SimpleIndicator simpleIndicator = null;
             StringIndicator stringIndicator = null;
             AnalogIndicator analogControl = null;
+            BarometerIndicator barometerControl = null;
             LastTimeIndicator lastTimeControl = null;
             DoubleIndicator doubleControl = null;
 
@@ -546,6 +547,28 @@ namespace HomeModbus
                     analogControl.IIcon.Source = GetImageSource(analogIndicator.Icon);
                 }
             }
+            var barometerIndicator = visibility.BarometerIndicator;
+            if (barometerIndicator != null)
+            {
+                barometerControl = new BarometerIndicator();
+                indicatorControl.SpMain.Children.Add(barometerControl);
+
+                _client.SetAction(barometerIndicator.TemperatureParameterId, (resetAction, value) =>
+                {
+                    ExecDispatched(() =>
+                    {
+                        barometerControl.Temperature = Convert.ToDouble(value);
+                    });
+                });
+                _client.SetAction(barometerIndicator.HymidityParameterId, (resetAction, value) =>
+                {
+                    ExecDispatched(() =>
+                    {
+                        barometerControl.Hymidity = Convert.ToDouble(value);
+                    });
+                });
+            }
+
             var digitalIndicatorSettings = visibility.DigitalIndicator;
             if (digitalIndicatorSettings != null)
             {
@@ -631,6 +654,11 @@ namespace HomeModbus
                     {
                         if (value.GetType().IsPrimitive)
                             analogControl.Value = Convert.ToDouble(value);
+                    }
+                    if (barometerControl != null)
+                    {
+                        if (value.GetType().IsPrimitive)
+                            barometerControl.Value = Convert.ToDouble(value);
                     }
                     if (lastTimeControl != null)
                     {

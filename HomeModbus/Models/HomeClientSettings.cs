@@ -81,6 +81,13 @@ namespace HomeModbus.Models
                     public ScaleClass Scale { get; set; }
                     public string Icon { get; set; }
                 }
+                public partial class BarometerIndicatorClass
+                {
+                    public string Icon { get; set; }
+                    public string TemperatureParameterId { get; set; }
+                    public string HymidityParameterId { get; set; }
+                }
+
                 public partial class BinaryIndicatorClass
                 {
                     public string OnIcon { get; set; }
@@ -104,6 +111,7 @@ namespace HomeModbus.Models
                 public object DigitalIndicator { get; set; }
                 public ShowBalloonClass ShowBalloon { get; set; }
                 public AnalogIndicatorClass AnalogIndicator { get; set; }
+                public BarometerIndicatorClass BarometerIndicator { get; set; }
                 public BinaryIndicatorClass BinaryIndicator { get; set; }
                 public LastTimeIndicatorClass LastTimeIndicator { get; set; }
                 public object Chart { get; set; }

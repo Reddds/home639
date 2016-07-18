@@ -22,6 +22,7 @@ namespace HomeModbus
         public WindowTest()
         {
             InitializeComponent();
+
         }
     }
 }

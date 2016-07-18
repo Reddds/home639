@@ -212,31 +212,13 @@
                     "Visibilities": [
                         {
                             "ParameterId": "meteo_pressure",
-                            "Icon": "HumiditySmall.png",
+                            "Icon": "Pressure.png",
                             "Name": "Давление",
                             "DigitalIndicator": { },
-                            "AnalogIndicator": {
+                            "BarometerIndicator": {
                                 "Icon": "Humidity.png",
-                                "Scale": {
-                                    "Min": 735,
-                                    "Max": 765,
-                                    "MinorCount": 5,
-                                    "GoodValue": 747,
-                                    "Ranges": [
-                                        {
-                                            "StartValue": 750,
-                                            "EndValue": 765
-                                        },
-                                        {
-                                            "StartValue": 740,
-                                            "EndValue": 750
-                                        },
-                                        {
-                                            "StartValue": 735,
-                                            "EndValue": 740
-                                        }
-                                    ]
-                                }
+                                "TemperatureParameterId": "meteo_temp_common",
+                                "HymidityParameterId": "meteo_hymidity"
                             },
                             "Chart": { }
                         }

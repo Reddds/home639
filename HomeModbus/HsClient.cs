@@ -16,8 +16,29 @@ namespace HomeModbus
 
         Timer CheckConnectionTimer;
 
+        public class ActionEventArgs
+        {
+            public ActionEventArgs(object v) { Value = v; }
+            public object Value { get; private set; } // readonly
+        }
+
+        // Declare the delegate (if using non-generic pattern).
+        public delegate void ActionEventHandler(object sender, ActionEventArgs e);
+
+        public class MyActionContainer
+        {
+            public event ActionEventHandler OnActionEvent;
+
+            public void RaiseOnAction(object v)
+            {
+                OnActionEvent?.Invoke(this, new ActionEventArgs(v));
+            }
+
+        }
+
         //        private readonly ConcurrentQueue<HsEnvelope> _messageQueue;
-        private readonly Dictionary<string, Action<object>> _registeredActions;
+        //private readonly Dictionary<string, Action<object>> _registeredActions;
+        private readonly Dictionary<string, MyActionContainer> _registeredActions;
         /// <summary>
         /// Вызывается при получении результата изменения значения
         /// </summary>
@@ -27,7 +48,7 @@ namespace HomeModbus
         {
             _writeToLog = writeToLog;
 
-            _registeredActions = new Dictionary<string, Action<object>>();
+            _registeredActions = new Dictionary<string, MyActionContainer>();
             _setterResultActions = new Dictionary<string, Action<bool>>();
             //            _messageQueue = new ConcurrentQueue<HsEnvelope>();
 
@@ -103,27 +124,27 @@ namespace HomeModbus
                             case HsEnvelope.BoolResult:
                                 bool boolValue;
                                 if (bool.TryParse(strMessage, out boolValue))
-                                    action?.Invoke(boolValue);
+                                    action?.RaiseOnAction(boolValue);
                                 break;
                             case HsEnvelope.UInt16Result:
                                 ushort uint16Value;
                                 if (ushort.TryParse(strMessage, out uint16Value))
-                                    action?.Invoke(uint16Value);
+                                    action?.RaiseOnAction(uint16Value);
                                 break;
                             case HsEnvelope.DoubleResult:
                                 double doubleValue;
 
 
                                 if (double.TryParse(strMessage, NumberStyles.Number, CultureInfo.InvariantCulture, out doubleValue))
-                                    action?.Invoke(doubleValue);
+                                    action?.RaiseOnAction(doubleValue);
                                 break;
                             case HsEnvelope.StringResult:
-                                action?.Invoke(strMessage);
+                                action?.RaiseOnAction(strMessage);
                                 break;
                             case HsEnvelope.DateTimeResult:
                                 DateTime dateTimeValue;
                                 if (DateTime.TryParseExact(strMessage, HsEnvelope.DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeValue))
-                                    action?.Invoke(dateTimeValue);
+                                    action?.RaiseOnAction(dateTimeValue);
                                 break;
                         }
 
@@ -178,7 +199,7 @@ namespace HomeModbus
             Console.WriteLine($"MQTT sent/ Message Id = {msgId}");
         }
 
-        Action<object> FindActionByParameterId(string actionId)
+        MyActionContainer FindActionByParameterId(string actionId)
         {
             if (_registeredActions == null)
                 return null;
@@ -200,13 +221,28 @@ namespace HomeModbus
         public void SetAction(string parameterId,
             Action<Action<object>, object> callback)
         {
-            _registeredActions.Add(parameterId, (obj) =>
+            MyActionContainer newEventHandler;
+            if (_registeredActions.ContainsKey(parameterId))
+                newEventHandler = _registeredActions[parameterId];
+            else
+            {
+                newEventHandler = new MyActionContainer();
+                _registeredActions.Add(parameterId, newEventHandler);
+            }
+            newEventHandler.OnActionEvent += (sender, obj) =>
             {
                 callback((newVal) =>
                 {
                     SendMessage($"{HsEnvelope.ResetParameter}/{parameterId}", newVal?.ToString());
-                }, obj);
-            });
+                }, obj.Value);
+            };
+//            _registeredActions.Add(parameterId, (sender, obj) =>
+//            {
+//                callback((newVal) =>
+//                {
+//                    SendMessage($"{HsEnvelope.ResetParameter}/{parameterId}", newVal?.ToString());
+//                }, obj);
+//            });
             //            var registerActionOnRegister = new SetAction()
             //            {
             //                ActionId = actionHash,
