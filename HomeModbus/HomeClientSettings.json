@@ -2,6 +2,7 @@
     "Rooms": [
         {
             "Name": "Спальня",
+            "ControllerId": "con_2",
             "LayoutGroups": [
                 {
                     "Orientation": "Vertical",
@@ -110,6 +111,7 @@
         },
         {
             "Name": "Коридор",
+            "ControllerId": "con_1",
             "Visibilities": [
                 {
                     "ParameterId": "corr_1",
@@ -123,8 +125,9 @@
         },
         {
             "Name": "Балкон",
+            "ControllerId": "meteo_con_1",
             "LayoutGroups": [
-                {
+                /*{
                     "Orientation": "Vertical",
                     "Visibilities": [
                         {
@@ -206,7 +209,7 @@
                             "Chart": { }
                         }
                     ]
-                },
+                },*/
                 {
                     "Orientation": "Vertical",
                     "Visibilities": [
@@ -228,6 +231,7 @@
         },
         {
             "Name": "Ванна",
+            "ControllerId": "con_3",
             "Visibilities": [
                 {
                     "ParameterId": "bath_1",
@@ -242,11 +246,20 @@
                         "OnIcon": "LightBulbOn.png",
                         "OffIcon": "LightBulbOff.png"
                     }
+                },
+                {
+                    "SetterId": "bath_ignore_door",
+                    "Name": "Не учитывать дверь",
+                    "SimpleLiteralToggleButton": {
+                        "ValueOff": "0",
+                        "ValueOn": "255"
+                    }
                 }
             ]
         },
         {
             "Name": "Табло",
+            "ControllerId": "bolidBi",
             "LayoutGroups": [
                 {
                     "Orientation": "Vertical",

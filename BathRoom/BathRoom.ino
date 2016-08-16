@@ -1,5 +1,8 @@
+// Reset 03 64 7F 00 00 00 00 00 00 00 5D AE 
+
 #include <avr/wdt.h>
 #include "ControllerSettings.h"
+#include <MyTime.h>
 #include <Time.h>
 #include <EEPROM.h>
 #include <DS1302RTC.h>
@@ -18,6 +21,9 @@
 #define RELAY_PIN 2
 #define LED_1_PIN 10
 
+// Игнорировать открытие двери, всегда держать включёным свет
+#define COMMAND_IGNORE_DOOR 10 // Data 0 - Нормальная работа 0xff - игнорирование двери
+
 // массив данных modbus
 #define modbusInputBufLen 5
 #define modbusHoldingBufLen 5
@@ -34,6 +40,9 @@ long lastDebounceTime = 0;  // the last time the output pin was toggled
 long debounceDelay = 500;    // the debounce time; increase if the output flickers
 bool lastDoorPinState;
 bool buttonDoorState;
+// Не проверять, открыта ли дверь. Всегда держать свет включённым
+bool _ignoreDoor = false;
+
 
 bool isEnterInBath = false;
 
@@ -97,14 +106,16 @@ void io_setup()
 
 void LightOn()
 {
-	digitalWrite(RELAY_PIN, LOW);
+	if(!_ignoreDoor)
+		digitalWrite(RELAY_PIN, LOW);
 	digitalWrite(LED_1_PIN, HIGH);
 	bitWrite(_MODBUSDiscreteInputs, LIGHT_INPUT, 1);
 }
 
 void LightOff()
 {
-	digitalWrite(RELAY_PIN, HIGH);
+	if (!_ignoreDoor)
+		digitalWrite(RELAY_PIN, HIGH);
 	digitalWrite(LED_1_PIN, LOW);
 	bitWrite(_MODBUSDiscreteInputs, LIGHT_INPUT, 0);
 }
@@ -186,7 +197,38 @@ void loop()
 
 void io_poll()
 {
+	uint16_t lastAddress;
+	uint16_t lastEndAddress;
+	uint8_t lastCommand;
+	//uint16_t lastCount;
+	uint8_t *lastFunction = ModbusGetLastCommand(&lastAddress, &lastEndAddress, &lastCommand);
+	if (*lastFunction == MB_FC_NONE)
+		return;
+	lastEndAddress += lastAddress - 1;
 
-	//Копируем Coil[1] в Discrete[0]
-	//au16data[0] = au16data[1];
+	uint8_t v1;
+	if (*lastFunction == MB_FC_USER_COMMAND)
+	{
+		if (*ModbusGetUserCommandId() == COMMAND_IGNORE_DOOR)
+		{
+			if(*ModbusGetUserCommandData() == MODBUS_ON)
+			{
+				LightOn();
+				_ignoreDoor = true;
+			}
+			else
+			{
+				_ignoreDoor = false;
+
+				bitRead(_MODBUSDiscreteInputs, LIGHT_INPUT) == 1 ? LightOn() : LightOff();
+			}
+			ModbusSetExceptionStatusBit(MB_EXCEPTION_LAST_COMMAND_STATE, 1);
+		}
+		return;
+	}
+}
+
+uint8_t MyTimeSet(time_t newTime)
+{
+	return 0;
 }

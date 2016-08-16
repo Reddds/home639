@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using HomeServer.Models;
+using HomeServer.Models.Base;
 using HomeServer.Objects;
 using Newtonsoft.Json;
 
@@ -50,11 +51,6 @@ namespace HomeServer
             //            _modbusMasterThread = new ModbusMasterThread("COM7", 9600);
             if (LoadSettings())
                 ApplySettings();
-            ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeServerSettings.HeartBeatMs);
-            ModbusMasterThread.WriteToLog += (sender, s) =>
-            {
-                WriteToLog(s);
-            };
             //            CreateSocket();
             try
             {
@@ -64,6 +60,21 @@ namespace HomeServer
             {
                 Console.WriteLine(options.Verbose ? e.ToString() : e.Message);
             }
+            ModbusMasterThread.ListeningChanged += (sender, b) =>
+            {
+                _clientWorker.SendMessage($"{HsEnvelope.ServerStatus}/{HsEnvelope.ListeningStatus}", b.ToString(), true);
+            };
+            ModbusMasterThread.SendControllerStatus += (sender, b) =>
+            {
+                SendControllerState(b.Item1, b.Item2);
+            };
+            ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeServerSettings.HeartBeatMs);
+            ModbusMasterThread.WriteToLog += (sender, s) =>
+            {
+                WriteToLog(s);
+            };
+
+
             if (!ModbusMasterThread.StartListening())
             {
                 Environment.Exit(1);
@@ -74,9 +85,13 @@ namespace HomeServer
             //            
         }
 
+        private static void SendControllerState(string controllerName, bool state)
+        {
+            _clientWorker.SendMessage($"{HsEnvelope.ControllerStatus}/{controllerName}", state.ToString(), true);
+        }
         private static void WriteToLog(string msg)
         {
-            _clientWorker.SendMessage($"{HsEnvelope.LogMessage}", msg, false);
+            _clientWorker.SendMessage($"{HsEnvelope.ServerStatus}/{HsEnvelope.LogMessage}", msg, false);
 
         }
 
@@ -217,18 +232,19 @@ namespace HomeServer
                     interval = tmpVal;
             }
 
-            Action reserAction = null;
+            Action resetAction = null;
 
             switch (parameter.ModbusType)
             {
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Discrete:
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil:
                     var isCoil = parameter.ModbusType == HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil;
-                    reserAction = controllerObject.SetActionOnDiscreteOrCoil(isCoil,
+                    resetAction = controllerObject.SetActionOnDiscreteOrCoil(parameter.Id, isCoil,
                                        CheckBoolStatus.OnBoth,
                                        parameter.ModbusIndex,
                                        (state) =>
                                        {
+                                           BaseUtils.WriteParamToBase(parameter.Id, boolValue: state);
                                            _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", state.ToString(), true);
                                            if (parameter.Echo != null)
                                            {
@@ -275,12 +291,12 @@ namespace HomeServer
                     switch (parameter.DataType)
                     {
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
-                            reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, value =>
+                            resetAction = controllerObject.SetActionOnRegister(parameter.Id, isHolding, parameter.ModbusIndex, parameter.DataType, value =>
                             {
                                 double resValue = value;
                                 if (parameter.Multiple != 0)
                                     resValue *= parameter.Multiple;
-
+                                BaseUtils.WriteParamToBase(parameter.Id, intValue: (long)resValue);
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
                             }, null, false, interval, uInt16Default: parameter.UintDefault);
                             if (Options.Current.Verbose)
@@ -288,11 +304,12 @@ namespace HomeServer
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.Double:
-                            reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, value =>
+                            resetAction = controllerObject.SetActionOnRegister(parameter.Id, isHolding, parameter.ModbusIndex, parameter.DataType, value =>
                             {
                                 double resValue = value;
                                 if (parameter.Multiple != 0)
                                     resValue *= parameter.Multiple;
+                                BaseUtils.WriteParamToBase(parameter.Id, doubleValue: resValue);
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DoubleResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
                             }, null, false, interval, resetAfterRead: parameter.ResetAfterRead, doubleDefault: parameter.DoubleDefault);
                             if (Options.Current.Verbose)
@@ -301,11 +318,12 @@ namespace HomeServer
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
-                            reserAction = controllerObject.SetActionOnRegister(isHolding, parameter.ModbusIndex, parameter.DataType, null, value =>
+                            resetAction = controllerObject.SetActionOnRegister(parameter.Id, isHolding, parameter.ModbusIndex, parameter.DataType, null, value =>
                             {
                                 double resValue = value;
                                 if (parameter.Multiple != 0)
                                     resValue *= parameter.Multiple;
+                                BaseUtils.WriteParamToBase(parameter.Id, intValue: (long)resValue);
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.ULongResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
                             }, false, interval, resetAfterRead: parameter.ResetAfterRead, uLongDefault: parameter.ULongDefault);
                             if (Options.Current.Verbose)
@@ -313,7 +331,7 @@ namespace HomeServer
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
-                            reserAction = controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
+                            resetAction = controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
                                 value =>
                                 {
                                     _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DateTimeResult}", value.ToString(HsEnvelope.DateTimeFormat), true);
@@ -341,7 +359,7 @@ namespace HomeServer
                     });
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.DeviceStatus:
-                    reserAction = controllerObject.SetActionOnDeviceStatus(
+                    resetAction = controllerObject.SetActionOnDeviceStatus(
                    CheckBoolStatus.OnBoth,
                    parameter.ModbusIndex,
                    (state) =>
@@ -370,8 +388,8 @@ namespace HomeServer
                 //                default:
                 //                    throw new ArgumentOutOfRangeException();
             }
-            if (reserAction != null)
-                MqttClienWorker.ParameterResets.Add(parameter.Id, reserAction);
+            if (resetAction != null)
+                MqttClienWorker.ParameterResets.Add(parameter.Id, resetAction);
         }
 
         private static void CreateSetter(HomeServerSettings.ControllerGroup.Controller.Setter setter, ShController controllerObject)

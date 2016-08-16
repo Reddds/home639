@@ -1,4 +1,4 @@
-﻿/*
+/*
 Ver 2.1
 Reset bytes 02 64 7F 00 00 00 00 00 00 00 0C 6B
 
@@ -28,7 +28,7 @@ Reset bytes 02 64 7F 00 00 00 00 00 00 00 0C 6B
 
 #define RESET_PIN 7 // A4
 #define TXEN 4  //!!! (Забит в bootloader)
-#include <MyModbus/ModbusRtu.h>
+//#include <MyModbus/ModbusRtu.h>
 //#define MODBUS_ID   2      // адрес ведомого
 
 
@@ -44,7 +44,10 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 #define KAKA_PIN 8
 #define CALL_PIN 10 // Кнопка вызова
 
-#define RECV_PIN 11 // ИК приёмник
+#define RECV_PIN 12 // ИК приёмник
+#define LED_PWM_PIN 11
+#define LOWER_PIN A6
+#define HIGHER_PIN A7
 
 #define CALL_LED_PIN 13
 
@@ -52,7 +55,9 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 #define DS1302_IO_PIN     A1    // Arduino pin for the Data I/O
 #define DS1302_CE_PIN     A0    // Arduino pin for the Chip Enable
 
-
+#define DIMMER_SHANGE_MS_INTERVAL 100
+#define DIMMER_SHANGE_MS_INTERVAL_MID 50
+#define DIMMER_SHANGE_MS_INTERVAL_HI 20
 // MODBUS ----------------------------------------------
 #define KAKA_EEPROM_ADDRESS 10
 #define LAST_KAKA_TIME_EEPROM_ADDRESS 2
@@ -87,7 +92,7 @@ char compileDate[] = __DATE__; //"hh:mm:ss"
 //DS1302RTC RTC(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
 //DHT dht(DHTPIN, DHTTYPE);
 dht DHT;
-LiquidCrystal lcd(A4, A5, 5, 9, 3, 2);//4
+LiquidCrystal lcd(A4, A5, 5, 9, A3, 2);//4
 
 
 // массив данных modbus
@@ -119,7 +124,8 @@ void printTime(time_t t);
 void printDate(time_t t);
 void printI00(int val, char delim);
 //-----------------------------------------------------
-
+//  DEBUG!!!!!
+//time_t tmpTime = -4;
 
 IRrecv irrecv(RECV_PIN);
 
@@ -139,12 +145,53 @@ MyDeviceInfoTag myDeviceInfo =
 		USER_APPLICATION_NAME
 	};
 
+
+DS1302RTC RTC(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
+
+
+//timeStatus_t MyTimeInitRtc()
+//{
+//	setSyncProvider(RTC.get); // the function to get the time from the RTC
+//	kakaCounter += 1;
+//	return timeStatus();
+//}
+
+//uint8_t MyTimeHaltRtc()
+//{
+//	RTC.haltRTC();
+//}
+
+uint8_t MyTimeSet(time_t newTime)
+{
+	//kakaCounter += 10;
+	//tmpTime = newTime;
+	if (RTC.set(newTime) == 0) { // Success
+		setTime(newTime);
+		//Serial << F("RTC set to: ");
+		//printDateTime(t);
+		//Serial << endl;
+		return 0;
+	}
+	else
+		return -1;
+}
+
+
+//========================
+//PWM2
+//========================
+void pwm2(void) {
+	TCCR2A = _BV(COM2A1) | _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
+	TCCR2B = _BV(CS20); // 1:1
+}
+
 void setup() {
+
 	//--------  MODBUS  -----------------------------
 	//Задаём ведомому адрес, последовательный порт, выход управления TX
 
 	
-	StartRtc(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
+	//StartRtc(DS1302_CE_PIN, DS1302_IO_PIN, DS1302_SCLK_PIN);
 
 	Modbus(0, TXEN, &myDeviceInfo);
 
@@ -160,8 +207,7 @@ void setup() {
 	//Serial.begin(9600);
 	//Serial.println("DHTxx test!");
 
-	pinMode(KAKA_PIN, INPUT_PULLUP);
-	pinMode(CALL_PIN, INPUT_PULLUP);
+
 
 	//Читаем счетчик из EEPROM:
 	uint8_t tmp = EEPROM[KAKA_EEPROM_ADDRESS];
@@ -192,8 +238,10 @@ void setup() {
 void InitRtc()
 {
 	lcd.clear();
-	
-	if (MyTimeHaltRtc())
+
+
+
+	if (RTC.haltRTC())
 		lcd.print("Clock stpd! Set Time!");
 	else
 		lcd.print("Clock working.");
@@ -202,7 +250,13 @@ void InitRtc()
 	lcd.setCursor(0, 1);
 	lcd.print("RTC Sync");
 
-	timeStatus_t timeStat = MyTimeInitRtc();
+	if (!RTC.writeEN()) {
+		//		Serial << F("The DS1302 is write protected. This normal.");
+		//		Serial << endl;
+	}
+	setSyncProvider(RTC.get);
+
+	timeStatus_t timeStat = timeStatus();
 	if (timeStat == timeSet)
 		lcd.print(" Ok!");
 	else if (timeStat == timeNotSet)
@@ -212,11 +266,26 @@ void InitRtc()
 }
 
 void io_setup() {
-	digitalWrite(RESET_PIN, HIGH);
+  pinMode(KAKA_PIN, INPUT_PULLUP);
+  pinMode(CALL_PIN, INPUT_PULLUP);
+	//digitalWrite(RESET_PIN, HIGH);
 
 	pinMode(RESET_PIN, OUTPUT);
 
 	pinMode(CALL_LED_PIN, OUTPUT);
+
+	pinMode(LED_PWM_PIN, OUTPUT);
+	pinMode(3, OUTPUT);
+ pinMode(LOWER_PIN, INPUT_PULLUP);
+ pinMode(HIGHER_PIN, INPUT_PULLUP);
+
+ 
+
+
+
+	pwm2();
+	OCR2A = 7;
+	//OCR2B = 120;
 }
 
 
@@ -282,6 +351,8 @@ void LoadLastKakTime()
 	_MODBUSInputRegs[LAST_KAK_HOUR_MIN_INPUT_REG] = tmp;
 }
 
+unsigned long nextDimmerMs = 0;
+byte dim = 7;
 void loop() {
 	/*if (Serial.available()) {
 		auto inByte = Serial.peek();
@@ -375,6 +446,38 @@ void loop() {
 			}
 		}
 	}
+
+  
+  if (analogRead(LOWER_PIN) < 512 && (curMillis > nextDimmerMs || (nextDimmerMs - curMillis > DIMMER_SHANGE_MS_INTERVAL)))
+  {
+    //nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL;
+    if (dim > 0)
+    {
+      dim--;
+      OCR2A = dim;
+    }
+    if(dim < 25)
+     nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL;
+    else if(dim < 100)
+      nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL_MID;
+     else
+     nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL_HI;
+  }
+  if (analogRead(HIGHER_PIN) < 512 && (curMillis > nextDimmerMs || (nextDimmerMs - curMillis > DIMMER_SHANGE_MS_INTERVAL)))
+  {
+    //nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL;
+    if (dim < 255)
+    {
+      dim++;
+      OCR2A = dim;
+    }
+        if(dim < 25)
+     nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL;
+    else if(dim < 100)
+      nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL_MID;
+     else
+     nextDimmerMs = curMillis + DIMMER_SHANGE_MS_INTERVAL_HI;
+  }
 	//----------------------------------------------------------------------------
 	if (curMillis - oldMillis < 1000)
 		return;
@@ -421,7 +524,7 @@ void loop() {
 
 		lcd.setCursor(9, 1);
 		lcd.print("KAK ");
-		lcd.print(kakaCounter);
+		lcd.print(dim);//kakaCounter
 
 		if (isnan(t) || isnan(h)) {
 			//Serial.println("Failed to read from DHT");
@@ -431,6 +534,7 @@ void loop() {
 		else {
 
 			lcd.setCursor(0, 0);
+//lcd.print(tmpTime);
 			//lcd.print("Hum: ");
 			lcd.print(h);
 			lcd.print(" %");
@@ -485,6 +589,7 @@ void loop() {
 	while (Serial.available() > 0) Serial.read();
 	}
 	}*/
+
 }
 
 void SetKakaKount(uint8_t newVal, bool writeEeprom)

@@ -1,42 +1,43 @@
-﻿<Window
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls"
-        xmlns:tb="http://www.hardcodet.net/taskbar"
-        xmlns:commands="clr-namespace:HomeModbus.Commands"
-        xmlns:tooltip="clr-namespace:HomeModbus.Tooltip"
-    xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
-    xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges"
-    x:Class="HomeModbus.MainWindow"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing" Loaded="Window_Loaded">
+﻿<dxr:DXRibbonWindow x:Class="HomeModbus.MainWindow" mc:Ignorable="d" Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing" Loaded="Window_Loaded" 
+    xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon" 
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
+    xmlns:rdControls="clr-namespace:RdControls;assembly=RdControls" 
+    xmlns:tb="http://www.hardcodet.net/taskbar" 
+    xmlns:commands="clr-namespace:HomeModbus.Commands" 
+    xmlns:tooltip="clr-namespace:HomeModbus.Tooltip" 
+    xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts" 
+    xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges" 
+    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="200"/>
+            <RowDefinition />
+            <RowDefinition Height="200" />
         </Grid.RowDefinitions>
         <TabControl x:Name="MainTabs">
             <TabItem Header="Основное">
                 <Grid>
-                    <Button Content="Очистить лог" Height="28" Width="104" Margin="777,149,10.2,219.8" Click="ClearLogClick" HorizontalAlignment="Right" />
+                    <Button Content="Очистить лог" Height="28" Width="104" Margin="0,149,10.2,0" Click="ClearLogClick" HorizontalAlignment="Right" VerticalAlignment="Top" />
 
-                    <ListBox x:Name="LbLog" Margin="10,182,10,10.2"/>
-                    <Button x:Name="BGmail" Content="Gmail" HorizontalAlignment="Left" Height="68" Margin="108,71,0,0" VerticalAlignment="Top" Width="214" Click="BGmail_Click"/>
+                    <ListBox x:Name="LbLog" Margin="10,182,10,10.2" />
+                    <Button x:Name="BGmail" Content="Gmail" HorizontalAlignment="Left" Height="68" Margin="68,71,0,0" VerticalAlignment="Top" Width="214" Click="BGmail_Click" />
 
-
+                    <ToggleButton x:Name="TbOnOff" HorizontalAlignment="Left" Height="68" Margin="406,71,0,0" VerticalAlignment="Top" Width="214" Click="ToggleButton_Click">
+                        <Image Source="Assets/Images/on_off.png" />
+                    </ToggleButton>
                 </Grid>
             </TabItem>
             <TabItem Header="Skype">
                 <Grid>
                     <StackPanel>
-                        <CheckBox x:Name="CbSkypeConnected" IsEnabled="False" Content="Skype connected" HorizontalAlignment="Left" VerticalAlignment="Top" Width="121"/>
+                        <CheckBox x:Name="CbSkypeConnected" IsEnabled="False" Content="Skype connected" HorizontalAlignment="Left" VerticalAlignment="Top" Width="121" />
                         <CheckBox x:Name="CbSkypeUnreaded" IsEnabled="False" Content="Есть непрочитанные сообщения" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
-                        
+
                     </StackPanel>
 
                 </Grid>
@@ -45,8 +46,8 @@
                 <Grid>
                     <GroupBox x:Name="groupBox1" Header="Demo EEPROM" HorizontalAlignment="Left" Height="107" Margin="10,10,0,0" VerticalAlignment="Top" Width="372">
                         <Grid>
-                            <rdControls:FilePicker x:Name="FpDemoEeprom" SettingKey="DemoEeprom" Filter="EEPROM|*.eep;*.hex" Margin="0,10,0,0" VerticalAlignment="Top"/>
-                            <Button x:Name="button1" Content="Послать программу для Demo" HorizontalAlignment="Left" Height="36" Margin="0,45,0,0" VerticalAlignment="Top" Width="186" Click="button1_Click"/>
+                            <rdControls:FilePicker x:Name="FpDemoEeprom" SettingKey="DemoEeprom" Filter="EEPROM|*.eep;*.hex" Margin="0,10,0,0" VerticalAlignment="Top" />
+                            <Button x:Name="button1" Content="Послать программу для Demo" HorizontalAlignment="Left" Height="36" Margin="0,45,0,0" VerticalAlignment="Top" Width="186" Click="button1_Click" />
 
                         </Grid>
                     </GroupBox>
@@ -57,20 +58,20 @@
                                 <CheckBox x:Name="CbLed2" VerticalAlignment="Center" />
                                 <CheckBox x:Name="CbLed3" VerticalAlignment="Center" />
                                 <CheckBox x:Name="CbLed4" VerticalAlignment="Center" />
-                                <Label VerticalAlignment="Center" Content="Яркость"/>
-                                <ComboBox x:Name="CbBrightnes" VerticalAlignment="Center" DisplayMemberPath="Key" SelectedValuePath="Value" Width="70"/>
-                                <Label VerticalAlignment="Center" Content="Задержка после"/>
-                                <xctk:IntegerUpDown x:Name="IudDelayAfter" Minimum="0" VerticalAlignment="Center" Margin="5,0" Width="60" Maximum="2550" Text="500" DefaultValue="500"/>
-                                <RadioButton x:Name="RbDelayMs" VerticalAlignment="Center" IsChecked="True" GroupName="Delays" Content="ms" Checked="RbDelayMs_Checked"/>
-                                <RadioButton x:Name="RbDelayS" VerticalAlignment="Center" Margin="5,0" GroupName="Delays" Content="s" Checked="RbDelayS_Checked"/>
-                                <Button Height="23" Width="120" Margin="20,0" Click="Button_Click_1" Content="Добавить команду"/>
-                                <Button Height="23" VerticalAlignment="Center" Content="&lt;-" ToolTip="Удалить последнюю комманду" Click="DeleteLastDemoCommand"/>
+                                <Label VerticalAlignment="Center" Content="Яркость" />
+                                <ComboBox x:Name="CbBrightnes" VerticalAlignment="Center" DisplayMemberPath="Key" SelectedValuePath="Value" Width="70" />
+                                <Label VerticalAlignment="Center" Content="Задержка после" />
+                                <xctk:IntegerUpDown x:Name="IudDelayAfter" Minimum="0" VerticalAlignment="Center" Margin="5,0" Width="60" Maximum="2550" Text="500" DefaultValue="500" />
+                                <RadioButton x:Name="RbDelayMs" VerticalAlignment="Center" IsChecked="True" GroupName="Delays" Content="ms" Checked="RbDelayMs_Checked" />
+                                <RadioButton x:Name="RbDelayS" VerticalAlignment="Center" Margin="5,0" GroupName="Delays" Content="s" Checked="RbDelayS_Checked" />
+                                <Button Height="23" Width="120" Margin="20,0" Click="Button_Click_1" Content="Добавить команду" />
+                                <Button Height="23" VerticalAlignment="Center" Content="&lt;-" ToolTip="Удалить последнюю комманду" Click="DeleteLastDemoCommand" />
                             </StackPanel>
-                            <ListBox x:Name="LbDemoCommands" Height="100"/>
+                            <ListBox x:Name="LbDemoCommands" Height="100" />
                             <StackPanel Orientation="Horizontal" Margin="5">
-                                <Label Content="Осталось места (байт):"/>
-                                <Label x:Name="LDemoBytesLeft" FontWeight="Bold" Content="256"/>
-                                <Button Click="SaveDemo" Margin="5" Height="23" Width="150" Content="Сохранить для передачи"/>
+                                <Label Content="Осталось места (байт):" />
+                                <Label x:Name="LDemoBytesLeft" FontWeight="Bold" Content="256" />
+                                <Button Click="SaveDemo" Margin="5" Height="23" Width="150" Content="Сохранить для передачи" />
 
                             </StackPanel>
                         </StackPanel>
@@ -80,37 +81,37 @@
             <TabItem Header="Табло">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="100"/>
-                        <RowDefinition/>
-                        <RowDefinition/>
+                        <RowDefinition Height="100" />
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
                     <GroupBox Header="Настройки">
                         <Grid>
-                            <xctk:IntegerUpDown x:Name="IudInfoPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Minimum="0" Maximum="255" Value="50"/>
-                            <xctk:IntegerUpDown x:Name="IudAlarmPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="81,10,0,0" Minimum="0" Maximum="255" Value="50"/>
-                            <Button Content="Записать настройки" Click="WriteBiSettingsClick" HorizontalAlignment="Left" Height="37" Margin="637,29,0,-2" VerticalAlignment="Top" Width="199"/>
+                            <xctk:IntegerUpDown x:Name="IudInfoPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Minimum="0" Maximum="255" Value="50" />
+                            <xctk:IntegerUpDown x:Name="IudAlarmPeriod" Width="60" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="81,10,0,0" Minimum="0" Maximum="255" Value="50" />
+                            <Button Content="Записать настройки" Click="WriteBiSettingsClick" HorizontalAlignment="Left" Height="37" Margin="637,29,0,-2" VerticalAlignment="Top" Width="199" />
                         </Grid>
                     </GroupBox>
                     <GroupBox Grid.Row="1" Header="Звуки">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="150" />
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TbSoundJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+                            <TextBox x:Name="TbSoundJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
                         </Grid>
 
                     </GroupBox>
                     <GroupBox Grid.Row="2" Header="Расписание">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="150" />
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TbDiaryJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+                            <TextBox x:Name="TbDiaryJson" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
                             <Button Click="UploadDiaryClick" Margin="10,0,0,0" Grid.Column="1" Height="54">
 
-                                <TextBlock><Run Text="Загрузить Расписание"/><LineBreak/><Run Text="и звуки"/></TextBlock>
+                                <TextBlock><Run Text="Загрузить Расписание" /><LineBreak /><Run Text="и звуки" /></TextBlock>
                             </Button>
                         </Grid>
 
@@ -118,22 +119,22 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
-           
+
         </TabControl>
-        <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" >
+        <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" Margin="0,0,0,24">
             <dxc:ChartControl.Legend>
-                <dxc:Legend/>
+                <dxc:Legend />
             </dxc:ChartControl.Legend>
             <dxc:XYDiagram2D EnableAxisXNavigation="True">
                 <dxc:XYDiagram2D.AxisX>
                     <dxc:AxisX2D>
                         <dxc:AxisX2D.DateTimeScaleOptions>
-                            <dxc:ManualDateTimeScaleOptions MeasureUnit="Minute"/>
+                            <dxc:ManualDateTimeScaleOptions MeasureUnit="Minute" />
                         </dxc:AxisX2D.DateTimeScaleOptions>
                     </dxc:AxisX2D>
                 </dxc:XYDiagram2D.AxisX>
-                <dxc:LineSeries2D DisplayName="Влажность"/>
-                <dxc:LineSeries2D DisplayName="Температура"/>
+                <dxc:LineSeries2D DisplayName="Влажность" />
+                <dxc:LineSeries2D DisplayName="Температура" />
             </dxc:XYDiagram2D>
         </dxc:ChartControl>
 
@@ -141,34 +142,22 @@
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <TextBlock Text="Hiding the sample window will not close it!" />
-                    <MenuItem Header="_Показать [S]"
-									Command="{commands:ShowSampleWindowCommand}"
-									CommandParameter="{Binding}">
+                    <MenuItem Header="_Показать [S]" Command="{commands:ShowSampleWindowCommand}" CommandParameter="{Binding}">
                         <MenuItem.Icon>
-                            <Image Width="16"
-											Height="16"
-											Source="/Assets/Images/Add.png" />
+                            <Image Width="16" Height="16" Source="/Assets/Images/Add.png" />
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="_Скрыть [H]"
-									Command="{commands:HideSampleWindowCommand}"
-									CommandParameter="{Binding}">
+                    <MenuItem Header="_Скрыть [H]" Command="{commands:HideSampleWindowCommand}" CommandParameter="{Binding}">
                         <MenuItem.Icon>
-                            <Image Width="16"
-											Height="16"
-											Source="/Assets/Images/Remove.png" />
+                            <Image Width="16" Height="16" Source="/Assets/Images/Remove.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
 
-                    <MenuItem Header="_Выход [X]"
-									Command="{commands:CloseWindowCommand}"
-									CommandParameter="{Binding}">
+                    <MenuItem Header="_Выход [X]" Command="{commands:CloseWindowCommand}" CommandParameter="{Binding}">
                         <MenuItem.Icon>
-                            <Image Width="16"
-											Height="16"
-											Source="/Assets/Images/Close.png" />
+                            <Image Width="16" Height="16" Source="/Assets/Images/Close.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>
@@ -178,5 +167,10 @@
                 <tooltip:FancyPopup />
             </tb:TaskbarIcon.TrayPopup>
         </tb:TaskbarIcon>
+        <dxr:RibbonStatusBarControl Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" >
+            <dxr:RibbonStatusBarControl.RightItems>
+                <dxb:BarStaticItem x:Name="BsiLastMessageTime" dxb:BarItemLinkBase.IsVisible="{Binding (dxb:BarItem.IsVisible), Mode=OneWay}"/>
+            </dxr:RibbonStatusBarControl.RightItems>
+        </dxr:RibbonStatusBarControl>
     </Grid>
-</Window>
+</dxr:DXRibbonWindow>

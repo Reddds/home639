@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using ExpressionEvaluator;
 using HomeServer.ModbusCustomMessages;
 using HomeServer.Models;
+using HomeServer.Models.Base;
 using Modbus.Device;
-using Modbus.IO;
 using Newtonsoft.Json;
-
 
 namespace HomeServer.Objects
 {
@@ -28,6 +26,13 @@ namespace HomeServer.Objects
         private const int MaxDeviceStatusIndex = 7;
         private const ushort CommandHoldingRegister = 0;
 
+        /// <summary>
+        /// Состояние контроллера
+        /// null - ещё не известно
+        /// true - нормально работает
+        /// false - ошибка связи
+        /// </summary>
+        public bool? State =  null;
         public string ControllerGroupName;
         public string Name;
 
@@ -52,6 +57,7 @@ namespace HomeServer.Objects
 
         public class ActionOnDiscreteOrCoil
         {
+            private readonly string _id;
             private bool? _currentState;
             public bool? InitialState { get; private set; }
 
@@ -60,13 +66,14 @@ namespace HomeServer.Objects
             private Action<bool> CallBack { get; set; }
             public TimeSpan? CheckInterval { get; set; }
 
-            protected ActionOnDiscreteOrCoil(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+            protected ActionOnDiscreteOrCoil(string id, ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
                 bool? initialState)
             {
                 Index = index;
                 CheckBoolStatus = checkBoolStatus;
                 CallBack = callBack;
                 InitialState = initialState;
+                _id = id;
                 _currentState = initialState;
             }
 
@@ -74,6 +81,9 @@ namespace HomeServer.Objects
             {
                 if (newState == _currentState)
                     return false;
+
+                //BaseUtils.WriteParamToBase(_id, boolValue: newState);
+
                 switch (CheckBoolStatus)
                 {
                     case CheckBoolStatus.OnTrue:
@@ -91,13 +101,15 @@ namespace HomeServer.Objects
                 _currentState = newState;
                 return true;
             }
+
         }
+
 
         private class ActionOnDiscrete : ActionOnDiscreteOrCoil
         {
-            public ActionOnDiscrete(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+            public ActionOnDiscrete(string id, ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
                 bool? initialState)
-                : base(index, checkBoolStatus, callBack, initialState)
+                : base(id, index, checkBoolStatus, callBack, initialState)
             {
             }
         }
@@ -106,9 +118,9 @@ namespace HomeServer.Objects
         {
             public bool ResetAfter { get; private set; }
 
-            public ActionOnCoil(ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack, bool resetAfter,
+            public ActionOnCoil(string id, ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack, bool resetAfter,
                 bool? initialState)
-                : base(index, checkBoolStatus, callBack, initialState)
+                : base(id, index, checkBoolStatus, callBack, initialState)
             {
                 ResetAfter = resetAfter;
             }
@@ -148,6 +160,7 @@ namespace HomeServer.Objects
 
         private class ActionOnRegister : IResetParameter
         {
+            private readonly string _id;
             private ushort? _currentValue;
             private uint? _currentLongValue;
             protected DateTime _lastCheck = DateTime.MinValue;
@@ -169,8 +182,9 @@ namespace HomeServer.Objects
             public bool RaiseOlwais { get; set; }
             public HomeServerSettings.ControllerGroup.Controller.DataTypes RegisterType { get; set; }
 
-            public ActionOnRegister(ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callBack, Action<uint> callBackULong = null)
+            public ActionOnRegister(string id, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callBack, Action<uint> callBackULong = null)
             {
+                _id = id;
                 Index = index;
                 CallBack = callBack;
                 CallBackULong = callBackULong;
@@ -199,6 +213,8 @@ namespace HomeServer.Objects
                 }
                 if (_currentValue == newValue)
                     return false;
+
+                //WriteToBase(_id, intValue: newValue);
                 _currentValue = newValue;
                 _lastCheck = DateTime.Now;
                 
@@ -224,6 +240,7 @@ namespace HomeServer.Objects
                 }
                 if (_currentLongValue == newValue)
                     return false;
+                //WriteToBase(_id, intValue: newValue);
                 _currentLongValue = newValue;
                 _lastCheck = DateTime.Now;
                 if (_currentLongValue == ULongDefault)
@@ -253,7 +270,7 @@ namespace HomeServer.Objects
             private DateTime _currentDateTime;
             private Action<DateTime> CallBack { get; set; }
 
-            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(index, HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime, null)
+            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(null, index, HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime, null)
             {
                 CallBack = callBack;
             }
@@ -841,6 +858,8 @@ namespace HomeServer.Objects
                     if (curHour != _lastTimeSetHour)
                     {
                         SetCurrentTime(modbus, SlaveAddress, WriteToLog);
+
+
                         // Ответ не ждём
                         _lastTimeSetHour = curHour;
                     }
@@ -994,7 +1013,20 @@ namespace HomeServer.Objects
                 (byte)curTime.Month);
 
             writeToLog("Time sync send");
-            return modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
+
+            var res = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
+
+            // Для отладки ждём
+            Thread.Sleep(500);
+            var msgCheck = new ReadExceptionStatusRequest(slaveAddress);
+            var respCheck = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgCheck);
+            if(respCheck.ExceptionStatusBits[2])
+                writeToLog("Time not set!!!!");
+            if(respCheck.ExceptionStatusBits[3])
+                writeToLog("Time need sync!!!!");
+            if (respCheck.ExceptionStatusBits[0])
+                writeToLog("Error set time!!!!");
+            return res;
         }
 
         private const int InputTimeSetBit = 0;
@@ -1070,6 +1102,7 @@ namespace HomeServer.Objects
         /// <summary>
         /// Прописывает метод, который будет вызван после изменения статуса дискретного регистра или катушки
         /// </summary>
+        /// <param name="id">Id параметра, которое пишется в базу</param>
         /// <param name="isCoil"></param>
         /// <param name="checkBoolStatus">При каком событии вызывать метод</param>
         /// <param name="index">Индекс регистра или катушки</param>
@@ -1077,7 +1110,7 @@ namespace HomeServer.Objects
         /// <param name="initialState">Начальное состояние</param>
         /// <param name="resetAfter">Сброс значения только для катушек и CheckBoolStatus != OnBoth</param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnDiscreteOrCoil(bool isCoil, CheckBoolStatus checkBoolStatus, ushort index,
+        public Action SetActionOnDiscreteOrCoil(string id, bool isCoil, CheckBoolStatus checkBoolStatus, ushort index,
             Action<bool> callback,
             bool? initialState = null, bool resetAfter = false)
         {
@@ -1102,7 +1135,7 @@ namespace HomeServer.Objects
                     _coilMaxIndex = index;
                 if (_coilChecks == null)
                     _coilChecks = new List<ActionOnCoil>();
-                var actionOnCoil = new ActionOnCoil(index, checkBoolStatus, callback, resetAfter, initialState);
+                var actionOnCoil = new ActionOnCoil(id, index, checkBoolStatus, callback, resetAfter, initialState);
 
                 _coilChecks.Add(actionOnCoil);
                 return () =>
@@ -1118,7 +1151,7 @@ namespace HomeServer.Objects
                     _discreteRegisterMaxIndex = index;
                 if (_discreteChecks == null)
                     _discreteChecks = new List<ActionOnDiscrete>();
-                var actionOnDiscrete = new ActionOnDiscrete(index, checkBoolStatus, callback, initialState);
+                var actionOnDiscrete = new ActionOnDiscrete(id, index, checkBoolStatus, callback, initialState);
                 _discreteChecks.Add(actionOnDiscrete);
                 return null;
             }
@@ -1156,6 +1189,7 @@ namespace HomeServer.Objects
         /// <summary>
         /// Добавить проверку регистра
         /// </summary>
+        /// <param name="id">Id параметра, которое пишется в базу</param>
         /// <param name="isHolding"></param>
         /// <param name="index"></param>
         /// <param name="registerType"></param>
@@ -1164,7 +1198,7 @@ namespace HomeServer.Objects
         /// <param name="raiseOlwais">Вызывать callback даже когда показания не изменились</param>
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnRegister(bool isHolding, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
+        public Action SetActionOnRegister(string id, bool isHolding, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
             Action<uint> uLongCallback,
             bool raiseOlwais = false, TimeSpan? checkInterval = null, bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0, double doubleDefault = 0)
         {
@@ -1196,7 +1230,7 @@ namespace HomeServer.Objects
                 if (_inputChecks == null)
                     _inputChecks = new List<ActionOnRegister>();
 
-                var holdingCheck = new ActionOnRegister(index, registerType, callback, uLongCallback)
+                var holdingCheck = new ActionOnRegister(id, index, registerType, callback, uLongCallback)
                 {
                     RaiseOlwais = raiseOlwais,
                     CheckInterval = checkInterval
@@ -1216,7 +1250,7 @@ namespace HomeServer.Objects
                     _holdingRegisterMaxIndex = endIndex;
                 if (_holdingChecks == null)
                     _holdingChecks = new List<ActionOnRegister>();
-                _holdingChecks.Add(new ActionOnRegister(index, registerType, callback, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
+                _holdingChecks.Add(new ActionOnRegister(id, index, registerType, callback, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
                 return null;
             }
         }
@@ -1291,6 +1325,11 @@ namespace HomeServer.Objects
             _setters.Add(newSetter);
             return newSetter;
         }
+        #region DataBase
+
+
+
+        #endregion DataBase
 
     }
 }

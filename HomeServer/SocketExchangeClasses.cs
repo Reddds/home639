@@ -57,6 +57,10 @@ namespace HomeServer
         public const string ControllersSettings = "controllerssettings";
 
         /// <summary>
+        /// Состояние контроллера 1 - работает, 0 - нет
+        /// </summary>
+        public const string ControllerStatus = "controllerstatus";
+        /// <summary>
         /// Передача данных с контроллеров
         /// </summary>
         public const string ControllersResult = "controllersresult";
@@ -105,7 +109,9 @@ namespace HomeServer
 
         public const string ResetParameter = "resetparameter";
 
+        public const string ServerStatus = "serverstatus";
         public const string LogMessage = "logmessage";
+        public const string ListeningStatus = "listeningstatus";
 
         public const string DateTimeFormat = "O";
 /*

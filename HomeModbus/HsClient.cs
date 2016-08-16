@@ -14,6 +14,9 @@ namespace HomeModbus
         private readonly Action<string> _writeToLog;
         private MqttClient _mqttClient;
 
+        public Action<bool> OnServerListeningStatusChange;
+        public Action UpdateLastTime;
+
         Timer CheckConnectionTimer;
 
         public class ActionEventArgs
@@ -39,6 +42,8 @@ namespace HomeModbus
         //        private readonly ConcurrentQueue<HsEnvelope> _messageQueue;
         //private readonly Dictionary<string, Action<object>> _registeredActions;
         private readonly Dictionary<string, MyActionContainer> _registeredActions;
+
+        private readonly Dictionary<string, Action<bool>> _statusChangeActions; 
         /// <summary>
         /// Вызывается при получении результата изменения значения
         /// </summary>
@@ -49,14 +54,22 @@ namespace HomeModbus
             _writeToLog = writeToLog;
 
             _registeredActions = new Dictionary<string, MyActionContainer>();
+            _statusChangeActions = new Dictionary<string, Action<bool>>();
             _setterResultActions = new Dictionary<string, Action<bool>>();
             //            _messageQueue = new ConcurrentQueue<HsEnvelope>();
 
             CheckConnectionTimer = new Timer((state) =>
             {
-              if (_mqttClient == null || !_mqttClient.IsConnected)
+                if (_mqttClient == null || !_mqttClient.IsConnected)
                 {
-                    ConnectToServer(address);
+                    try
+                    {
+                        ConnectToServer(address);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
                 }
             }, null, Timeout.Infinite, 60000);
         }
@@ -77,15 +90,25 @@ namespace HomeModbus
             {
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersResult}/#",
                 $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllersSetterResult}/#",
-                $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.LogMessage}/#",
+                $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ServerStatus}/#",
+                $"/{HsEnvelope.HomeServerTopic}/{HsEnvelope.ControllerStatus}/#",
             }, new[]
             {
+                MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
                 MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE,
             });
 
             CheckConnectionTimer.Change(0, 60000);
+        }
+
+        private bool? MessageToBool(string strMessage)
+        {
+            bool boolValue;
+            if (bool.TryParse(strMessage, out boolValue))
+                return boolValue;
+            return null;
         }
 
         private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
@@ -97,9 +120,6 @@ namespace HomeModbus
             var topicSplit = e.Topic.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             if (topicSplit.Length < 3)
             {
-                if(topicSplit.Length == 2 && topicSplit[1] == HsEnvelope.LogMessage)
-                    _writeToLog?.Invoke(strMessage);
-
                 return;
             }
 
@@ -108,10 +128,33 @@ namespace HomeModbus
 
             try
             {
-
+                UpdateLastTime?.Invoke();
                 switch (resultKind)
                 {
+                    case HsEnvelope.ServerStatus:
+                        switch (parameterId)
+                        {
+                            case HsEnvelope.LogMessage:
+                                _writeToLog?.Invoke(strMessage);
+                                break;
+                            case HsEnvelope.ListeningStatus:
 
+                                var boolVal = MessageToBool(strMessage);
+                                if (boolVal != null)
+                                    OnServerListeningStatusChange?.Invoke(boolVal.Value);
+                                break;
+                                //OnServerListeningStatusChange 
+                        }
+                        break;
+
+                    case HsEnvelope.ControllerStatus:
+                        if (_statusChangeActions.ContainsKey(parameterId))
+                        {
+                            var boolVal = MessageToBool(strMessage);
+                            if (boolVal != null)
+                                _statusChangeActions[parameterId]?.Invoke(boolVal.Value);
+                        }
+                        break;
                     case HsEnvelope.ControllersResult:
                         if (topicSplit.Length < 4)
                             return;
@@ -122,9 +165,10 @@ namespace HomeModbus
                         switch (dataType)
                         {
                             case HsEnvelope.BoolResult:
-                                bool boolValue;
-                                if (bool.TryParse(strMessage, out boolValue))
-                                    action?.RaiseOnAction(boolValue);
+                                var boolVal = MessageToBool(strMessage);
+                                if (boolVal != null)
+
+                                    action?.RaiseOnAction(boolVal.Value);
                                 break;
                             case HsEnvelope.UInt16Result:
                                 ushort uint16Value;
@@ -178,7 +222,7 @@ namespace HomeModbus
                         _sender.Shutdown(SocketShutdown.Both);
                         _sender.Close();
             */
-            if(_mqttClient.IsConnected)
+            if (_mqttClient.IsConnected)
                 _mqttClient.Disconnect();
             _mqttClient = null;
         }
@@ -236,13 +280,13 @@ namespace HomeModbus
                     SendMessage($"{HsEnvelope.ResetParameter}/{parameterId}", newVal?.ToString());
                 }, obj.Value);
             };
-//            _registeredActions.Add(parameterId, (sender, obj) =>
-//            {
-//                callback((newVal) =>
-//                {
-//                    SendMessage($"{HsEnvelope.ResetParameter}/{parameterId}", newVal?.ToString());
-//                }, obj);
-//            });
+            //            _registeredActions.Add(parameterId, (sender, obj) =>
+            //            {
+            //                callback((newVal) =>
+            //                {
+            //                    SendMessage($"{HsEnvelope.ResetParameter}/{parameterId}", newVal?.ToString());
+            //                }, obj);
+            //            });
             //            var registerActionOnRegister = new SetAction()
             //            {
             //                ActionId = actionHash,
@@ -257,6 +301,12 @@ namespace HomeModbus
             Action<bool> callback)
         {
             _setterResultActions.Add(parameterId, callback);
+        }
+
+        public void OnStatusChanged(string controllerId, Action<bool> action)
+        {
+            if(!_statusChangeActions.ContainsKey(controllerId))
+                _statusChangeActions.Add(controllerId, action);
         }
     }
 }

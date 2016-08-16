@@ -184,15 +184,21 @@ namespace HomeModbus
             _demoView.Source = _demoCommands;
             LbDemoCommands.ItemsSource = _demoView.View;
 
-            _client = new HsClient(ServerName, WriteToLog);
-
+            _client = new HsClient(ServerName, WriteToLog)
+            {
+                OnServerListeningStatusChange = b => { TbOnOff.IsChecked = b; },
+                UpdateLastTime = () => ExecDispatched(() =>
+                {
+                    BsiLastMessageTime.Content = $"Время последней команды: {DateTime.Now:G}";
+                })
+            };
             if (LoadSettings())
                 ApplySettings();
 
             ConnectToServer();
 
             // Starting plugins
-            if(_plugins != null)
+            if (_plugins != null)
                 foreach (var homePlugin in _plugins)
                 {
                     homePlugin.Start();
@@ -372,7 +378,7 @@ namespace HomeModbus
                             SendEcho(pluginEvent.Echo, objects != null && objects.Length > 0 ? "1" : "0");
                         });
                     }
-                    _plugins.Add(gmailNotify);                    
+                    _plugins.Add(gmailNotify);
                 }
             }
 
@@ -382,7 +388,15 @@ namespace HomeModbus
         {
             foreach (var room in _homeSettings.Rooms)
             {
-                var roomTab = new RoomTab { Header = room.Name };
+                var roomTab = new RoomTab { Title = room.Name };
+                if (!string.IsNullOrEmpty(room.ControllerId))
+                {
+                    roomTab.ControllerId = room.ControllerId;
+                    _client.OnStatusChanged(room.ControllerId, b =>
+                    {
+                        roomTab.State = b;
+                    });
+                }
                 MainTabs.Items.Add(roomTab);
 
                 if (room.LayoutGroups != null)
@@ -435,6 +449,39 @@ namespace HomeModbus
                 });
                 setterControl.SpMain.Children.Add(simpleSetter);
             }
+            var simpleLiteralButtonSettings = visibility.SimpleLiteralButton;
+            if (simpleLiteralButtonSettings != null)
+            {
+                var simpleSetter = new SimpleSetter { TbName = { Content = visibility.Name } };
+                simpleSetter.BMain.Click += (sender, args) =>
+                {
+                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", simpleLiteralButtonSettings.Value ?? "");
+                };
+                _client.SetResultAction(visibility.SetterId, status =>
+                {
+                    simpleSetter.Result(status);
+                });
+                setterControl.SpMain.Children.Add(simpleSetter);
+
+            }
+            var simpleLiteralToggleButtonSettings = visibility.SimpleLiteralToggleButton;
+            if (simpleLiteralToggleButtonSettings != null)
+            {
+                var binaryInd = new BinaryIndicator {Content = visibility.Name };
+                binaryInd.Click += (sender, args) =>
+                {
+                    var bi = (BinaryIndicator) sender; 
+                    _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", bi.IsChecked == true ? simpleLiteralToggleButtonSettings.ValueOn : simpleLiteralToggleButtonSettings.ValueOff);
+                };
+//                _client.SetResultAction(visibility.SetterId, status =>
+//                {
+//                    binaryInd.Result(status);
+//                });
+                setterControl.SpMain.Children.Add(binaryInd);
+
+            }
+
+
             var sendCommandSetting = visibility.SendCommand;
             if (sendCommandSetting != null)
             {
@@ -510,6 +557,7 @@ namespace HomeModbus
 
                 binaryIndicator.EnabledUnchecked = GetImageSource(offIcon, "DefaultUnChecked.png");
             }
+
 
             var analogIndicator = visibility.AnalogIndicator;
             if (analogIndicator != null)
@@ -761,7 +809,7 @@ namespace HomeModbus
             //AsynchronousClient.Start();
             _client.ConnectToServer(ServerName);
             // Восстановление плагинов
-            if(_plugins != null)
+            if (_plugins != null)
                 foreach (var plugin in _plugins)
                 {
                     plugin.ResumeFromSleep();
@@ -1170,6 +1218,15 @@ namespace HomeModbus
         private void ClearLogClick(object sender, RoutedEventArgs e)
         {
             LbLog.Items.Clear();
+        }
+
+        private void ToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tb = (ToggleButton)sender;
+            if (tb.IsChecked == true)
+                _client.SendMessage($"{HsEnvelope.HomeServerCommands}", HsEnvelope.StartListening);
+            else
+                _client.SendMessage($"{HsEnvelope.HomeServerCommands}", HsEnvelope.StopListening);
         }
     }
 }

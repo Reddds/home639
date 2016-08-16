@@ -24,6 +24,7 @@ namespace HomeServer
 
 
         public static event EventHandler<string> WriteToLog;
+        public static event EventHandler<Tuple<string, bool>> SendControllerStatus;
 
 
         private static bool _setCurrentTime;
@@ -241,6 +242,7 @@ namespace HomeServer
                         {
                             foreach (var controller in room.ShControllers)
                             {
+                                
                                 if (controller.ErrorCount >= 30)
                                 {
                                     // теперь опрашиваем текущий контроллер только раз в 30 минут
@@ -264,6 +266,11 @@ namespace HomeServer
                                         BanController(controller, currentControllerAddress);
                                         continue;
                                     }
+                                    if (controller.State == null)
+                                    {
+                                        controller.State = true;
+                                        SendControllerStatus?.Invoke(null, new Tuple<string, bool>(controller.Id, true));
+                                    }
                                     Thread.Sleep(20);
                                     curAction = "DoActions";
                                     controller.DoActions(_modbus);
@@ -272,7 +279,8 @@ namespace HomeServer
                                     {
                                         Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
                                         WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
-
+                                        controller.State = true;
+                                        SendControllerStatus?.Invoke(null, new Tuple<string, bool>(controller.Id, true));
                                         controller.ErrorCount = 0;
                                     }
                                 }
@@ -307,6 +315,8 @@ namespace HomeServer
             controller.ErrorCount++;
             if (controller.ErrorCount == 5)
             {
+                controller.State = false;
+                SendControllerStatus?.Invoke(null, new Tuple<string, bool>(controller.Id, false));
                 Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} Now access every minute");
                 WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} Now access every minute");
             }

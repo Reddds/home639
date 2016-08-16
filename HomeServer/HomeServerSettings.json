@@ -222,6 +222,22 @@
                             "ModbusIndex": 1,
                             "Retain": true
                         }
+                    ],
+                    "Setters": [
+                        {
+                            "Id": "bath_ignore_door",
+                            "Name": "Игнорировать дверь. Свет всегда включён.",
+                            "Type": "Command",
+                            "Command": {
+                                "Id": {
+                                    "Type": "Literal",
+                                    "Value": 10 
+                                },
+                                "Data": {
+                                    "Type": "FromRequest"
+                                }                                
+                            }
+                        }
                     ]
                 }
             ]

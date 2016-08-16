@@ -103,6 +103,16 @@ namespace HomeModbus.Models
                     public bool IsHex { get; set; }
                 }
 
+                public class SimpleLiteralButtonClass
+                {
+                    public string Value { get; set; }
+                }
+
+                public class SimpleLiteralToggleButtonClass
+                {
+                    public string ValueOn { get; set; }
+                    public string ValueOff { get; set; }
+                }
                 public string Name { get; set; }
                 public string ParameterId { get; set; }
                 public string SetterId { get; set; }
@@ -119,6 +129,11 @@ namespace HomeModbus.Models
                 public object StringIndicator { get; set; }
                 public object CurrentTime { get; set; }
                 public object SendCommand { get; set; }
+                /// <summary>
+                /// Простая кнопка, которая посылает простое строковое значение
+                /// </summary>
+                public SimpleLiteralButtonClass SimpleLiteralButton { get; set; }
+                public SimpleLiteralToggleButtonClass SimpleLiteralToggleButton { get; set; }
             }
 
             /*            public partial class LayoutItem
@@ -133,6 +148,10 @@ namespace HomeModbus.Models
                         }*/
 
             public string Name { get; set; }
+            /// <summary>
+            /// Id контрллера для показа его состояния
+            /// </summary>
+            public string ControllerId { get; set; }
             public List<LayoutGroup> LayoutGroups { get; set; }
             public List<Visibility> Visibilities { get; set; }
 

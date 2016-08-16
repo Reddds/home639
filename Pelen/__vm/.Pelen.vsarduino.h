@@ -50,6 +50,5 @@ extern "C" void __cxa_pure_virtual() {;}
 #define F(string_literal) ((const PROGMEM char *)(string_literal))
 #undef PSTR
 #define PSTR(string_literal) ((const PROGMEM char *)(string_literal))")
-#include <Pelen.ino>
-#include <ControllerSettings.h>
+#include "Pelen.ino"
 #endif

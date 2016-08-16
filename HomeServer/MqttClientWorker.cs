@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text;
 using HomeServer.Models;
 using HomeServer.Objects;
-using Newtonsoft.Json.Serialization;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
