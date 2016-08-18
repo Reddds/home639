@@ -1,4 +1,4 @@
-﻿<dxr:DXRibbonWindow x:Class="HomeModbus.MainWindow" mc:Ignorable="d" Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing" Loaded="Window_Loaded" 
+﻿<dxr:DXRibbonWindow xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"  
     xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon" 
     xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
@@ -12,13 +12,12 @@
     xmlns:tooltip="clr-namespace:HomeModbus.Tooltip" 
     xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts" 
     xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges" 
-    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars">
+    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars" xmlns:System="clr-namespace:System;assembly=mscorlib"
+                    xmlns:controls="clr-namespace:HomeModbus.Controls"
+                    x:Class="HomeModbus.MainWindow" mc:Ignorable="d" Title="MainWindow" Height="673.14" Width="920.821" Closed="Window_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing" Loaded="Window_Loaded" 
+    >
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="200" />
-        </Grid.RowDefinitions>
-        <TabControl x:Name="MainTabs">
+        <TabControl x:Name="MainTabs" Margin="0,0,0,24">
             <TabItem Header="Основное">
                 <Grid>
                     <Button Content="Очистить лог" Height="28" Width="104" Margin="0,149,10.2,0" Click="ClearLogClick" HorizontalAlignment="Right" VerticalAlignment="Top" />
@@ -119,24 +118,8 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
-
+            <controls:ChartsTabItem/>
         </TabControl>
-        <dxc:ChartControl Grid.Row="1" x:Name="MainChartLog" HorizontalAlignment="Stretch" DataSource="_mainValueLog" Margin="0,0,0,24">
-            <dxc:ChartControl.Legend>
-                <dxc:Legend />
-            </dxc:ChartControl.Legend>
-            <dxc:XYDiagram2D EnableAxisXNavigation="True">
-                <dxc:XYDiagram2D.AxisX>
-                    <dxc:AxisX2D>
-                        <dxc:AxisX2D.DateTimeScaleOptions>
-                            <dxc:ManualDateTimeScaleOptions MeasureUnit="Minute" />
-                        </dxc:AxisX2D.DateTimeScaleOptions>
-                    </dxc:AxisX2D>
-                </dxc:XYDiagram2D.AxisX>
-                <dxc:LineSeries2D DisplayName="Влажность" />
-                <dxc:LineSeries2D DisplayName="Температура" />
-            </dxc:XYDiagram2D>
-        </dxc:ChartControl>
 
         <tb:TaskbarIcon x:Name="MyNotifyIcon" ToolTipText="hello world" IconSource="Assets/Images/com_plug.ico">
             <tb:TaskbarIcon.ContextMenu>

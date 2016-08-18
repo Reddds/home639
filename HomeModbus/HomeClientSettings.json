@@ -391,5 +391,72 @@
                 }
             ]
         }
-    ]
+    ],
+    "Chart": {
+        "Groups": [
+            {
+                "Title": "Температура",
+                "DataType": "Double",
+                "YAxisTitle": "°С",
+                "Parameters": [
+                    {
+                        "Legend": "Спальня",
+                        "Id": "bed_3"
+                    },
+                    {
+                        "Legend": "Улица",
+                        "Id": "meteo_temp_comm"
+                    }
+                ]
+            },
+            {
+                "Title": "Давление",
+                "DataType": "Double",
+                "YAxisTitle": "мм.рт.с.",
+                "Parameters": [
+                    {
+                        "Legend": "Улица",
+                        "Id": "meteo_pressure"
+                    }
+                ]
+            },
+            {
+                "Title": "Влажность",
+                "DataType": "Double",
+                "YAxisTitle": "%",
+                "Parameters": [
+                    {
+                        "Legend": "Улица",
+                        "Id": "meteo_hymidity"
+                    }
+                ]
+            },
+            {
+                "Title": "Свет",
+                "DataType": "Bool",
+                "YAxisTitle": "Вкл",
+                "Parameters": [
+                    {
+                        "Legend": "Корридор",
+                        "Id": "corr_1"
+                    },
+                    {
+                        "Legend": "Ванна",
+                        "Id": "bath_2"
+                    }
+                ]
+            },
+            {
+                "Title": "Двери",
+                "DataType": "Bool",
+                "YAxisTitle": "Открыта",
+                "Parameters": [
+                    {
+                        "Legend": "Ванна",
+                        "Id": "bath_1"
+                    }
+                ]
+            }
+        ]
+    }
 }

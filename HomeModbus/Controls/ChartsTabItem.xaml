@@ -1,0 +1,95 @@
+﻿<TabItem x:Class="HomeModbus.Controls.ChartsTabItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HomeModbus.Controls"
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+             xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" Header="Графики"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <ToolBar>
+            <ToolBarPanel>
+                <dx:SimpleButton Click="ShowLastDay">За последний день</dx:SimpleButton>
+                <dx:SimpleButton Click="ShowLastWeek">За неделю</dx:SimpleButton>
+            </ToolBarPanel>
+        </ToolBar>
+        <dxc:ChartControl x:Name="MainChart" Grid.Row="1" HorizontalAlignment="Left" Margin="0,0,-0.4,-0.2" VerticalAlignment="Top">
+            <dxc:ChartControl.Legend>
+                <dxc:Legend HorizontalPosition="RightOutside" Orientation="Vertical" VerticalPosition="Top"/>
+            </dxc:ChartControl.Legend>
+            <dxc:XYDiagram2D PaneOrientation="Vertical" EnableAxisXNavigation="True">
+                <dxc:XYDiagram2D.DefaultPane>
+                    <dxc:Pane>
+
+                    </dxc:Pane>
+                </dxc:XYDiagram2D.DefaultPane>
+                <dxc:XYDiagram2D.AxisX>
+                    <dxc:AxisX2D Visible="True">
+                        <dxc:AxisX2D.DateTimeScaleOptions>
+                            <dxc:AutomaticDateTimeScaleOptions AggregateFunction="Financial"/>
+                        </dxc:AxisX2D.DateTimeScaleOptions>
+
+                    </dxc:AxisX2D>
+                </dxc:XYDiagram2D.AxisX>
+                <dxc:XYDiagram2D.AxisY>
+                    <dxc:AxisY2D>
+
+                        <dxc:AxisY2D.Strips>
+                            <dxc:Strip>
+                                <dxc:Strip.MinLimit>
+                                    <system:Double>0.385</system:Double>
+                                </dxc:Strip.MinLimit>
+                                <dxc:Strip.MaxLimit>
+                                    <system:Double>0.71500000000000008</system:Double>
+                                </dxc:Strip.MaxLimit>
+                            </dxc:Strip>
+                        </dxc:AxisY2D.Strips>
+                    </dxc:AxisY2D>
+                </dxc:XYDiagram2D.AxisY>
+                <!--<dxc:XYDiagram2D.Panes>
+                    <dxc:Pane x:Name="pane0">
+
+                    </dxc:Pane>
+                    <dxc:Pane x:Name="pane1">
+
+                    </dxc:Pane>
+                </dxc:XYDiagram2D.Panes>
+                <dxc:LineSeries2D DisplayName="Series 1">
+                    <dxc:SeriesPoint Argument="2016-04-20 19:50" Value="6.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 20:50" Value="5.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 21:50" Value="12.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 22:50" Value="11.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 23:50" Value="18.5"/>
+
+                </dxc:LineSeries2D>
+                <dxc:LineSeries2D DisplayName="Series 2" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=pane0}">
+                    <dxc:SeriesPoint Argument="2016-04-20 19:50" Value="6.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 20:50" Value="5.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 21:50" Value="12.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 22:50" Value="11.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 23:50" Value="18.5"/>
+                </dxc:LineSeries2D>
+                <dxc:LineSeries2D DisplayName="Series 3" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=pane1}">
+                    <dxc:SeriesPoint Argument="2016-04-20 19:50" Value="6.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 20:50" Value="5.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 21:50" Value="12.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 22:50" Value="11.5"/>
+                    <dxc:SeriesPoint Argument="2016-04-20 23:50" Value="18.5"/>
+                </dxc:LineSeries2D>-->
+            </dxc:XYDiagram2D>
+        </dxc:ChartControl>
+
+        <!--<dxg:GridControl x:Name="GcTest" Grid.Row="1" AutoGenerateColumns="AddNew" >
+                        <dxg:GridControl.View>
+                            <dxg:TreeListView/>
+                        </dxg:GridControl.View>
+                    </dxg:GridControl>-->
+    </Grid>
+</TabItem>

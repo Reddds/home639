@@ -41,7 +41,6 @@ namespace HomeModbus
         private const string ServerName = "tor";
 
         private const string SettingsFileName = "HomeClientSettings.json";
-        private HomeClientSettings _homeSettings;
 
         private const string ValuesLogLogFileName = "ValuesLog.json";
         //        private readonly ModbusMasterThread _modbusMasterThread;
@@ -240,34 +239,6 @@ namespace HomeModbus
         }
 
 
-        private void LoadValuesLog()
-        {
-            //            if (!File.Exists(ValuesLogLogFileName))
-            //            {
-            //                _mainValueLog = new List<LogValues>();
-            //                return;
-            //            }
-            //
-            //            _mainValueLog = JsonConvert.DeserializeObject<List<LogValues>>(File.ReadAllText(ValuesLogLogFileName));
-            using (var db = new ValueLogContext())
-            {
-
-                var valueLog = new ValueLog { Time = DateTime.Now, ParameterId = "test1212", Value = 9238745982374923 };
-                db.ValueLogs.Add(valueLog);
-                db.SaveChanges();
-
-                // Display all Blogs from the database 
-                var query = from b in db.ValueLogs
-                            select b;
-                var tstr = string.Empty;
-                foreach (var item in query)
-                {
-                    tstr += item.Time + Environment.NewLine;
-                }
-                MessageBox.Show(tstr);
-            }
-        }
-
 
         public static ImageSource GetImageSource(string imageName, string defaultImage = null, double height = -1)
         {
@@ -336,7 +307,7 @@ namespace HomeModbus
 
         private void ProcessPlugins()
         {
-            foreach (var plugin in _homeSettings.Plugins)
+            foreach (var plugin in HomeClientSettings.Instance.Plugins)
             {
                 if (plugin.Name == "Skype")
                 {
@@ -386,7 +357,7 @@ namespace HomeModbus
 
         private void ProcessRooms()
         {
-            foreach (var room in _homeSettings.Rooms)
+            foreach (var room in HomeClientSettings.Instance.Rooms)
             {
                 var roomTab = new RoomTab { Title = room.Name };
                 if (!string.IsNullOrEmpty(room.ControllerId))
@@ -467,16 +438,16 @@ namespace HomeModbus
             var simpleLiteralToggleButtonSettings = visibility.SimpleLiteralToggleButton;
             if (simpleLiteralToggleButtonSettings != null)
             {
-                var binaryInd = new BinaryIndicator {Content = visibility.Name };
+                var binaryInd = new BinaryIndicator { Content = visibility.Name };
                 binaryInd.Click += (sender, args) =>
                 {
-                    var bi = (BinaryIndicator) sender; 
+                    var bi = (BinaryIndicator)sender;
                     _client.SendMessage($"{HsEnvelope.ControllersSetValue}/{visibility.SetterId}", bi.IsChecked == true ? simpleLiteralToggleButtonSettings.ValueOn : simpleLiteralToggleButtonSettings.ValueOff);
                 };
-//                _client.SetResultAction(visibility.SetterId, status =>
-//                {
-//                    binaryInd.Result(status);
-//                });
+                //                _client.SetResultAction(visibility.SetterId, status =>
+                //                {
+                //                    binaryInd.Result(status);
+                //                });
                 setterControl.SpMain.Children.Add(binaryInd);
 
             }
@@ -646,13 +617,13 @@ namespace HomeModbus
                 doubleControl = new DoubleIndicator();
                 indicatorControl.SpMain.Children.Add(doubleControl);
             }
-            var chartSettings = visibility.Chart;
-            if (chartSettings != null)
-            {
-                chartSerie = new LineSeries2D();
-                MainChartLog.Diagram.Series.Add(chartSerie);
-                chartSerie.DisplayName = visibility.Name;
-            }
+            //            var chartSettings = visibility.Chart;
+            //            if (chartSettings != null)
+            //            {
+            //                chartSerie = new LineSeries2D();
+            //                //MainChartLog.Diagram.Series.Add(chartSerie);
+            //                chartSerie.DisplayName = visibility.Name;
+            //            }
 
             _client.SetAction(visibility.ParameterId, (resetAction, value) =>
             {
@@ -789,7 +760,7 @@ namespace HomeModbus
             }
             try
             {
-                _homeSettings = JsonConvert.DeserializeObject<HomeClientSettings>(File.ReadAllText(SettingsFileName));
+                HomeClientSettings.Instance = JsonConvert.DeserializeObject<HomeClientSettings>(File.ReadAllText(SettingsFileName));
                 return true;
             }
             catch (Exception ee)
@@ -1228,5 +1199,7 @@ namespace HomeModbus
             else
                 _client.SendMessage($"{HsEnvelope.HomeServerCommands}", HsEnvelope.StopListening);
         }
+
+
     }
 }

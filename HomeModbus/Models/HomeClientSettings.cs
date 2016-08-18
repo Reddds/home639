@@ -11,6 +11,8 @@ namespace HomeModbus.Models
 {
     public partial class HomeClientSettings
     {
+        public static HomeClientSettings Instance;
+
         public partial class Room
         {
             public partial class LayoutGroup
@@ -192,8 +194,38 @@ namespace HomeModbus.Models
             public string Name { get; set; }
             public PluginEvent[] Events { get; set; }
         }
+
+
+        public class ChartClass
+        {
+            public class ChartGroup
+            {
+                public enum DataTypes
+                {
+                    Int,
+                    Double,
+                    Bool
+                }
+
+                public class Parameter
+                {
+                    public string Legend { get; set; }
+                    public string Id { get; set; }
+                }
+
+                public string Title { get; set; }
+                public DataTypes DataType { get; set; }
+                public string YAxisTitle { get; set; }
+
+                public Parameter[] Parameters { get; set; }
+            }
+             
+        public ChartGroup[] Groups { get; set; }
+        }
         public Room[] Rooms { get; set; }
         public Plugin[] Plugins { get; set; }
+
+        public ChartClass Chart { get; set; }
     }
 
 

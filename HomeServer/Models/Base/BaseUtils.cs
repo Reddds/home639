@@ -57,7 +57,9 @@ EOF"
 
             try
             {
-                const string connectionString = "Server=localhost;" +
+                var baseServer = IsRunningOnMono() ? "localhost" : "192.168.88.240";
+
+                string connectionString = $"Server={baseServer};" +
                                                 "Database=homeserver;" +
                                                 "User ID=hsdatawriter;" +
                                                 "Password=test;" +
