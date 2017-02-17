@@ -256,7 +256,7 @@ void InitRtc()
 	}
 	setSyncProvider(RTC.get);
 
-	timeStatus_t timeStat = timeStatus();
+	auto timeStat = timeStatus();
 	if (timeStat == timeSet)
 		lcd.print(" Ok!");
 	else if (timeStat == timeNotSet)
@@ -507,11 +507,11 @@ void loop() {
 		ResetKaka();
 	}
 
-	if (ho == 10 && mi == 0 && washDay != d)
-	{
-		washDay = d;
-		ShowWashMessage();
-	}
+//	if (ho == 10 && mi == 0 && washDay != d)
+//	{
+//		washDay = d;
+//		ShowWashMessage();
+//	}
 
 	if (!isBannerMode)
 	{
@@ -675,11 +675,11 @@ void io_poll() {
 		bitWrite(_MODBUSCoils, RESET_KAKA_COIL, 0);
 	}
 
-	if (bitRead(_MODBUSCoils, WASH_BANNER_TEST_COIL))
-	{
-		ShowWashMessage();
-		bitWrite(_MODBUSCoils, WASH_BANNER_TEST_COIL, 0);
-	}
+//	if (bitRead(_MODBUSCoils, WASH_BANNER_TEST_COIL))
+//	{
+//		ShowWashMessage();
+//		bitWrite(_MODBUSCoils, WASH_BANNER_TEST_COIL, 0);
+//	}
 
 
 

@@ -12,8 +12,11 @@ namespace HomeServer
     class MqttClienWorker
     {
         private readonly MqttClient _mqttClient;
-//        private readonly List<ShController> _allControllers;
-//        private readonly HomeServerSettings.ControllerGroup[] _controllerGroups;
+
+        const byte ModbusOn = 0xff;
+        const byte ModbusOff = 0x00;
+        //        private readonly List<ShController> _allControllers;
+        //        private readonly HomeServerSettings.ControllerGroup[] _controllerGroups;
         //        private readonly ConcurrentQueue<HsEnvelope> _messageQueue = new ConcurrentQueue<HsEnvelope>();
 
         /// <summary>
@@ -25,9 +28,16 @@ namespace HomeServer
         /// Функции сброса параметров
         /// Key = parameterId
         /// </summary>
-        public static Dictionary<string, ShController.ModbusSetter> Setters = new Dictionary<string, ShController.ModbusSetter>();
-
-        public MqttClienWorker(string address, List<ShController> allControllers, HomeServerSettings.ControllerGroup[] controllerGroups)
+        public static List<ShController.ModbusSetter> Setters = new List<ShController.ModbusSetter>();
+        //public static Dictionary<string, ShController.ModbusSetter> Setters = new Dictionary<string, ShController.ModbusSetter>();
+        public static Dictionary<string, HomeServerSettings.ActiveValue> ActiveValues;
+        /// <summary>
+        /// Делегат обновления настроек 
+        /// Если всё нормально, возвращает null
+        /// Если ошибка, возвращает ошибку
+        /// </summary>
+        public Func<string, string> UpdateSettings;
+        public MqttClienWorker(string address, List<ShController> allControllers, HomeServerSettings homeServerSettings)
         {
 //            _allControllers = allControllers;
 //            _controllerGroups = controllerGroups;
@@ -80,6 +90,20 @@ namespace HomeServer
             switch (topicSplit[1])
             {
                 case HsEnvelope.HomeServerCommands:
+                    if (topicSplit.Length >= 3)
+                    {
+                        switch (topicSplit[2])
+                        {
+                            case HsEnvelope.SendSettings:
+                                var updateSettingsRes = UpdateSettings?.Invoke(strMessage);
+                                if (string.IsNullOrEmpty(updateSettingsRes))
+                                    Console.WriteLine("SendSettings Ok");
+                                else
+                                    Console.WriteLine($"SendSettings Error! {updateSettingsRes}");
+                                return;
+                        }
+                        return;
+                    }
                     switch (strMessage)
                     {
                         case HsEnvelope.StartListening:
@@ -91,6 +115,7 @@ namespace HomeServer
                             ModbusMasterThread.StopListening();
                             Console.WriteLine("Stopping");
                             return;
+                        
                     }
                     return;
 
@@ -124,7 +149,17 @@ namespace HomeServer
             if (topicSplit.Length < 3)
                 return;
             var setterId = topicSplit[2];
-            if (Setters.ContainsKey(setterId))
+
+            foreach (var activeValue in ActiveValues)
+            {
+                if (activeValue.Key != setterId)
+                    continue;
+
+                activeValue.Value.SetNewValueFromString(strMessage);
+            }
+
+
+            /*if (Setters.ContainsKey(setterId))
             {
                 var setter = Setters[setterId];
                 if (setter == null)
@@ -193,7 +228,7 @@ namespace HomeServer
                             }
                             else if (bool.TryParse(strValues[i], out tmpBool))
                             {
-                                commandValues[i] = tmpBool ? 1 : 0;
+                                commandValues[i] = tmpBool ? ModbusOn : ModbusOff;
                             }
                             else
                             {
@@ -205,7 +240,7 @@ namespace HomeServer
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-            }
+            }*/
         }
 
         /// <summary>

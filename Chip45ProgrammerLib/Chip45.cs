@@ -363,7 +363,7 @@ namespace Chip45ProgrammerLib
             HexFile flashHexFile = null;
             if (opts.ProgramType != ProgramTypes.FillEeprom)
             {
-                flashHexFile = new HexFile(_log, _verbose, emptyByte: 0xff);
+                flashHexFile = new HexFile(_log, _verbose, true, emptyByte: 0xff); // !!! no check size
                 try
                 {
                     if (!flashHexFile.Load(opts.ProgramFile))

@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define GENERATE_SCHEMA
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,12 +8,17 @@ using HomeServer.Models;
 using HomeServer.Models.Base;
 using HomeServer.Objects;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
 
 namespace HomeServer
 {
     class Program
     {
         private const string ServerSettingsFileName = "HomeServerSettings.json";
+
+        private const ushort ModbusTrue = 0x00FF; // 0xFF00 (Big Endian)
+        private const ushort ModbusFalse = 0x0000;
 
         private static HomeServerSettings _homeServerSettings;
 
@@ -24,6 +30,23 @@ namespace HomeServer
 
         static void Main(string[] args)
         {
+#if GENERATE_SCHEMA
+            var generator = new JSchemaGenerator {DefaultRequired = Required.Default};
+            generator.GenerationProviders.Add(new StringEnumGenerationProvider());
+
+            var schema = generator.Generate(typeof(HomeServerSettings));
+            schema.Title = "JSON Schema for Home Server Settings";
+            
+
+            using (var file = File.CreateText(@"D:\Work\Home\SmartHome\Modbus\HomeServer\Models\HomeServerSettindsSchema.json"))
+            using (var writer = new JsonTextWriter(file))
+            {
+                writer.Formatting = Formatting.Indented;
+                schema.WriteTo(writer);
+            }
+#endif
+
+
             var options = new Options();
             Options.Current = options;
 
@@ -60,6 +83,36 @@ namespace HomeServer
             {
                 Console.WriteLine(options.Verbose ? e.ToString() : e.Message);
             }
+            _clientWorker.UpdateSettings = s =>
+            {
+                try
+                {
+                    JsonConvert.DeserializeObject<HomeServerSettings>(s);
+                    File.WriteAllText(SettingsPath, s);
+                    //if(!ModbusMasterThread.IsPaused)
+                    //    ModbusMasterThread.StopListening();
+                    ModbusMasterThread.Close(true);
+                    // Ждём 10 секунд пока поток остановится
+                    //ModbusMasterThread.ThreadStopped.WaitOne(10000);
+                    if (LoadSettings())
+                    {
+                        _clientWorker.SendMessage($"{HsEnvelope.ServerStatus}/{HsEnvelope.SendSettings}", true.ToString(), false);
+
+                        ApplySettings();
+                        ModbusMasterThread.Init(options.SerialPort, options.BaudRate, _homeServerSettings.HeartBeatMs);
+                        if (!ModbusMasterThread.StartListening())
+                        {
+                            Environment.Exit(1);
+                            return "Error starting listening!";
+                        }
+                    }
+                }
+                catch (Exception ee)
+                {
+                    return ee.Message;
+                }
+                return null;
+            };
             ModbusMasterThread.ListeningChanged += (sender, b) =>
             {
                 _clientWorker.SendMessage($"{HsEnvelope.ServerStatus}/{HsEnvelope.ListeningStatus}", b.ToString(), true);
@@ -97,8 +150,11 @@ namespace HomeServer
 
         private static void CreateMqttClient(string serverAddress)
         {
-            _clientWorker = new MqttClienWorker(serverAddress, _allControllers, _homeServerSettings.ControllerGroups);
+            _clientWorker = new MqttClienWorker(serverAddress, _allControllers, _homeServerSettings);
         }
+
+
+        private static string SettingsPath => IsLinux ? Path.Combine("/etc", ServerSettingsFileName) : ServerSettingsFileName;
 
         private static bool LoadSettings()
         {
@@ -106,9 +162,7 @@ namespace HomeServer
 //            if (IsLinux)
 //                settingsPath = Path.Combine("/etc", SettingsFileName);
 
-            var serverSettingsPath = ServerSettingsFileName;
-            if (IsLinux)
-                serverSettingsPath = Path.Combine("/etc", ServerSettingsFileName);
+            var serverSettingsPath = SettingsPath;
 
 
 //            if (!File.Exists(settingsPath))
@@ -167,6 +221,11 @@ namespace HomeServer
 
         private static void ApplySettings()
         {
+            ModbusMasterThread.ActiveValues = _homeServerSettings.ActiveValues;
+            ModbusMasterThread.ControolerObjects.Clear();
+            MqttClienWorker.ActiveValues = _homeServerSettings.ActiveValues;
+            MqttClienWorker.ParameterResets.Clear();
+            MqttClienWorker.Setters.Clear();
             _allControllers = new List<ShController>();
             if (Options.Current.Verbose)
             {
@@ -193,7 +252,8 @@ namespace HomeServer
                         WriteToLog)
                     {
                         ControllerGroupName = controllerGroup.Name,
-                        Name = controller.Name
+                        Name = controller.Name,
+                        ActiveValues = _homeServerSettings.ActiveValues
                     };
 
                     if (controllerGroupObject.ShControllers == null)
@@ -215,8 +275,51 @@ namespace HomeServer
                 }
             }
         }
+
+        private void WriteToBaseMumeric(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
+            long? intValue = null, double? doubleValue = null)
+        {
+            var val = intValue ?? doubleValue ?? 0;
+            if (parameter.WriteToBaseIntervalTime != null && parameter.NextTimeToWriteToBase <= DateTime.Now)
+            {
+                parameter.NextTimeToWriteToBase += parameter.WriteToBaseIntervalTime.Value;
+
+                if (parameter.WriteToBaseMethod ==
+                    HomeServerSettings.ControllerGroup.Controller.Parameter.WriteToBaseMethods.Average
+                    && parameter.AverageValuesToWriteToBase != null && parameter.AverageValuesToWriteToBase.Count > 0)
+                {
+                    var avg = parameter.AverageValuesToWriteToBase.Sum();
+                    avg /= parameter.AverageValuesToWriteToBase.Count;
+
+                    parameter.AverageValuesToWriteToBase = null;
+                    if (intValue != null)
+                        BaseUtils.WriteParamToBase(parameter.Id, intValue: (long) Math.Round(avg));
+                    else
+                        BaseUtils.WriteParamToBase(parameter.Id, doubleValue: doubleValue);
+                }
+                else
+                    BaseUtils.WriteParamToBase(parameter.Id, intValue: intValue, doubleValue: doubleValue);
+            }
+            else if(parameter.WriteToBaseMethod == HomeServerSettings.ControllerGroup.Controller.Parameter.WriteToBaseMethods.Average) // если счейчас писать не надо и режим среднего значения
+            {
+                if (parameter.AverageValuesToWriteToBase == null)
+                    parameter.AverageValuesToWriteToBase = new List<double>();
+                parameter.AverageValuesToWriteToBase.Add(val);
+            }
+        }
+
+        private static void PrintOnConsole(string status, string id, string name, string refreshRate)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write($"{status,-26}");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.Write($"{id,-30}");
+            Console.ResetColor();
+
+            Console.WriteLine($" {name,-50} {refreshRate}");
+        }
         private static void CreateParameter(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
-    ShController controllerObject)
+                                            ShController controllerObject)
         {
             //            var indicatorControl = new IndicatorControl
             //            {
@@ -229,21 +332,44 @@ namespace HomeServer
             {
                 TimeSpan tmpVal;
                 if (TimeSpan.TryParseExact(parameter.RefreshRate, "g", null, TimeSpanStyles.None, out tmpVal))
+                {
                     interval = tmpVal;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(parameter.WriteToBaseInterval))
+            {
+                TimeSpan tmpVal;
+                if (TimeSpan.TryParseExact(parameter.WriteToBaseInterval, "g", null, TimeSpanStyles.None, out tmpVal))
+                    parameter.WriteToBaseIntervalTime = tmpVal;
             }
 
             Action resetAction = null;
+
+            HomeServerSettings.ActiveValue currentActiveValue = null;
+            if (_homeServerSettings.ActiveValues.ContainsKey(parameter.Id))
+            {
+                currentActiveValue = _homeServerSettings.ActiveValues[parameter.Id];
+                
+            }
+
 
             switch (parameter.ModbusType)
             {
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Discrete:
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil:
                     var isCoil = parameter.ModbusType == HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil;
-                    resetAction = controllerObject.SetActionOnDiscreteOrCoil(parameter.Id, isCoil,
+                    resetAction = controllerObject.SetActionOnDiscreteOrCoil(parameter, isCoil,
                                        CheckBoolStatus.OnBoth,
                                        parameter.ModbusIndex,
                                        (state) =>
                                        {
+                                           if (_homeServerSettings.ActiveValues.ContainsKey(parameter.Id))
+                                           {
+                                               var av = _homeServerSettings.ActiveValues[parameter.Id];
+                                               av.SetNewValue(state);
+                                           }
+
                                            BaseUtils.WriteParamToBase(parameter.Id, boolValue: state);
                                            _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", state.ToString(), true);
                                            if (parameter.Echo != null)
@@ -258,7 +384,7 @@ namespace HomeServer
                                                    {
                                                        switch (argument.Type)
                                                        {
-                                                           case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.Argument.ArgumentTypes.Literal:
+                                                           case HomeServerSettings.EchoValue.Argument.ArgumentTypes.Literal:
                                                                tmpArg.Add(argument.Value.ToString());
                                                                break;
                                                            default:
@@ -270,7 +396,7 @@ namespace HomeServer
                                                switch (parameter.Echo.Type)
                                                {
 
-                                                   case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
+                                                   case HomeServerSettings.EchoValue.EchoTypes.Setter:
                                                        MqttClienWorker.ProceedSetValue(
                                                            new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id},
                                                            state.ToString() + arguments);
@@ -281,9 +407,9 @@ namespace HomeServer
                                                        throw new ArgumentOutOfRangeException();
                                                }
                                            }
-                                       }, parameter.BoolDefault);
+                                       }, currentActiveValue, parameter.BoolDefault);
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DiscreteOrCoil    {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
+                        PrintOnConsole("Created DiscreteOrCoil", parameter.Id, parameter.Name, parameter.RefreshRate);
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.InputRegister:
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.HoldingRegister:
@@ -291,53 +417,143 @@ namespace HomeServer
                     switch (parameter.DataType)
                     {
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
-                            resetAction = controllerObject.SetActionOnRegister(parameter.Id, isHolding, parameter.ModbusIndex, parameter.DataType, value =>
+                            resetAction = controllerObject.SetActionOnRegister(parameter, isHolding, parameter.DataType, value =>
                             {
                                 double resValue = value;
                                 if (parameter.Multiple != 0)
                                     resValue *= parameter.Multiple;
-                                BaseUtils.WriteParamToBase(parameter.Id, intValue: (long)resValue);
+
+                                if (_homeServerSettings.ActiveValues.ContainsKey(parameter.Id))
+                                {
+                                    var av = _homeServerSettings.ActiveValues[parameter.Id];
+                                    av.SetNewValue(resValue);
+                                }
+
+                                if (parameter.WriteToBaseIntervalTime != null && parameter.NextTimeToWriteToBase <= DateTime.Now)
+                                {
+                                    parameter.NextTimeToWriteToBase += parameter.WriteToBaseIntervalTime.Value;
+                                    BaseUtils.WriteParamToBase(parameter.Id, intValue: (long) resValue);
+                                }
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.UInt16Result}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
-                            }, null, false, interval, uInt16Default: parameter.UintDefault);
+
+                                if (parameter.Echo != null)
+                                {
+                                    switch (parameter.Echo.Type)
+                                    {
+                                        case HomeServerSettings.EchoValue.EchoTypes.Setter:
+                                            MqttClienWorker.ProceedSetValue(
+                                                new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id },
+                                                value.ToString());
+                                            //                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
+
+                                            break;
+                                        default:
+                                            throw new ArgumentOutOfRangeException();
+                                    }
+                                }
+
+
+                            }, null, currentActiveValue, false, interval, uInt16Default: parameter.UintDefault);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created Register          {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
+                                PrintOnConsole("Created Register", parameter.Id, parameter.Name, parameter.RefreshRate);
+                            
+                            break;
+                        case HomeServerSettings.ControllerGroup.Controller.DataTypes.ModbusUInt16Bool:
+                            resetAction = controllerObject.SetActionOnRegister(parameter, isHolding, parameter.DataType, value =>
+                            {
+                                var resValue = value == ModbusTrue;
+
+                                if (parameter.WriteToBaseIntervalTime != null && parameter.NextTimeToWriteToBase <= DateTime.Now)
+                                {
+                                    parameter.NextTimeToWriteToBase += parameter.WriteToBaseIntervalTime.Value;
+                                    BaseUtils.WriteParamToBase(parameter.Id, boolValue: resValue);
+                                }
+                                _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.BoolResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
+                            }, null, currentActiveValue, false, interval, uInt16Default: parameter.UintDefault);
+                            if (Options.Current.Verbose)
+                                PrintOnConsole("Created Register", parameter.Id, parameter.Name, parameter.RefreshRate);
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.Double:
-                            resetAction = controllerObject.SetActionOnRegister(parameter.Id, isHolding, parameter.ModbusIndex, parameter.DataType, value =>
+                            resetAction = controllerObject.SetActionOnRegister(parameter, isHolding, parameter.DataType, value =>
                             {
-                                double resValue = value;
+                                // Чтобы со знаком было
+                                double resValue = (short)value;
                                 if (parameter.Multiple != 0)
                                     resValue *= parameter.Multiple;
-                                BaseUtils.WriteParamToBase(parameter.Id, doubleValue: resValue);
+
+                                if (_homeServerSettings.ActiveValues.ContainsKey(parameter.Id))
+                                {
+                                    var av = _homeServerSettings.ActiveValues[parameter.Id];
+                                    av.SetNewValue(resValue);
+                                }
+
+
+
+                                if (parameter.WriteToBaseIntervalTime != null && parameter.NextTimeToWriteToBase <= DateTime.Now)
+                                {
+                                    parameter.NextTimeToWriteToBase += parameter.WriteToBaseIntervalTime.Value;
+                                    BaseUtils.WriteParamToBase(parameter.Id, doubleValue: resValue);
+                                }
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DoubleResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
-                            }, null, false, interval, resetAfterRead: parameter.ResetAfterRead, doubleDefault: parameter.DoubleDefault);
+
+
+                                if (parameter.Echo != null)
+                                {
+                                    switch (parameter.Echo.Type)
+                                    {
+                                        case HomeServerSettings.EchoValue.EchoTypes.Setter:
+                                            MqttClienWorker.ProceedSetValue(
+                                                new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id },
+                                                ((ushort)resValue).ToString());
+                                            //                                                       _clientWorker.SendMessage($"{HsEnvelope.ControllersSetValue}/{parameter.Echo.Id}", state.ToString(), false);
+
+                                            break;
+                                        default:
+                                            throw new ArgumentOutOfRangeException();
+                                    }
+                                }
+
+                            }, null, currentActiveValue, false, interval, resetAfterRead: parameter.ResetAfterRead, doubleDefault: parameter.DoubleDefault);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created Double Register   {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
+                                PrintOnConsole("Created Double Register", parameter.Id, parameter.Name, parameter.RefreshRate);
 
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
-                            resetAction = controllerObject.SetActionOnRegister(parameter.Id, isHolding, parameter.ModbusIndex, parameter.DataType, null, value =>
+                            resetAction = controllerObject.SetActionOnRegister(parameter, isHolding, parameter.DataType, null, value =>
                             {
                                 double resValue = value;
                                 if (parameter.Multiple != 0)
                                     resValue *= parameter.Multiple;
-                                BaseUtils.WriteParamToBase(parameter.Id, intValue: (long)resValue);
+
+                                if (_homeServerSettings.ActiveValues.ContainsKey(parameter.Id))
+                                {
+                                    var av = _homeServerSettings.ActiveValues[parameter.Id];
+                                    av.SetNewValue(resValue);
+                                }
+
+
+
+                                if (parameter.WriteToBaseIntervalTime != null && parameter.NextTimeToWriteToBase <= DateTime.Now)
+                                {
+                                    parameter.NextTimeToWriteToBase += parameter.WriteToBaseIntervalTime.Value;
+                                    BaseUtils.WriteParamToBase(parameter.Id, intValue: (long) resValue);
+                                }
                                 _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.ULongResult}", resValue.ToString(CultureInfo.InvariantCulture), parameter.Retain);
-                            }, false, interval, resetAfterRead: parameter.ResetAfterRead, uLongDefault: parameter.ULongDefault);
+                            }, currentActiveValue, false, interval, resetAfterRead: parameter.ResetAfterRead, uLongDefault: parameter.ULongDefault);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created Long Register     {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
+                                PrintOnConsole("Created Long Register", parameter.Id, parameter.Name, parameter.RefreshRate);
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
-                            resetAction = controllerObject.SetActionOnRegisterDateTime(false, parameter.ModbusIndex,
+                            resetAction = controllerObject.SetActionOnRegisterDateTime(parameter, false,
                                 value =>
                                 {
                                     _clientWorker.SendMessage($"{HsEnvelope.ControllersResult}/{parameter.Id}/{HsEnvelope.DateTimeResult}", value.ToString(HsEnvelope.DateTimeFormat), true);
-                                }, false, interval);
+                                }, currentActiveValue, false, interval);
                             if (Options.Current.Verbose)
-                                Console.WriteLine($"Created DateTime Register {parameter.Id,-30} {parameter.Name,-50} {parameter.RefreshRate}");
+                                PrintOnConsole("Created DateTime Register", parameter.Id, parameter.Name, parameter.RefreshRate);
 
                             break;
                         case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdTime:
@@ -349,7 +565,7 @@ namespace HomeServer
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.ModbusTypes.DeviceId:
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DeviceId Reseiver {parameter.Id,-30} {parameter.Name,-50}");
+                        PrintOnConsole("Created DeviceId Register", parameter.Id, parameter.Name, parameter.RefreshRate);
 
                     controllerObject.SetActionOnSlaveId(value =>
                     {
@@ -369,7 +585,7 @@ namespace HomeServer
                        {
                            switch (parameter.Echo.Type)
                            {
-                               case HomeServerSettings.ControllerGroup.Controller.Parameter.EchoValue.EchoTypes.Setter:
+                               case HomeServerSettings.EchoValue.EchoTypes.Setter:
                                    MqttClienWorker.ProceedSetValue(
                                        new[] { HsEnvelope.HomeServerTopic, HsEnvelope.ControllersSetValue, parameter.Echo.Id },
                                        state.ToString());
@@ -382,7 +598,7 @@ namespace HomeServer
                        }
                    }, parameter.BoolDefault);
                     if (Options.Current.Verbose)
-                        Console.WriteLine($"Created DevStat Reseiver  {parameter.Id,-30} {parameter.Name,-50}");
+                        PrintOnConsole("Created DevStat Register", parameter.Id, parameter.Name, parameter.RefreshRate);
 
                     break;
                 //                default:
@@ -396,12 +612,12 @@ namespace HomeServer
         {
             var setterObj = controllerObject.SetSetter(setter, resultStatus =>
             {
-                _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), false);
+                _clientWorker.SendMessage($"{HsEnvelope.ControllersSetterResult}/{setter.Id}", resultStatus.ToString(), setter.Retain);
                 Console.WriteLine($"Set value '{setter.Id}' status  \t{resultStatus}");
             });
-            MqttClienWorker.Setters.Add(setter.Id, setterObj);
+            MqttClienWorker.Setters.Add(setterObj);//setter.Id, 
             if (Options.Current.Verbose)
-                Console.WriteLine($"Created Setter            {setter.Id,-30} {setter.Name,-50}");
+                PrintOnConsole("Created Setter", setter.Id, setter.Name, "");
 
             /*
                         switch (setter.Type)

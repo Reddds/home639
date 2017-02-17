@@ -1,0 +1,489 @@
+{
+  "title": "JSON Schema for Home Server Settings",
+  "definitions": {
+    "Plugin": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "WordValue": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Hi": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "Type": {
+              "type": "string",
+              "enum": [
+                "Zero",
+                "Literal",
+                "FromRequest",
+                "BitsFromRequest"
+              ]
+            },
+            "ParamIndex": {
+              "type": "integer"
+            },
+            "Value": {
+              "type": "integer"
+            },
+            "Conversion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "Bits": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "Index": {
+                    "type": "integer"
+                  },
+                  "Count": {
+                    "type": "integer"
+                  },
+                  "Type": {
+                    "type": "string",
+                    "enum": [
+                      "Zero",
+                      "Literal",
+                      "FromRequest"
+                    ]
+                  },
+                  "ParamIndex": {
+                    "type": "integer"
+                  },
+                  "Value": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Lo": {
+          "$ref": "#/definitions/WordValue/properties/Hi"
+        },
+        "Type": {
+          "type": "string",
+          "enum": [
+            "Zero",
+            "Literal",
+            "TwoBytesFromRequest",
+            "WordFromRequest"
+          ]
+        },
+        "ParamIndex": {
+          "type": "integer"
+        },
+        "Value": {
+          "type": "integer"
+        },
+        "Conversion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "BitsValue": {
+      "$ref": "#/definitions/WordValue/properties/Hi/properties/Bits/items/0"
+    },
+    "ByteValue": {
+      "$ref": "#/definitions/WordValue/properties/Hi"
+    },
+    "SendCommand": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "IsSystem": {
+          "type": "boolean"
+        },
+        "Id": {
+          "$ref": "#/definitions/WordValue/properties/Hi"
+        },
+        "Data": {
+          "$ref": "#/definitions/WordValue/properties/Hi"
+        },
+        "Additional1": {
+          "$ref": "#/definitions/WordValue"
+        },
+        "Additional2": {
+          "$ref": "#/definitions/WordValue"
+        },
+        "Additional3": {
+          "$ref": "#/definitions/WordValue"
+        }
+      }
+    },
+    "Setter": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "enum": [
+            "RealDateTime",
+            "UInt16",
+            "MultipleUInt16",
+            "File",
+            "Command"
+          ]
+        },
+        "ModbusIndex": {
+          "type": "integer"
+        },
+        "Command": {
+          "$ref": "#/definitions/SendCommand"
+        },
+        "Retain": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Argument": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [
+            "Literal"
+          ]
+        },
+        "Value": {}
+      }
+    },
+    "EchoValue": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [
+            "Setter"
+          ]
+        },
+        "Id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Arguments": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Argument"
+          }
+        }
+      }
+    },
+    "Parameter": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "WriteToBaseIntervalTime": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "NextTimeToWriteToBase": {
+          "type": "string"
+        },
+        "AverageValuesToWriteToBase": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "Id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ModbusType": {
+          "type": "string",
+          "enum": [
+            "Discrete",
+            "Coil",
+            "InputRegister",
+            "HoldingRegister",
+            "SlaveId",
+            "DeviceId",
+            "DeviceStatus"
+          ]
+        },
+        "ModbusIndex": {
+          "type": "integer"
+        },
+        "ModbusIndexSpecified": {
+          "type": "boolean"
+        },
+        "RefreshRate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "WriteToBaseInterval": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "WriteToBaseMethod": {
+          "type": "string",
+          "enum": [
+            "Last",
+            "Average"
+          ]
+        },
+        "DataType": {
+          "type": "string",
+          "enum": [
+            "UInt16",
+            "ModbusUInt16Bool",
+            "Double",
+            "ULong",
+            "RdDateTime",
+            "RdTime"
+          ]
+        },
+        "BoolDefault": {
+          "type": "boolean"
+        },
+        "BoolDefaultSpecified": {
+          "type": "boolean"
+        },
+        "UintDefault": {
+          "type": "integer"
+        },
+        "UintDefaultSpecified": {
+          "type": "boolean"
+        },
+        "ULongDefault": {
+          "type": "integer"
+        },
+        "ULongDefaultSpecified": {
+          "type": "boolean"
+        },
+        "DoubleDefault": {
+          "type": "number"
+        },
+        "ResetAfterRead": {
+          "type": "boolean"
+        },
+        "Retain": {
+          "type": "boolean"
+        },
+        "Value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Multiple": {
+          "type": "number"
+        },
+        "Echo": {
+          "$ref": "#/definitions/EchoValue"
+        }
+      }
+    },
+    "Controller": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Disabled": {
+          "type": "boolean"
+        },
+        "Parameters": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Parameter"
+          }
+        },
+        "Setters": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Setter"
+          }
+        },
+        "Id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "SlaveId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ModbusAddress": {
+          "type": "integer"
+        }
+      }
+    },
+    "ControllerGroup": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Disabled": {
+          "type": "boolean"
+        },
+        "Controllers": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Controller"
+          }
+        },
+        "Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ActiveValue": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Value": {},
+        "ValueType": {
+          "type": "string",
+          "enum": [
+            "UInt",
+            "Int",
+            "Double",
+            "DateTime",
+            "Time",
+            "Bool"
+          ]
+        },
+        "Description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "ActiveValues": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "$ref": "#/definitions/ActiveValue"
+      }
+    },
+    "ControllerGroups": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/ControllerGroup"
+      }
+    },
+    "Plugins": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/Plugin"
+      }
+    },
+    "HeartBeatMs": {
+      "type": "integer"
+    }
+  }
+}

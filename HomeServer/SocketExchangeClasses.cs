@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 
 namespace HomeServer
 {
@@ -42,11 +40,12 @@ namespace HomeServer
 
     public class HsEnvelope
     {
+        //--------------------------------------------------------------------------
         /// <summary>
         /// Общий идентификатор темы умного дома
         /// </summary>
         public const string HomeServerTopic = "homebrain";
-
+        //--------------------------------------------------------------------------
         /// <summary>
         /// Управляющие комманды
         /// </summary>
@@ -84,23 +83,30 @@ namespace HomeServer
         /// Возврат ID устройства
         /// </summary>
         public const string ControllersIdResponse = "controllersidresponse";
-
+        //--------------------------------------------------------------------------
         /// <summary>
-        /// Начало опроса контроллеров
+        /// Начало опроса контроллеров 
+        /// HomeServerCommands
         /// </summary>
         public const string StartListening = "startlistening";
         /// <summary>
-        /// Конец опроса контроллеров
+        /// Конец опроса контроллеров 
+        /// HomeServerCommands
         /// </summary>
         public const string StopListening = "stoplistening";
+        /// <summary>
+        /// Отправка новых настроек 
+        /// HomeServerCommands
+        /// </summary>
+        public const string SendSettings = "sendsettings";
 
-
+        //--------------------------------------------------------------------------
         public const string BoolResult = "boolresult";
         public const string UInt16Result = "uint16result";
         public const string ULongResult = "ulongresult";
         public const string DoubleResult = "doubleresult";
         public const string StringResult = "stringresult";
-
+        //--------------------------------------------------------------------------
         public const string DateTimeResult = "datetimeresult";
 
         public const string SetAction = "setaction";

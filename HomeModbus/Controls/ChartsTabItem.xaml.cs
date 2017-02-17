@@ -40,7 +40,10 @@ namespace HomeModbus.Controls
                 return;
             }
 
+            try
+            {
 
+           
 
             using (var de = new homeserverEntities())
             {
@@ -71,10 +74,11 @@ namespace HomeModbus.Controls
                         diag.Panes.Add(pane);
                         secY = new SecondaryAxisY2D();
                         diag.SecondaryAxesY.Add(secY);
-                        secY.VisualRange = new Range();
-                        secY.VisualRange.SetAuto();
+//                        secY.VisualRange = new Range();
+//                        secY.VisualRange.SetAuto();
                         secY.WholeRange = new Range();
-                        secY.WholeRange.SetAuto();
+                        AxisY2D.SetAlwaysShowZeroLevel(secY.WholeRange, false);
+                        //secY.WholeRange.SetAuto();
                         secY.Title = new AxisTitle { Content = chartGroup.YAxisTitle };
                         secY.Alignment = AxisAlignment.Near;
                     }
@@ -83,7 +87,7 @@ namespace HomeModbus.Controls
                         firstPaneUsed = true;
                         pane = diag.DefaultPane;
                         diag.AxisY.Title = new AxisTitle { Content = chartGroup.YAxisTitle };
-                        diag.AxisY.WholeRange = new Range();
+                        //diag.AxisY.WholeRange = new Range();
                     }
 
 
@@ -101,7 +105,7 @@ namespace HomeModbus.Controls
 
                         if (chartGroup.DataType == HomeClientSettings.ChartClass.ChartGroup.DataTypes.Bool)
                         {
-                            var serie = new LineStepSeries2D(); // new LineSeries2D();
+                            var serie = new LineStepSeries2D(); // new LineStepSeries2D LineSeries2D();
                             if (!ReferenceEquals(pane, diag.DefaultPane))
                                 XYDiagram2D.SetSeriesPane(serie, pane);
                             if (secY != null)
@@ -109,7 +113,7 @@ namespace HomeModbus.Controls
 
                             serie.ArgumentDataMember = "Argument";
                             serie.ValueDataMember = "Value";
-                            serie.DisplayName = parameter.Legend;
+                            serie.DisplayName = $"{chartGroup.Title} ({parameter.Legend})";
                             var points = new List<DatePoint>();
                             foreach (var log in dataLog)
                             {
@@ -129,7 +133,7 @@ namespace HomeModbus.Controls
                             XYDiagram2D.SetSeriesPane(serie, pane);
                             XYDiagram2D.SetSeriesAxisY(serie, secY);
 
-                            serie.DisplayName = parameter.Legend;
+                            serie.DisplayName = $"{chartGroup.Title} ({parameter.Legend})";
                             serie.ArgumentDataMember = "Argument";
                             serie.ValueDataMember = "Value";
                             var points = new List<DatePoint>();
@@ -149,15 +153,45 @@ namespace HomeModbus.Controls
                             diag.Series.Add(serie);
 
                         }
-                        if (secY != null)
-                            secY.WholeRange.MinValue = minY;
-                        else
-                            diag.AxisY.WholeRange.MinValue = minY;
+//                        if (secY != null)
+//                            secY.WholeRange.MinValue = minY;
+//                        else
+//                            diag.AxisY.WholeRange.MinValue = minY;
                         steckOffset++;
                     }
 
                 }
-                
+
+                diag.AxisX.VisibilityInPanes.Clear();
+                if (diag.Panes.Count > 0)
+                {
+                    diag.DefaultPane.AxisXScrollBarOptions = new ScrollBarOptions {Visible = false};
+                    diag.AxisX.VisibilityInPanes.Add(new VisibilityInPane
+                    {
+                        Pane = diag.DefaultPane,
+                        Visible = false
+                    });
+                    for (var i = 0; i < diag.Panes.Count - 1; i++)
+                    {
+                        diag.Panes[i].AxisXScrollBarOptions = new ScrollBarOptions { Visible = false };
+                        diag.AxisX.VisibilityInPanes.Add(new VisibilityInPane
+                        {
+                            Pane = diag.Panes[i],
+                            Visible = false
+                        });
+                    }
+                    diag.Panes[diag.Panes.Count - 1].AxisXScrollBarOptions = new ScrollBarOptions { Visible = true };
+                }
+                else
+                {
+                    diag.DefaultPane.AxisXScrollBarOptions = new ScrollBarOptions { Visible = true };
+                }
+            }
+            }
+            catch (Exception ee)
+            {
+
+                MessageBox.Show(ee.ToString(), "Ошибка получения данных", MessageBoxButton.OK, MessageBoxImage.Error);;
             }
 
         }

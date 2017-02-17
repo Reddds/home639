@@ -286,13 +286,12 @@ namespace Chip45ProgrammerLib
                     // Если сегмент на этот адрес ещё не вписан, вписываем
                     if (_emptyByte != null)
                     {
-                        if ((address > 0) // new segment
-                        && ((address % (0x10000)) == 0))
+                        //if ((address > 0)) // new segment && ((address % (0x10000)) == 0)
                         {
                             var curSeg = address >> 16;
                             if (curSeg != lastSegment)
                             {
-                                lastSegment = address >> 16;
+                                lastSegment = curSeg;
                                 result.Add(CreateSegment(address));
                             }
                         }

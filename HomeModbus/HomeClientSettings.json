@@ -10,7 +10,7 @@
                         {
                             "Name": "Сколько покакал",
                             "ParameterId": "bed_1",
-                            "DigitalIndicator": { }
+                            "DigitalIndicator": {}
 
 
                         },
@@ -30,7 +30,7 @@
                         {
                             "ParameterId": "bed_3",
                             "Icon": "ThermometreSmall.png",
-                            "DigitalIndicator": { },
+                            "DigitalIndicator": {},
                             "AnalogIndicator": {
                                 "Icon": "Thermometre.png",
                                 "Scale": {
@@ -55,14 +55,14 @@
                                     ]
                                 }
                             },
-                            "Chart": { }
+                            "Chart": {}
 
 
                         },
                         {
                             "ParameterId": "bed_4",
                             "Icon": "HumiditySmall.png",
-                            "DigitalIndicator": { },
+                            "DigitalIndicator": {},
                             "AnalogIndicator": {
                                 "Icon": "Humidity.png",
                                 "Scale": {
@@ -86,7 +86,7 @@
                                     ]
                                 }
                             },
-                            "Chart": { }
+                            "Chart": {}
                         }
                     ]
                 }
@@ -98,16 +98,30 @@
                         "Type": "Exclamation",
                         "Text": "Вызов!!!!",
                         "OnClose": {
-                            "ResetParameter": { }
+                            "ResetParameter": {}
                         }
                     }
 
                 },
                 {
                     "SetterId": "bed_10",
-                    "CurrentTime": { }
+                    "CurrentTime": {}
                 }
             ]
+        },
+        {
+            "Name": "Пульт",
+            "ControllerId": "pult",
+            "Visibilities": [
+                {
+                    "ParameterId": "pult_bath_door_ignore",
+                    "BinaryIndicator": {
+                        "OnIcon": "DoorOpened.png",
+                        "OffIcon": "DoorClosed.png"
+                    }
+                }
+            ]
+
         },
         {
             "Name": "Коридор",
@@ -425,6 +439,10 @@
                 "DataType": "Double",
                 "YAxisTitle": "%",
                 "Parameters": [
+                    {
+                        "Legend": "Спальня",
+                        "Id": "bed_4"
+                    },
                     {
                         "Legend": "Улица",
                         "Id": "meteo_hymidity"

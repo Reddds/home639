@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -24,8 +25,8 @@ using log4net;
 using log4net.Config;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using SKYPE4COMLib;
-using Application = System.Windows.Application;
+//using SKYPE4COMLib;
+//using Application = Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System.Windows.Application;
 
 // Import log4net classes.
 
@@ -192,7 +193,10 @@ namespace HomeModbus
                 })
             };
             if (LoadSettings())
+            {
+                PgSettings.SelectedObject = HomeClientSettings.Instance;
                 ApplySettings();
+            }
 
             ConnectToServer();
 
@@ -267,7 +271,7 @@ namespace HomeModbus
 
         }
 
-        private Skype _skype;
+        private SKYPE4COMLib.Skype _skype;
 
 
         private List<IHomePlugin> _plugins;
@@ -311,7 +315,7 @@ namespace HomeModbus
             {
                 if (plugin.Name == "Skype")
                 {
-                    _skype = new Skype();
+                    _skype = new SKYPE4COMLib.Skype();
                     try
                     {
                         foreach (var pluginEvent in plugin.Events)
@@ -357,9 +361,10 @@ namespace HomeModbus
 
         private void ProcessRooms()
         {
+            var roomNum = 1;
             foreach (var room in HomeClientSettings.Instance.Rooms)
             {
-                var roomTab = new RoomTab { Title = room.Name };
+                var roomTab = new RoomTab { Title = $"_{roomNum} {room.Name}" };
                 if (!string.IsNullOrEmpty(room.ControllerId))
                 {
                     roomTab.ControllerId = room.ControllerId;
@@ -380,7 +385,9 @@ namespace HomeModbus
                     {
                         ProcessVisibility(roomTab.MainPanel, visibility);
                     }
+                roomNum++;
             }
+            
         }
 
         private void ProcessVisibility(LayoutGroup layoutGroupObject, HomeClientSettings.Room.Visibility visibility)
@@ -439,6 +446,7 @@ namespace HomeModbus
             if (simpleLiteralToggleButtonSettings != null)
             {
                 var binaryInd = new BinaryIndicator { Content = visibility.Name };
+                
                 binaryInd.Click += (sender, args) =>
                 {
                     var bi = (BinaryIndicator)sender;
@@ -629,83 +637,92 @@ namespace HomeModbus
             {
                 ExecDispatched(() =>
                 {
-                    if (binaryIndicator != null)
+                    try
                     {
-                        if (value.GetType().IsPrimitive)
-                            binaryIndicator.IsChecked = (bool)value;
-                    }
-                    if (stringIndicator != null)
-                    {
-                        var s = value as string;
-                        if (s != null)
-                            stringIndicator.Value = s;
-                    }
-                    if (visibility.ShowBalloon != null)
-                    {
-                        if (value.GetType().IsPrimitive)
-                            if ((bool)value)
-                            {
-                                var balloonSettings = visibility.ShowBalloon;
-                                var balloon = new FancyBalloon(balloonSettings.Text,
-                                    GetBalloonStyle(balloonSettings.Type));
-                                ShowBalloon(balloon);
-                                if (balloonSettings.OnClose != null)
-                                {
-                                    balloon.Closing += (sender, args) =>
-                                    {
-                                        if (balloonSettings.OnClose.ResetParameter != null)
-                                        {
-                                            resetAction?.Invoke(false);
-                                        }
-                                    };
-                                }
-                                if (showWhileParameterSet)
-                                    dutyBalloon = balloon;
-                            }
-                            else if (showWhileParameterSet && dutyBalloon != null)
-                            {
-                                dutyBalloon.Close();
-                            }
-                    }
-
-
-                    if (analogControl != null)
-                    {
-                        if (value.GetType().IsPrimitive)
-                            analogControl.Value = Convert.ToDouble(value);
-                    }
-                    if (barometerControl != null)
-                    {
-                        if (value.GetType().IsPrimitive)
-                            barometerControl.Value = Convert.ToDouble(value);
-                    }
-                    if (lastTimeControl != null)
-                    {
-                        if (value is DateTime)
-                            lastTimeControl.Value = (DateTime)value;
-                    }
-                    if (doubleControl != null)
-                    {
-                        if (value.GetType().IsPrimitive)
+                        if (binaryIndicator != null)
                         {
-                            doubleControl.HiValue = (((ushort)value & 0xFF00) >> 8).ToString(doubleIndicator.IsHex ? "X2" : "D");
-                            doubleControl.LoValue = ((ushort)value & 0xFF).ToString(doubleIndicator.IsHex ? "X2" : "D");
+                            if (value.GetType().IsPrimitive)
+                                binaryIndicator.IsChecked = (bool) value;
+                        }
+                        if (stringIndicator != null)
+                        {
+                            var s = value as string;
+                            if (s != null)
+                                stringIndicator.Value = s;
+                        }
+                        if (visibility.ShowBalloon != null)
+                        {
+                            if (value.GetType().IsPrimitive)
+                                if ((bool) value)
+                                {
+                                    var balloonSettings = visibility.ShowBalloon;
+                                    var balloon = new FancyBalloon(balloonSettings.Text,
+                                        GetBalloonStyle(balloonSettings.Type));
+                                    ShowBalloon(balloon);
+                                    if (balloonSettings.OnClose != null)
+                                    {
+                                        balloon.Closing += (sender, args) =>
+                                        {
+                                            if (balloonSettings.OnClose.ResetParameter != null)
+                                            {
+                                                resetAction?.Invoke(false);
+                                            }
+                                        };
+                                    }
+                                    if (showWhileParameterSet)
+                                        dutyBalloon = balloon;
+                                }
+                                else if (showWhileParameterSet)
+                                {
+                                    dutyBalloon?.Close();
+                                }
+                        }
+
+
+                        if (analogControl != null)
+                        {
+                            if (value.GetType().IsPrimitive)
+                                analogControl.Value = Convert.ToDouble(value);
+                        }
+                        if (barometerControl != null)
+                        {
+                            if (value.GetType().IsPrimitive)
+                                barometerControl.Value = Convert.ToDouble(value);
+                        }
+                        if (lastTimeControl != null)
+                        {
+                            if (value is DateTime)
+                                lastTimeControl.Value = (DateTime) value;
+                        }
+                        if (doubleControl != null)
+                        {
+                            if (value.GetType().IsPrimitive)
+                            {
+                                doubleControl.HiValue =
+                                    (((ushort) value & 0xFF00) >> 8).ToString(doubleIndicator.IsHex ? "X2" : "D");
+                                doubleControl.LoValue =
+                                    ((ushort) value & 0xFF).ToString(doubleIndicator.IsHex ? "X2" : "D");
+                            }
+                        }
+
+                        if (simpleIndicator != null)
+                        {
+                            if (value.GetType().IsPrimitive)
+                                simpleIndicator.Value = Convert.ToDouble(value);
+                        }
+                        if (chartSerie != null)
+                        {
+                            var curTime = DateTime.Now;
+                            if (value.GetType().IsPrimitive)
+                                chartSerie.Points.Add(new SeriesPoint(curTime, Convert.ToDouble(value)));
+
                         }
                     }
-
-                    if (simpleIndicator != null)
+                    catch (Exception ee)
                     {
-                        if (value.GetType().IsPrimitive)
-                            simpleIndicator.Value = Convert.ToDouble(value);
+                        WriteToLog($"Ошибка обработки значения ({value})\n" + ee);
+                        //MessageBox.Show(ee.ToString(), "Ошибка обработки значения", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
-                    if (chartSerie != null)
-                    {
-                        var curTime = DateTime.Now;
-                        if (value.GetType().IsPrimitive)
-                            chartSerie.Points.Add(new SeriesPoint(curTime, Convert.ToDouble(value)));
-
-                    }
-
                 });
             });
         }
@@ -777,8 +794,15 @@ namespace HomeModbus
 
         private void ConnectToServer()
         {
-            //AsynchronousClient.Start();
-            _client.ConnectToServer(ServerName);
+            try
+            {
+                //AsynchronousClient.Start();
+                _client.ConnectToServer(ServerName);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
             // Восстановление плагинов
             if (_plugins != null)
                 foreach (var plugin in _plugins)
@@ -1201,5 +1225,51 @@ namespace HomeModbus
         }
 
 
+        private void SendServerSettingsClick(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(TbServerSettings.Text))
+            {
+                MessageBox.Show("Введите настройки!", "ошибка отправки настроек на сервер", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            _client.SendMessage($"{HsEnvelope.HomeServerCommands}/{HsEnvelope.SendSettings}", TbServerSettings.Text.Trim());
+        }
+
+        private void BTest_Click(object sender, RoutedEventArgs e)
+        {
+            var forecastUrl =
+                "http://api.openweathermap.org/data/2.5/forecast?lat=55.9352591&lon=37.9313304&appid=0434c6d01cbcbdfe5c51f15eb5fe9e5b&units=metric&lang=ru";
+
+            OpenWeatherMapResult weatherForecast = null;
+
+            var wrGETURL = WebRequest.Create(forecastUrl);
+
+            var objStream = wrGETURL.GetResponse().GetResponseStream();
+            if (objStream != null)
+            {
+                using (var objReader = new StreamReader(objStream))
+                {
+                    var str = objReader.ReadToEnd();
+                    weatherForecast = JsonConvert.DeserializeObject<OpenWeatherMapResult>(str);
+                }
+            }
+
+
+
+            if (weatherForecast != null)
+            {
+                var neededTime = DateTime.Now;
+                if (neededTime.Hour > 3) // Если время больше 3 ночи, то начинаем выводить пгоду на следующий день
+                    neededTime = neededTime.AddDays(1);
+                // Погода на 3 часа дня
+                neededTime = new DateTime(neededTime.Year, neededTime.Month, neededTime.Day, 15, 0, 0);
+
+                var neededCast = from fi in weatherForecast.ForeList
+                    where fi.Time >= neededTime && fi.Time < neededTime.AddHours(3)
+                    select fi;
+
+                MessageBox.Show("Test");
+            }
+        }
     }
 }

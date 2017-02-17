@@ -36,6 +36,7 @@ namespace HomeServer.Objects
         public string ControllerGroupName;
         public string Name;
 
+        public Dictionary<string, HomeServerSettings.ActiveValue> ActiveValues; 
         /// <summary>
         /// Количество ошибок обращения к контроллеру
         /// Если подряд 5 раз вылетят ошибки, то обращаемся к этому контроллеру только раз в минуту
@@ -57,8 +58,9 @@ namespace HomeServer.Objects
 
         public class ActionOnDiscreteOrCoil
         {
-            private readonly string _id;
+            private HomeServerSettings.ControllerGroup.Controller.Parameter _parameter;
             private bool? _currentState;
+            private HomeServerSettings.ActiveValue _activeValue;
             public bool? InitialState { get; private set; }
 
             public CheckBoolStatus CheckBoolStatus { get; set; }
@@ -66,14 +68,18 @@ namespace HomeServer.Objects
             private Action<bool> CallBack { get; set; }
             public TimeSpan? CheckInterval { get; set; }
 
-            protected ActionOnDiscreteOrCoil(string id, ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+            protected ActionOnDiscreteOrCoil(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
+                ushort index, CheckBoolStatus checkBoolStatus, 
+                Action<bool> callBack,
+                HomeServerSettings.ActiveValue activeValue,
                 bool? initialState)
             {
+                _parameter = parameter;
                 Index = index;
                 CheckBoolStatus = checkBoolStatus;
                 CallBack = callBack;
+                _activeValue = activeValue;
                 InitialState = initialState;
-                _id = id;
                 _currentState = initialState;
             }
 
@@ -107,9 +113,11 @@ namespace HomeServer.Objects
 
         private class ActionOnDiscrete : ActionOnDiscreteOrCoil
         {
-            public ActionOnDiscrete(string id, ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+            public ActionOnDiscrete(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
+                ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+                 HomeServerSettings.ActiveValue activeValue,
                 bool? initialState)
-                : base(id, index, checkBoolStatus, callBack, initialState)
+                : base(parameter, index, checkBoolStatus, callBack, activeValue, initialState)
             {
             }
         }
@@ -118,9 +126,11 @@ namespace HomeServer.Objects
         {
             public bool ResetAfter { get; private set; }
 
-            public ActionOnCoil(string id, ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack, bool resetAfter,
+            public ActionOnCoil(HomeServerSettings.ControllerGroup.Controller.Parameter parameter, 
+                ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack, 
+                bool resetAfter, HomeServerSettings.ActiveValue activeValue,
                 bool? initialState)
-                : base(id, index, checkBoolStatus, callBack, initialState)
+                : base(parameter, index, checkBoolStatus, callBack, activeValue, initialState)
             {
                 ResetAfter = resetAfter;
             }
@@ -160,17 +170,18 @@ namespace HomeServer.Objects
 
         private class ActionOnRegister : IResetParameter
         {
-            private readonly string _id;
+            private HomeServerSettings.ControllerGroup.Controller.Parameter _parameter;
             private ushort? _currentValue;
             private uint? _currentLongValue;
             protected DateTime _lastCheck = DateTime.MinValue;
 
+            private HomeServerSettings.ActiveValue _activeValue;
             /// <summary>
             /// Сбросить после чтения
             /// </summary>
             public bool ResetAfterRead { get; set; }
 
-            public ushort Index { get; set; }
+            public ushort Index => _parameter.ModbusIndex;
             private Action<ushort> CallBack { get; set; }
             private Action<uint> CallBackULong { get; set; }
             public TimeSpan? CheckInterval { get; set; }
@@ -182,11 +193,15 @@ namespace HomeServer.Objects
             public bool RaiseOlwais { get; set; }
             public HomeServerSettings.ControllerGroup.Controller.DataTypes RegisterType { get; set; }
 
-            public ActionOnRegister(string id, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callBack, Action<uint> callBackULong = null)
+            public ActionOnRegister(HomeServerSettings.ControllerGroup.Controller.Parameter parameter, 
+                HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, 
+                Action<ushort> callBack, 
+                HomeServerSettings.ActiveValue activeValue,
+                Action<uint> callBackULong = null)
             {
-                _id = id;
-                Index = index;
+                _parameter = parameter;
                 CallBack = callBack;
+                _activeValue = activeValue;
                 CallBackULong = callBackULong;
                 RegisterType = registerType;
             }
@@ -211,21 +226,76 @@ namespace HomeServer.Objects
                 {
                     return false;
                 }
+
+                _lastCheck = DateTime.Now;
                 if (_currentValue == newValue)
                     return false;
 
-                //WriteToBase(_id, intValue: newValue);
                 _currentValue = newValue;
-                _lastCheck = DateTime.Now;
-                
-                if (UInt16Default != null && _currentValue == UInt16Default.Value)
+
+                if (_activeValue == null)
                     return false;
-                CallBack?.Invoke(newValue);
+
+
+                object convertedValue = newValue;
+
+                switch (_parameter.DataType)
+                {
+                    case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
+                    {
+                        double resValue = newValue;
+                        if (Math.Abs(_parameter.Multiple) > 0.000001)
+                            resValue *= _parameter.Multiple;
+                        convertedValue = resValue;
+                    }
+                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.DataTypes.ModbusUInt16Bool:
+                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.DataTypes.Double:
+                        {
+                            // делаем число со знаком
+                            double resValue = (short)newValue;
+                            if (Math.Abs(_parameter.Multiple) > 0.000001)
+                                resValue *= _parameter.Multiple;
+                            convertedValue = resValue;
+                        }
+                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
+                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
+                        break;
+                    case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdTime:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+
+                if (!_activeValue.SetNewValue(convertedValue))
+                    return false;
+                //TODO Вынести это в setters??
                 if (ResetAfterRead)
                 {
                     _currentValue = UInt16Default ?? 0;
                     Reset();
                 }
+
+                /*!!!
+                                if (_currentValue == newValue)
+                                    return false;
+
+                                //WriteToBase(_id, intValue: newValue);
+                                _currentValue = newValue;
+
+                                if (UInt16Default != null && _currentValue == UInt16Default.Value)
+                                    return false;
+                                //!!!CallBack?.Invoke(newValue);
+                                if (ResetAfterRead)
+                                {
+                                    _currentValue = UInt16Default ?? 0;
+                                    Reset();
+                                }
+                */
                 return true;
             }
             public bool CheckStateULong(ushort newValueHi, ushort newValueLo)
@@ -270,7 +340,9 @@ namespace HomeServer.Objects
             private DateTime _currentDateTime;
             private Action<DateTime> CallBack { get; set; }
 
-            public ActionOnRegisterDateTime(ushort index, Action<DateTime> callBack) : base(null, index, HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime, null)
+            public ActionOnRegisterDateTime(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
+                Action<DateTime> callBack, HomeServerSettings.ActiveValue activeValue) 
+                : base(parameter, HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime, null, activeValue)
             {
                 CallBack = callBack;
             }
@@ -433,11 +505,11 @@ namespace HomeServer.Objects
         /// <summary>
         /// Минимальный индекс дискретного регистра для проверки
         /// </summary>
-        private byte _deviceStatusMinIndex = MaxDeviceStatusIndex;
+        private ushort _deviceStatusMinIndex = MaxDeviceStatusIndex;
         /// <summary>
         /// Максимальный индекс дискретного регистра для проверки
         /// </summary>
-        private byte _deviceStatusMaxIndex;
+        private ushort _deviceStatusMaxIndex;
 
         private List<ActionOnDeviceStatus> _actionsOnDeviceStatus = null;
         #endregion Others
@@ -463,6 +535,8 @@ namespace HomeServer.Objects
                 _resultAction = resultAction;
             }
 
+            public string Id => _setter.Id;
+
             public void PendingSet(object newValue = null)
             {
                 _pendingObject = newValue;
@@ -474,8 +548,9 @@ namespace HomeServer.Objects
             /// </summary>
             /// <param name="modbus"></param>
             /// <param name="slaveAddress"></param>
+            /// <param name="value"></param>
             /// <returns></returns>
-            public bool Set(ModbusSerialMaster modbus, byte slaveAddress)
+            public bool Set(ModbusSerialMaster modbus, byte slaveAddress, object value)
             {
                 IsPending = false;
 
@@ -486,7 +561,7 @@ namespace HomeServer.Objects
                         _resultAction?.Invoke(resultStatus);
                         return resultStatus;
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.UInt16:
-                        var resultUInt16Status = SendUInt16(modbus, slaveAddress);
+                        var resultUInt16Status = SendUInt16(modbus, slaveAddress, value);
                         _resultAction?.Invoke(resultUInt16Status);
                         return resultUInt16Status;
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.MultipleUInt16:
@@ -500,7 +575,7 @@ namespace HomeServer.Objects
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.Command:
                         if (_setter.Command == null)
                             return false;
-                        var resultCommandStatus = SendCommand(modbus, slaveAddress);
+                        var resultCommandStatus = SendCommand(modbus, slaveAddress, value);
                         _resultAction?.Invoke(resultCommandStatus);
                         return resultCommandStatus;
                     default:
@@ -603,17 +678,30 @@ namespace HomeServer.Objects
 
 
 
-            private bool SendCommand(ModbusSerialMaster modbus, byte slaveAddress)
+            private bool SendCommand(ModbusSerialMaster modbus, byte slaveAddress, object value)
             {
                 var command = _setter.Command;
 
                 if(command?.Id == null)
                     return false;
+                var requestValues = new int[1];
+                if (value is double)
+                {
+                    requestValues[0] = (int)((double)value);
+                }
+                else if (value is int)
+                {
+                    requestValues[0] = (int) value;
+                }
+                else if (value is bool)
+                {
+                    requestValues[0] = (bool) value ? 0xFF : 0;
+                }
 
-                var requestValues = _pendingObject as int[];
+                    //                var requestValues = _pendingObject as int[];
 
 
-                var msg = new WriteSysUserCommandRequest(slaveAddress, command.IsSystem,
+                    var msg = new WriteSysUserCommandRequest(slaveAddress, command.IsSystem,
                     GetByteValue(command.Id, requestValues), GetByteValue(command.Data, requestValues),
                     GetWordValue(command.Additional1, requestValues),
                     GetWordValue(command.Additional2, requestValues),
@@ -674,9 +762,16 @@ namespace HomeServer.Objects
                 return resp.ExceptionStatusBits[0];
             }
 
-            private bool SendUInt16(ModbusSerialMaster modbus, byte slaveAddress)
+            private bool SendUInt16(IModbusMaster modbus, byte slaveAddress, object value)
             {
-                modbus.WriteSingleRegister(slaveAddress, Index, (ushort)_pendingObject);
+                ushort converted = 0;
+
+                if (value is double)
+                {
+                    converted = (ushort) ((double) value);
+                }
+
+                modbus.WriteSingleRegister(slaveAddress, Index, converted);//_pendingObject
                 Thread.Sleep(50);
                 var msg = new ReadExceptionStatusRequest(slaveAddress);
                 var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
@@ -749,6 +844,7 @@ namespace HomeServer.Objects
                 _slaveId[i] = b;
             }
         }
+
 
         /// <summary>
         /// Проверка SlaveId устройства
@@ -834,6 +930,10 @@ namespace HomeServer.Objects
 
         public virtual bool GetStatus(ModbusSerialMaster modbus)
         {
+
+//            var startDt = DateTime.Now;
+
+            var timeJustSet = false;
             var curOperation = string.Empty;
             if (_slaveId != null && !_addresIsSet)
             {
@@ -846,13 +946,18 @@ namespace HomeServer.Objects
                 }
                 GetDeviceStatus(modbus);
                 if (_needTimeSet)
+                {
                     SetCurrentTime(modbus, SlaveAddress, WriteToLog);
+                    timeJustSet = true;
+                }
             }
+
+//            Console.WriteLine($"        {Id}: After set address: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
 
             try
             {
                 // Установка времени если сменился час
-                if (_needTimeSet)
+                if (_needTimeSet && !timeJustSet)
                 { 
                     var curHour = DateTime.Now.Hour;
                     if (curHour != _lastTimeSetHour)
@@ -865,6 +970,7 @@ namespace HomeServer.Objects
                     }
                 }
 
+//                Console.WriteLine($"        {Id}: After set time: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
                 // Дискретные
                 if (_discreteChecks != null)
                 {
@@ -876,6 +982,8 @@ namespace HomeServer.Objects
                         check.CheckState(discreteStatus[check.Index - _discreteRegisterMinIndex]);
                     }
                 }
+//                Console.WriteLine($"        {Id}: After discrete: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
+
                 // Катушки
                 if (_coilChecks != null)
                 {
@@ -894,6 +1002,7 @@ namespace HomeServer.Objects
                             }
                     }
                 }
+//                Console.WriteLine($"        {Id}: After coils: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
                 // Регистры
                 if (_inputChecks != null)
                 {
@@ -909,10 +1018,12 @@ namespace HomeServer.Objects
                     }
                     if (needCheck)
                     {
-                        Thread.Sleep(10);
+                        Thread.Sleep(6);
                         curOperation = $"CheckInput ";
+                        //Console.WriteLine($"                {Id}: Before ReadInputRegisters: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
                         var inputsStatus = modbus.ReadInputRegisters(SlaveAddress, _inputRegisterMinIndex,
                             (ushort)(_inputRegisterMaxIndex - _inputRegisterMinIndex + 1));
+//                        Console.WriteLine($"                {Id}: After ReadInputRegisters: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
                         foreach (var inputCheck in _inputChecks)
                         {
 
@@ -928,6 +1039,8 @@ namespace HomeServer.Objects
                         }
                     }
                 }
+//                Console.WriteLine($"        {Id}: After registers: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
+
                 // Перезаписываемые Регистры
                 if (_holdingChecks != null)
                 {
@@ -942,7 +1055,7 @@ namespace HomeServer.Objects
                     }
                     if (needCheck)
                     {
-                        Thread.Sleep(10);
+                        Thread.Sleep(6);
                         curOperation = $"CheckHolding";
                         var holdingsStatus = modbus.ReadHoldingRegisters(SlaveAddress, _holdingRegisterMinIndex,
                             (ushort)(_holdingRegisterMaxIndex - _holdingRegisterMinIndex + 1));
@@ -961,6 +1074,8 @@ namespace HomeServer.Objects
                         }
                     }
                 }
+//                Console.WriteLine($"        {Id}: After holdings: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
+
                 // Остальное
                 if (_actionOnReceiveSlaveId != null && _actionOnReceiveSlaveId.IsNeedCheck())
                 {
@@ -980,6 +1095,8 @@ namespace HomeServer.Objects
                     //                        _actionOnReceiveSlaveId.SendValue(resp.ReseivedId);
                     //                    }
                 }
+//                Console.WriteLine($"        {Id}: After other: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
+
                 // Катушки
                 if (_actionsOnDeviceStatus != null)
                 {
@@ -991,6 +1108,8 @@ namespace HomeServer.Objects
                         check.CheckState(resp.DeviceStatusBits[check.Index]);
                     }
                 }
+//                Console.WriteLine($"        {Id}: After last: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
+
             }
             catch (Exception ee)
             {
@@ -1010,22 +1129,24 @@ namespace HomeServer.Objects
                 (byte)curTime.Day,
                 (byte)curTime.Second,
                 (byte)(curTime.Year % 100),
-                (byte)curTime.Month);
+                (byte)(curTime.Month -1));
 
             writeToLog("Time sync send");
 
             var res = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
 
             // Для отладки ждём
-            Thread.Sleep(500);
+            Thread.Sleep(5);//500
             var msgCheck = new ReadExceptionStatusRequest(slaveAddress);
             var respCheck = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgCheck);
             if(respCheck.ExceptionStatusBits[2])
                 writeToLog("Time not set!!!!");
-            if(respCheck.ExceptionStatusBits[3])
+            else if(respCheck.ExceptionStatusBits[3])
                 writeToLog("Time need sync!!!!");
-            if (respCheck.ExceptionStatusBits[0])
+            else if (!respCheck.ExceptionStatusBits[0])
                 writeToLog("Error set time!!!!");
+            else
+                writeToLog("Time OK.");
             return res;
         }
 
@@ -1043,7 +1164,7 @@ namespace HomeServer.Objects
         /// Действия с шиной
         /// </summary>
         /// <param name="modbus"></param>
-        public void DoActions(ModbusSerialMaster modbus)
+        public void SetCoils(ModbusSerialMaster modbus)
         {
             if (_coilChecks != null)
             {
@@ -1086,16 +1207,29 @@ namespace HomeServer.Objects
                 }
             }
 
+            
+        }
+
+        public void SetSetters(ModbusSerialMaster modbus)
+        {
             if (_setters != null)
             {
-                foreach (var setter in _setters)
+                foreach (var activeValue in ActiveValues)
                 {
-                    if (setter.IsPending)
+                    if (!activeValue.Value.IsChanged)
+                        continue;
+                    foreach (var setter in _setters)
                     {
-                        var setResult = setter.Set(modbus, SlaveAddress);
-
+                        if (setter.Id == activeValue.Key)
+                        {
+                            var setResult = setter.Set(modbus, SlaveAddress, activeValue.Value.Value);
+                        }
                     }
+                    //activeValue.Value.ResetChange();
                 }
+
+
+                
             }
         }
 
@@ -1107,11 +1241,13 @@ namespace HomeServer.Objects
         /// <param name="checkBoolStatus">При каком событии вызывать метод</param>
         /// <param name="index">Индекс регистра или катушки</param>
         /// <param name="callback">Метод, который будет вызываться</param>
+        /// <param name="activeValue"></param>
         /// <param name="initialState">Начальное состояние</param>
         /// <param name="resetAfter">Сброс значения только для катушек и CheckBoolStatus != OnBoth</param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnDiscreteOrCoil(string id, bool isCoil, CheckBoolStatus checkBoolStatus, ushort index,
-            Action<bool> callback,
+        public Action SetActionOnDiscreteOrCoil(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
+            bool isCoil, CheckBoolStatus checkBoolStatus, ushort index,
+            Action<bool> callback, HomeServerSettings.ActiveValue activeValue,
             bool? initialState = null, bool resetAfter = false)
         {
             if (index > MaxDiscreteOrCoilIndex)
@@ -1135,7 +1271,7 @@ namespace HomeServer.Objects
                     _coilMaxIndex = index;
                 if (_coilChecks == null)
                     _coilChecks = new List<ActionOnCoil>();
-                var actionOnCoil = new ActionOnCoil(id, index, checkBoolStatus, callback, resetAfter, initialState);
+                var actionOnCoil = new ActionOnCoil(parameter, index, checkBoolStatus, callback, resetAfter, activeValue, initialState);
 
                 _coilChecks.Add(actionOnCoil);
                 return () =>
@@ -1151,7 +1287,7 @@ namespace HomeServer.Objects
                     _discreteRegisterMaxIndex = index;
                 if (_discreteChecks == null)
                     _discreteChecks = new List<ActionOnDiscrete>();
-                var actionOnDiscrete = new ActionOnDiscrete(id, index, checkBoolStatus, callback, initialState);
+                var actionOnDiscrete = new ActionOnDiscrete(parameter, index, checkBoolStatus, callback, activeValue, initialState);
                 _discreteChecks.Add(actionOnDiscrete);
                 return null;
             }
@@ -1165,7 +1301,7 @@ namespace HomeServer.Objects
         /// <param name="callback"></param>
         /// <param name="initialState"></param>
         /// <returns></returns>
-        public Action SetActionOnDeviceStatus(CheckBoolStatus checkBoolStatus, byte index,
+        public Action SetActionOnDeviceStatus(CheckBoolStatus checkBoolStatus, ushort index,
             Action<bool> callback, bool? initialState = null)
         {
             if (index > MaxDeviceStatusIndex)
@@ -1189,30 +1325,38 @@ namespace HomeServer.Objects
         /// <summary>
         /// Добавить проверку регистра
         /// </summary>
+        /// <param name="parameter"></param>
         /// <param name="id">Id параметра, которое пишется в базу</param>
         /// <param name="isHolding"></param>
         /// <param name="index"></param>
         /// <param name="registerType"></param>
         /// <param name="callback"></param>
         /// <param name="uLongCallback"></param>
+        /// <param name="activeValue"></param>
         /// <param name="raiseOlwais">Вызывать callback даже когда показания не изменились</param>
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnRegister(string id, bool isHolding, ushort index, HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
-            Action<uint> uLongCallback,
-            bool raiseOlwais = false, TimeSpan? checkInterval = null, bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0, double doubleDefault = 0)
+        public Action SetActionOnRegister(HomeServerSettings.ControllerGroup.Controller.Parameter parameter, 
+            bool isHolding, 
+            HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
+            Action<uint> uLongCallback, 
+            HomeServerSettings.ActiveValue activeValue,
+            bool raiseOlwais = false, TimeSpan? checkInterval = null, 
+            bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0, double doubleDefault = 0)
         {
             if (callback == null && uLongCallback == null)
                 throw new ArgumentNullException(nameof(callback) + " and " + nameof(uLongCallback));
-            var endIndex = index;
+            var endIndex = parameter.ModbusIndex;
             switch (registerType)
             {
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
                     break;
+                case HomeServerSettings.ControllerGroup.Controller.DataTypes.ModbusUInt16Bool:
+                    break;
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.Double:
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.ULong:
-                    endIndex = (ushort)(index + 1);
+                    endIndex = (ushort)(parameter.ModbusIndex + 1);
                     break;
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime:
                     break;
@@ -1223,14 +1367,14 @@ namespace HomeServer.Objects
             }
             if (!isHolding)
             {
-                if (_inputRegisterMinIndex > index)
-                    _inputRegisterMinIndex = index;
+                if (_inputRegisterMinIndex > parameter.ModbusIndex)
+                    _inputRegisterMinIndex = parameter.ModbusIndex;
                 if (_inputRegisterMaxIndex < endIndex)
                     _inputRegisterMaxIndex = endIndex;
                 if (_inputChecks == null)
                     _inputChecks = new List<ActionOnRegister>();
 
-                var holdingCheck = new ActionOnRegister(id, index, registerType, callback, uLongCallback)
+                var holdingCheck = new ActionOnRegister(parameter, registerType, callback, activeValue, uLongCallback)
                 {
                     RaiseOlwais = raiseOlwais,
                     CheckInterval = checkInterval
@@ -1244,13 +1388,13 @@ namespace HomeServer.Objects
             }
             else
             {
-                if (_holdingRegisterMinIndex > index)
-                    _holdingRegisterMinIndex = index;
+                if (_holdingRegisterMinIndex > parameter.ModbusIndex)
+                    _holdingRegisterMinIndex = parameter.ModbusIndex;
                 if (_holdingRegisterMaxIndex < endIndex)
                     _holdingRegisterMaxIndex = endIndex;
                 if (_holdingChecks == null)
                     _holdingChecks = new List<ActionOnRegister>();
-                _holdingChecks.Add(new ActionOnRegister(id, index, registerType, callback, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
+                _holdingChecks.Add(new ActionOnRegister(parameter, registerType, callback, activeValue, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
                 return null;
             }
         }
@@ -1261,24 +1405,27 @@ namespace HomeServer.Objects
         /// <param name="isHolding"></param>
         /// <param name="index"></param>
         /// <param name="callback"></param>
+        /// <param name="activeValue"></param>
         /// <param name="raiseOlwais"></param>
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
-        public Action SetActionOnRegisterDateTime(bool isHolding, ushort index, Action<DateTime> callback,
+        public Action SetActionOnRegisterDateTime(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
+            bool isHolding, Action<DateTime> callback,
+            HomeServerSettings.ActiveValue activeValue,
             bool raiseOlwais = false, TimeSpan? checkInterval = null)
         {
             if (callback == null)
                 throw new ArgumentNullException(nameof(callback));
-            var endIndex = (ushort)(index + 2);
+            var endIndex = (ushort)(parameter.ModbusIndex + 2);
             if (!isHolding)
             {
-                if (_inputRegisterMinIndex > index)
-                    _inputRegisterMinIndex = index;
+                if (_inputRegisterMinIndex > parameter.ModbusIndex)
+                    _inputRegisterMinIndex = parameter.ModbusIndex;
                 if (_inputRegisterMaxIndex < endIndex)
                     _inputRegisterMaxIndex = endIndex;
                 if (_inputChecks == null)
                     _inputChecks = new List<ActionOnRegister>();
-                var holdingCheck = new ActionOnRegisterDateTime(index, callback)
+                var holdingCheck = new ActionOnRegisterDateTime(parameter, callback, activeValue)
                 {
                     RaiseOlwais = raiseOlwais,
                     CheckInterval = checkInterval
@@ -1291,13 +1438,13 @@ namespace HomeServer.Objects
             }
             else
             {
-                if (_holdingRegisterMinIndex > index)
-                    _holdingRegisterMinIndex = index;
+                if (_holdingRegisterMinIndex > parameter.ModbusIndex)
+                    _holdingRegisterMinIndex = parameter.ModbusIndex;
                 if (_holdingRegisterMaxIndex < endIndex)
                     _holdingRegisterMaxIndex = endIndex;
                 if (_holdingChecks == null)
                     _holdingChecks = new List<ActionOnRegister>();
-                _inputChecks.Add(new ActionOnRegisterDateTime(index, callback)
+                _inputChecks.Add(new ActionOnRegisterDateTime(parameter, callback, activeValue)
                 {
                     RaiseOlwais = raiseOlwais,
                     CheckInterval = checkInterval

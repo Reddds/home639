@@ -14,13 +14,15 @@ namespace Chip45ProgrammerLib
             var data = new StringBuilder();
             
             long bytesRead = 0;
-                port.ReadTimeout = 2000;
+            port.ReadTimeout = 2000;
             try
             {
                 while (bytesRead < maxSize)
                 {
-    //                if (port.BytesToRead <= 0)
-    //                    break;
+                    //                if (port.BytesToRead <= 0)
+                    //                    break;
+
+
                     var c = (byte)port.ReadChar();
                     bytesRead++;
                     //unsigned char c = 0;

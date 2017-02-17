@@ -15,7 +15,7 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="24"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="TbTitle"></TextBlock>
+            <Label x:Name="TbTitle"></Label>
             <dxga:StateIndicatorControl x:Name="SiControllerState" Grid.Column="1" Height="16">
                 <dxga:StateIndicatorControl.Model>
                     <dxga:LampStateIndicatorModel/>

@@ -17,8 +17,9 @@ namespace HomeServer.Models.Base
         {
             return Type.GetType("Mono.Runtime") != null;
         }
-        public static void WriteParamToBase(string id, bool? boolValue = null, long? intValue = null, double? doubleValue = null,
-    string stringValue = null, byte[] blobValue = null)
+        public static void WriteParamToBase(string id, bool? boolValue = null, long? intValue = null, 
+            double? doubleValue = null,
+            string stringValue = null, byte[] blobValue = null)
         {
             //var conStrConfig = ConfigurationManager.ConnectionStrings["homeBase"];
             
@@ -57,9 +58,9 @@ EOF"
 
             try
             {
-                var baseServer = IsRunningOnMono() ? "localhost" : "192.168.88.240";
+                var baseServer = IsRunningOnMono() ? "localhost" : "tor";
 
-                string connectionString = $"Server={baseServer};" +
+                var connectionString = $"Server={baseServer};" +
                                                 "Database=homeserver;" +
                                                 "User ID=hsdatawriter;" +
                                                 "Password=test;" +

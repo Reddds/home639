@@ -1,4 +1,52 @@
 ﻿{
+    /*
+    ActiveValues - значения параметров.
+    Они могут получать значения из разных источников
+    И на них можно подписываться чтобы посылать в Setters
+    
+    TODO:
+    Сделать проверку по обратной связи
+
+
+    */
+    "ActiveValues": {
+        "bed_3": {
+            "ValueType": "Double",
+            "Description": "Температура в спальне"
+        },
+        "bed_4": {
+            "ValueType": "Double",
+            "Description": "Влажность в спальне"
+        },
+        "meteo_temp_common": {
+            "ValueType": "Double",
+            "Description": "Вычисленная температура"
+        },
+        "meteo_hymidity": {
+            "ValueType": "Double",
+            "Description": "Влажность"
+        },
+        "meteo_pressure": {
+            "ValueType": "Double",
+            "Description": "Давление, мм рт.ст."
+        },
+        "corr_1": {
+            "ValueType": "Bool",
+            "Description": "Движение и свет"
+        },
+        "bath_1": {
+            "ValueType": "Bool",
+            "Description": "Дверь открыта"
+        },
+        "bath_2": {
+            "ValueType": "Bool",
+            "Description": "Свет включён"
+        },
+        "bath_ignore_door": {
+            "ValueType": "Bool",
+            "Description": "Игнорировать дверь. Свет всегда включён."
+        }
+    },
     "ControllerGroups": [
         {
             "Name": "Спальня",
@@ -32,7 +80,12 @@
                             "ModbusType": "InputRegister",
                             "ModbusIndex": 2,
                             "RefreshRate": "0:1:0",
-                            "Retain": true
+                            "WriteToBaseInterval": "0:1:0",
+                            "Retain": true,
+                            "Echo": {
+                                "Id": "pult_bed_temp",
+                                "Type": "Setter"
+                            }
                         },
                         {
                             "Id": "bed_4",
@@ -40,7 +93,12 @@
                             "ModbusType": "InputRegister",
                             "ModbusIndex": 3,
                             "RefreshRate": "0:1:0",
-                            "Retain": true
+                            "WriteToBaseInterval": "0:1:0",
+                            "Retain": true,
+                            "Echo": {
+                                "Id": "pult_bed_hum",
+                                "Type": "Setter"
+                            }
                         },
                         {
                             "Id": "bed_5",
@@ -109,7 +167,13 @@
                             "Multiple": 0.1,
                             "DataType": "Double",
                             "RefreshRate": "0:1:0",
-                            "Retain": true
+                            "WriteToBaseInterval": "0:1:0",
+                            "Retain": true,
+                            "Echo": {
+                                "Id": "pult_balk_temp",
+                                "Type": "Setter"
+                            }
+
                         },
                         {
                             "Id": "meteo_temp_bmp",
@@ -139,7 +203,13 @@
                             "Multiple": 0.1,
                             "DataType": "Double",
                             "RefreshRate": "0:1:0",
-                            "Retain": true
+                            "WriteToBaseInterval": "0:1:0",
+                            "Retain": true,
+                            "Echo": {
+                                "Id": "pult_balk_hym",
+                                "Type": "Setter"
+                            }
+
                         },
                         {
                             "Id": "meteo_pressure",
@@ -149,7 +219,13 @@
                             "Multiple": 0.1,
                             "DataType": "Double",
                             "RefreshRate": "0:1:0",
-                            "Retain": true
+                            "WriteToBaseInterval": "0:1:0",
+                            "Retain": true,
+                            "Echo": {
+                                "Id": "pult_balk_press",
+                                "Type": "Setter"
+                            }
+
                         }
 
                     ]
@@ -160,6 +236,103 @@
         {
             "Name": "Коридор",
             "Controllers": [
+                {
+                    "Id": "pult",
+                    "Name": "Пульт",
+                    "SlaveId": "119.1.1.0",
+                    "ModbusAddress": 120,
+
+                    /*
+                    //    // макс 8 символов
+//    {"Темпер. ", PT_TEMP,      false, 0, 0, 0}, //   0
+//    {"Влажн.  ", PT_HYM,       false, 0, 0, 0}, //   1
+//    // Ванная
+//    {"Свет    ", PT_LIGHT,     false, 0, 0, 0}, //   2 
+//    {"Дверь   ", PT_DOOR_OPEN, false, 0, 0, 0}, //   3 
+//    {"Игн.дв. ", PT_YES_NO,    true,  0, 1, 1}, //   3 
+//    // Коридор
+//    {"Свет    ", PT_LIGHT,     false, 0, 0, 0}, //   4 
+//    // Улица
+//    {"Темпер. ", PT_TEMP,      false, 0, 0, 0}, //   5 
+//    {"Влажн.  ", PT_HYM,       false, 0, 0, 0}, //   6 
+//    {"Давление", PT_PRESS,     false, 0, 0, 0}, //   7 
+
+                    */
+                    "Parameters": [
+                        {
+                            "Id": "bath_ignore_door", /*pult_bath_door_ignore*/
+                            "Name": "Ванна. Игнорировать дверь",
+                            "ModbusType": "Discrete",
+                            "ModbusIndex": 2,
+                            /*"Echo": {
+                                "Id": "bath_ignore_door",
+                                "Type": "Setter"
+                            }*/
+                        }
+                    ],
+                    "Setters": [
+                        {
+                            "Id": "bed_3", /*pult_bed_temp*/
+                            "Name": "Спальня. Температура",
+                            "ModbusType": "UInt16",
+                            "Type": "UInt16",
+                            "ModbusIndex": 0
+                        },
+                        {
+                            "Id": "bed_4", /*pult_bed_hum*/
+                            "Name": "Спальня. Влажность",
+                            "ModbusType": "UInt16",
+                            "Type": "UInt16",
+                            "ModbusIndex": 1
+                        },
+                        {
+                            "Id": "bath_2", /*pult_bath_light*/
+                            "Name": "Ванна. Свет",
+                            "ModbusType": "Coil",
+                            "ModbusIndex": 0
+                        },
+                        {
+                            "Id": "bath_1", /*pult_bath_door*/
+                            "Name": "Ванна. Дверь",
+                            "ModbusType": "Coil",
+                            "ModbusIndex": 1
+                        },
+                        {
+                            "Id": "bath_ignore_door", /*pult_bath_door_ignore_s*/
+                            "Name": "Ванна. Игнорировать дверь",
+                            "ModbusType": "Coil",
+                            "ModbusIndex": 2
+                        },
+                        {
+                            "Id": "corr_1", /*pult_corr_light*/
+                            "Name": "Коридор. Свет",
+                            "ModbusType": "Coil",
+                            "ModbusIndex": 3
+                        },
+                        {
+                            "Id": "meteo_temp_common", /*pult_balk_temp*/
+                            "Name": "Балкон. Температура",
+                            "ModbusType": "UInt16",
+                            "Type": "UInt16",
+                            "ModbusIndex": 2
+                        },
+                        {
+                            "Id": "meteo_hymidity", /*pult_balk_hym*/
+                            "Name": "Балкон. Влажность",
+                            "ModbusType": "UInt16",
+                            "Type": "UInt16",
+                            "ModbusIndex": 3
+                        },
+                        {
+                            "Id": "meteo_pressure", /*pult_balk_press*/
+                            "Name": "Балкон. Давление",
+                            "ModbusType": "UInt16",
+                            "Type": "UInt16",
+                            "ModbusIndex": 4
+                        }
+                    ]
+
+                },
                 {
                     "Id": "con_1",
                     "Name": "Контроллер 1",
@@ -231,12 +404,13 @@
                             "Command": {
                                 "Id": {
                                     "Type": "Literal",
-                                    "Value": 10 
+                                    "Value": 10
                                 },
                                 "Data": {
                                     "Type": "FromRequest"
-                                }                                
-                            }
+                                }
+                            },
+                            "Retain": true
                         }
                     ]
                 }
@@ -246,7 +420,7 @@
 
 
         {
-            "Disabled": false,
+            "Disabled": true,
             "Name": "Табло",
             "Controllers": [
                 {
@@ -500,8 +674,6 @@
                 }
             ]
         }
-    ]
-
-
-
+    ],
+    "HeartBeatMs": 333
 }

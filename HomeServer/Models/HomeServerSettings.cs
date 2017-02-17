@@ -1,11 +1,135 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace HomeServer.Models
 {
 
     public partial class HomeServerSettings
     {
+
+        public enum ActiveValueTypes
+        {
+            UInt,
+            Int,
+            Double,
+            DateTime,
+            Time,
+            Bool,
+        }
+
+        public class ActiveValue
+        {
+
+            public object Value { get; set; }
+            public ActiveValueTypes ValueType { get; set; }
+            public string Description { get; set; }
+
+            /// <summary>
+            /// Устанавливает новое значение
+            /// </summary>
+            /// <param name="newValue"></param>
+            /// <returns>Если значение изменилось, true</returns>
+            public bool SetNewValue(object newValue)
+            {
+                if(Value!= null && Value.Equals(newValue))
+                    return false;
+                Value = newValue;
+
+                IsChanged = true;
+                Console.WriteLine($"{Description} = {Value}");
+                return true;
+            }
+
+            public void SetNewValueFromString(string newValue)
+            {
+                switch (ValueType)
+                {
+                    case ActiveValueTypes.UInt:
+                    {
+                        uint tempValue;
+                        if (uint.TryParse(newValue, out tempValue))
+                            SetNewValue(tempValue);
+                    }
+                        break;
+                    case ActiveValueTypes.Int:
+                    {
+                        int tempValue;
+                        if (int.TryParse(newValue, out tempValue))
+                            SetNewValue(tempValue);
+                    }
+                        break;
+                    case ActiveValueTypes.Double:
+                        {
+                            double tempValue;
+                            if (double.TryParse(newValue.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out tempValue))
+                                SetNewValue(tempValue);
+                        }
+                        break;
+                    case ActiveValueTypes.DateTime:
+                        break;
+                    case ActiveValueTypes.Time:
+                        break;
+                    case ActiveValueTypes.Bool:
+                        {
+                            bool tempValue;
+                            if (bool.TryParse(newValue, out tempValue))
+                                SetNewValue(tempValue);
+                            else
+                            {
+                                int tempIntValue;
+                                if (int.TryParse(newValue, out tempIntValue))
+                                    SetNewValue(tempIntValue != 0);
+                            }
+                        }
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            /// <summary>
+            /// Изменено ли значение за последний цикл проверки параметров
+            /// </summary>
+            public bool IsChanged { get; private set; }
+
+            public void ResetChange()
+            {
+                IsChanged = false;
+            }
+
+        }
+
+
+
+
+        public class EchoValue
+        {
+            public enum EchoTypes
+            {
+                Setter
+            }
+
+            public class Argument
+            {
+                public enum ArgumentTypes
+                {
+                    Literal
+                }
+                public ArgumentTypes Type { get; set; }
+                public object Value { get; set; }
+            }
+
+            public EchoTypes Type { get; set; }
+            /// <summary>
+            /// Id параметра, куда будет пересылаться значение
+            /// </summary>
+            [Description("Id параметра, куда будет пересылаться значение")]
+            public string Id { get; set; }
+            public Argument[] Arguments { get; set; }
+        }
+
         public partial class ControllerGroup
         {
             public partial class Controller
@@ -14,6 +138,10 @@ namespace HomeServer.Models
                 {
                     /// <remarks/>
                     UInt16,
+                    /// <summary>
+                    /// Булевое значение MODBUS 0x0000 - false 0xFF00 - true 
+                    /// </summary>
+                    ModbusUInt16Bool,
                     /// <remarks/>
                     Double,
                     /// <remarks/>
@@ -43,29 +171,18 @@ namespace HomeServer.Models
 
                 public partial class Parameter
                 {
-                    public class EchoValue
+                    /// <summary>
+                    /// Записывать в базу значение из интервала после предыдущей записи
+                    /// Last - писать последнее значение
+                    /// Average - вычислять среднее
+                    /// </summary>
+                    public enum WriteToBaseMethods
                     {
-                        public enum EchoTypes
-                        {
-                            Setter
-                        }
-
-                        public class Argument
-                        {
-                            public enum ArgumentTypes
-                            {
-                                Literal
-                            }
-                            public ArgumentTypes Type { get; set; }
-                            public object Value { get; set; }
-                        }
-
-                        public EchoTypes Type { get; set; }
-                        public string Id { get; set; }
-                        public Argument[] Arguments { get; set; }
+                        Last,
+                        Average
                     }
 
-                    private byte? _modbusIndex;
+                    private ushort? _modbusIndex;
 
                     private bool? _boolDefault;
 
@@ -83,9 +200,10 @@ namespace HomeServer.Models
 
                     public ModbusTypes ModbusType { get; set; }
 
-                    public byte ModbusIndex
+                    public ushort ModbusIndex
                     {
-                        get {
+                        get
+                        {
                             return this._modbusIndex ?? default(byte);
                         }
                         set
@@ -110,6 +228,18 @@ namespace HomeServer.Models
                     }
 
                     public string RefreshRate { get; set; }
+                    /// <summary>
+                    /// Период записи результатов в базу
+                    /// </summary>
+                    public string WriteToBaseInterval { get; set; }
+                    public WriteToBaseMethods WriteToBaseMethod { get; set; }
+                    /// <summary>
+                    /// Сконвертированное значение
+                    /// </summary>
+                    public TimeSpan? WriteToBaseIntervalTime;
+
+                    public DateTime NextTimeToWriteToBase = DateTime.MinValue;
+                    public List<double> AverageValuesToWriteToBase;
 
                     public DataTypes DataType { get; set; }
 
@@ -169,7 +299,8 @@ namespace HomeServer.Models
 
                     public uint ULongDefault
                     {
-                        get {
+                        get
+                        {
                             return this._uLongDefault ?? default(uint);
                         }
                         set
@@ -209,7 +340,8 @@ namespace HomeServer.Models
 
                     public bool Retain
                     {
-                        get {
+                        get
+                        {
                             return this._retain.HasValue && this._retain.Value;
                         }
                         set
@@ -225,6 +357,7 @@ namespace HomeServer.Models
                     /// </summary>
                     public double Multiple { get; set; }
                     public EchoValue Echo { get; set; }
+
                 }
 
                 public partial class Setter
@@ -301,8 +434,12 @@ namespace HomeServer.Models
                     public string Id { get; set; }
                     public string Name { get; set; }
                     public SetterTypes Type { get; set; }
-                    public byte ModbusIndex { get; set; }
+                    public ushort ModbusIndex { get; set; }
                     public SendCommand Command { get; set; }
+                    /// <summary>
+                    /// Запомнить результат установки
+                    /// </summary>
+                    public bool Retain { get; set; }
                 }
 
                 public bool Disabled { get; set; }
@@ -312,6 +449,7 @@ namespace HomeServer.Models
                 public string Name { get; set; }
                 public string SlaveId { get; set; }
                 public byte ModbusAddress { get; set; }
+
             }
             public bool Disabled { get; set; }
 
@@ -319,12 +457,32 @@ namespace HomeServer.Models
             public string Name { get; set; }
         }
 
+        public class Plugin
+        {
+            public string Type { get; set; }
+
+            public class Parameter
+            {
+                public string Name { get; set; }
+                public EchoValue Echo { get; set; }
+            }
+
+            
+
+        }
+
+
+        public Dictionary<string, ActiveValue> ActiveValues { get; set; }
+
         public HomeServerSettings()
         {
+            ActiveValues = new Dictionary<string, ActiveValue>();
             this.HeartBeatMs = 1000;
         }
 
         public ControllerGroup[] ControllerGroups { get; set; }
+
+        public Plugin[] Plugins { get; set; }
         public int HeartBeatMs { get; set; }
     }
 

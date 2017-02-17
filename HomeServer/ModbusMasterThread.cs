@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Threading;
+using HomeServer.Models;
 using HomeServer.Objects;
 using Microsoft.Win32;
 using Modbus.Device;
@@ -15,9 +16,15 @@ namespace HomeServer
         private static int _heartBeatMs;
         private static Thread _mainThread;
         private static ManualResetEvent _isListening;
+        public static ManualResetEvent ThreadStopped;
 
         private static SerialPort _port;
         private static ModbusSerialMaster _modbus;
+
+        /// <summary>
+        /// Поток работает
+        /// </summary>
+        private static bool IsWorked;
 
         public static event EventHandler PortChanged;
         public static event EventHandler<bool> ListeningChanged;
@@ -29,14 +36,15 @@ namespace HomeServer
 
         private static bool _setCurrentTime;
 
-        public static List<ControllerGroup> ControolerObjects = new List<ControllerGroup>(); 
-
+        public static List<ControllerGroup> ControolerObjects = new List<ControllerGroup>();
+        public static Dictionary<string, HomeServerSettings.ActiveValue> ActiveValues;
         public static void Init(string portName, int baudRate, int heartBeatMs)
         {
             _portName = portName;
             _baudRate = baudRate;
             _heartBeatMs = heartBeatMs;
             _isListening = new ManualResetEvent(false);
+            ThreadStopped = new ManualResetEvent(false);
             SystemEvents.PowerModeChanged += OnPowerChanged;
 
             _mainThread = new Thread(ThreadProc);
@@ -58,6 +66,7 @@ namespace HomeServer
             _modbus = ModbusSerialMaster.CreateRtu(_port);
             _modbus.Transport.Retries = 1;
             //            _readRs485Timer.Start();
+            IsWorked = true;
             if (!_mainThread.IsAlive)
                 _mainThread.Start();
             _isListening.Set();
@@ -132,15 +141,27 @@ namespace HomeServer
 
         public static void Start()
         {
+            IsWorked = true;
             _mainThread.Start();
         }
 
-        public static void Close()
+        /// <summary>
+        /// Останавливаем поток
+        /// </summary>
+        /// <param name="wait">Ждять завершения</param>
+        public static void Close(bool wait = false)
         {
-            _mainThread.Abort();
+            // Если на паузе, то можно и абортнуть, никто не пострадает
+            if (IsPaused)
+                _mainThread.Abort();
+            // А если работает, то выключаем безопасно
+            else
+                IsWorked = false;
+            if(wait)
+                ThreadStopped.WaitOne(10000);
         }
 
-        private static bool IsPaused => _isListening.WaitOne(0);
+        public static bool IsPaused => !_isListening.WaitOne(0);
 
         public static void SetCurrentTime()
         {
@@ -191,12 +212,15 @@ namespace HomeServer
 
         private static void ThreadProc()
         {
+            ThreadStopped.Reset();
             do
             {
                 var currentControllerAddress = 0;
                 var curAction = string.Empty;
                 var now = DateTime.Now;
                 _isListening.WaitOne();
+                if (!IsWorked)
+                    break;
                 try
                 {
                     // Проверяем, если порт закрыт, ждём открытия
@@ -233,16 +257,16 @@ namespace HomeServer
 //                        ModbusResetCall();
 //                    }
 
-                    Thread.Sleep(200);
-                  
+                    //Thread.Sleep(200);
 
+//                    var startDt = DateTime.Now;
                     if (ControolerObjects != null && ControolerObjects.Count > 0)
                     {
                         foreach (var room in ControolerObjects)
                         {
                             foreach (var controller in room.ShControllers)
                             {
-                                
+//                                Console.WriteLine($"{controller.Id}: Start: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
                                 if (controller.ErrorCount >= 30)
                                 {
                                     // теперь опрашиваем текущий контроллер только раз в 30 минут
@@ -271,10 +295,56 @@ namespace HomeServer
                                         controller.State = true;
                                         SendControllerStatus?.Invoke(null, new Tuple<string, bool>(controller.Id, true));
                                     }
-                                    Thread.Sleep(20);
-                                    curAction = "DoActions";
-                                    controller.DoActions(_modbus);
-                                    Thread.Sleep(20);
+//                                    Console.WriteLine($"{controller.Id}: After GetStatus: {DateTime.Now.Subtract(startDt).TotalMilliseconds}");
+                                    
+                                    if (controller.ErrorCount > 0)
+                                    {
+                                        Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
+                                        WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
+                                        controller.State = true;
+                                        SendControllerStatus?.Invoke(null, new Tuple<string, bool>(controller.Id, true));
+                                        controller.ErrorCount = 0;
+                                    }
+                                }
+                                catch (Exception eee)
+                                {
+                                    Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress}; Action: {curAction}; {eee}");
+                                    WriteToLog?.Invoke(null, $"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress}; Action: {curAction}; {eee}");
+                                    BanController(controller, currentControllerAddress);
+                                }
+//                                Console.WriteLine($"{controller.Id}: End: {DateTime.Now.Subtract(startDt).TotalMilliseconds}\n");
+                                //Console.WriteLine("Iteration Controller Address: " + controller.SlaveAddress);
+                            }
+                        }
+
+                        // Отправка значений
+                        foreach (var room in ControolerObjects)
+                        {
+                            foreach (var controller in room.ShControllers)
+                            {
+
+                                if (controller.ErrorCount >= 30)
+                                {
+                                    // теперь опрашиваем текущий контроллер только раз в 30 минут
+                                    if (now.Subtract(controller.LastAccess).TotalMinutes < 30)
+                                        continue;
+                                }
+                                if (controller.ErrorCount >= 5)
+                                {
+                                    // теперь опрашиваем текущий контроллер только раз в минуту
+                                    if (now.Subtract(controller.LastAccess).TotalMinutes < 1)
+                                        continue;
+                                }
+                                controller.LastAccess = now;
+                                currentControllerAddress = controller.SlaveAddress;
+
+                                try
+                                {
+                                    curAction = "SetCoils";
+                                    controller.SetCoils(_modbus);
+                                    curAction = "SetSetters";
+                                    controller.SetSetters(_modbus);
+                                    Thread.Sleep(10);
                                     if (controller.ErrorCount > 0)
                                     {
                                         Console.WriteLine($"{controller.ControllerGroupName} / {controller.Name} : {currentControllerAddress} now work!");
@@ -293,6 +363,13 @@ namespace HomeServer
                                 //Console.WriteLine("Iteration Controller Address: " + controller.SlaveAddress);
                             }
                         }
+
+                        // После цикла сбрасываем флаги изменений 
+                        foreach (var activeValue in ActiveValues)
+                        {
+                            activeValue.Value.ResetChange();
+                        }
+                        
                     }
 
                     Thread.Sleep(_heartBeatMs);
@@ -307,7 +384,7 @@ namespace HomeServer
                     WriteToLog?.Invoke(null, $"Address = {currentControllerAddress}; Action: {curAction}; {ee}");
                 }
             } while (true);
-
+            ThreadStopped.Set();
         }
 
         private static void BanController(ShController controller, int currentControllerAddress)

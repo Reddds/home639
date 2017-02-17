@@ -9,6 +9,7 @@ SETTINGS_FILE=../HomeServerSettings.json
 if [ -f $SETTINGS_FILE ]
 then
 	cp $SETTINGS_FILE /etc/
+	chmod 666 /etc/HomeServerSettings.json
 fi
 
 cp home639server.service /etc/systemd/system/

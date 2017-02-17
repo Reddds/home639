@@ -1,4 +1,4 @@
-﻿<dxr:DXRibbonWindow xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"  
+﻿<dxr:DXRibbonWindow xmlns:dxprg="http://schemas.devexpress.com/winfx/2008/xaml/propertygrid"  xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"  
     xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon" 
     xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
@@ -24,10 +24,29 @@
 
                     <ListBox x:Name="LbLog" Margin="10,182,10,10.2" />
                     <Button x:Name="BGmail" Content="Gmail" HorizontalAlignment="Left" Height="68" Margin="68,71,0,0" VerticalAlignment="Top" Width="214" Click="BGmail_Click" />
+                    <Button x:Name="BTest" Content="Прогноз погоды" HorizontalAlignment="Left" Height="68" Margin="650,37,0,0" VerticalAlignment="Top" Width="214" Click="BTest_Click"  />
 
                     <ToggleButton x:Name="TbOnOff" HorizontalAlignment="Left" Height="68" Margin="406,71,0,0" VerticalAlignment="Top" Width="214" Click="ToggleButton_Click">
                         <Image Source="Assets/Images/on_off.png" />
                     </ToggleButton>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Настройки">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold">Настройки клиента</Label>
+                    <Label Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold">Настройки сервера</Label>
+                    <dxprg:PropertyGridControl Grid.Column="0" Grid.Row="1" x:Name="PgSettings" AllowExpanding="Force" ExpandCategoriesWhenSelectedObjectChanged="True" />
+                    <TextBox x:Name="TbServerSettings" Grid.Column="1" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" AcceptsTab="True"></TextBox>
+                    <Button Grid.Column="1" Grid.Row="2" Width="100" Click="SendServerSettingsClick">Отправить</Button>
                 </Grid>
             </TabItem>
             <TabItem Header="Skype">
@@ -119,6 +138,8 @@
                 </Grid>
             </TabItem>
             <controls:ChartsTabItem/>
+            <Button x:Name="button" Content="Button" Height="4" Width="59"/>
+
         </TabControl>
 
         <tb:TaskbarIcon x:Name="MyNotifyIcon" ToolTipText="hello world" IconSource="Assets/Images/com_plug.ico">

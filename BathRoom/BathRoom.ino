@@ -23,6 +23,7 @@
 
 // Игнорировать открытие двери, всегда держать включёным свет
 #define COMMAND_IGNORE_DOOR 10 // Data 0 - Нормальная работа 0xff - игнорирование двери
+#define COMMAND_SET_LIGHT 11 // Включение-выключение света 0 - выключение 0xff - включение
 
 // массив данных modbus
 #define modbusInputBufLen 5
@@ -219,8 +220,21 @@ void io_poll()
 			else
 			{
 				_ignoreDoor = false;
-
-				bitRead(_MODBUSDiscreteInputs, LIGHT_INPUT) == 1 ? LightOn() : LightOff();
+				isEnterInBath = false;
+				LightOff();
+				//bitRead(_MODBUSDiscreteInputs, LIGHT_INPUT) == 1 ? LightOn() : LightOff();
+			}
+			ModbusSetExceptionStatusBit(MB_EXCEPTION_LAST_COMMAND_STATE, 1);
+		}
+		else if (*ModbusGetUserCommandId() == COMMAND_SET_LIGHT)
+		{
+			if(*ModbusGetUserCommandData() == MODBUS_ON)
+			{
+				LightOn();
+			}
+			else
+			{
+				LightOff();
 			}
 			ModbusSetExceptionStatusBit(MB_EXCEPTION_LAST_COMMAND_STATE, 1);
 		}

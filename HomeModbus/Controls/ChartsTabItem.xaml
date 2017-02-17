@@ -7,7 +7,7 @@
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
              xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
-             mc:Ignorable="d" Header="Графики"
+             mc:Ignorable="d" Header="_Графики"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <Grid.RowDefinitions>
@@ -20,7 +20,15 @@
                 <dx:SimpleButton Click="ShowLastWeek">За неделю</dx:SimpleButton>
             </ToolBarPanel>
         </ToolBar>
-        <dxc:ChartControl x:Name="MainChart" Grid.Row="1" HorizontalAlignment="Left" Margin="0,0,-0.4,-0.2" VerticalAlignment="Top">
+        <dxc:ChartControl x:Name="MainChart" Grid.Row="1" HorizontalAlignment="Left" Margin="0,0,-0.4,-0.2" VerticalAlignment="Top"
+                          AnimationMode="OnLoad" IsManipulationEnabled="True">
+            <dxc:ChartControl.CrosshairOptions>
+                <dxc:CrosshairOptions ShowArgumentLine="True" ShowValueLine="True" ArgumentLineBrush="DeepSkyBlue" ShowOnlyInFocusedPane="False">
+                    <dxc:CrosshairOptions.ArgumentLineStyle>
+                        <dxc:LineStyle Thickness="1"/>
+                    </dxc:CrosshairOptions.ArgumentLineStyle>
+                </dxc:CrosshairOptions>
+            </dxc:ChartControl.CrosshairOptions>
             <dxc:ChartControl.Legend>
                 <dxc:Legend HorizontalPosition="RightOutside" Orientation="Vertical" VerticalPosition="Top"/>
             </dxc:ChartControl.Legend>
@@ -31,16 +39,20 @@
                     </dxc:Pane>
                 </dxc:XYDiagram2D.DefaultPane>
                 <dxc:XYDiagram2D.AxisX>
-                    <dxc:AxisX2D Visible="True">
+                    <dxc:AxisX2D Visible="True" GridLinesVisible="True" Interlaced="True">
+
                         <dxc:AxisX2D.DateTimeScaleOptions>
                             <dxc:AutomaticDateTimeScaleOptions AggregateFunction="Financial"/>
                         </dxc:AxisX2D.DateTimeScaleOptions>
-
+                        <dxc:AxisX2D.VisibilityInPanes>
+                        </dxc:AxisX2D.VisibilityInPanes>
                     </dxc:AxisX2D>
                 </dxc:XYDiagram2D.AxisX>
                 <dxc:XYDiagram2D.AxisY>
-                    <dxc:AxisY2D>
-
+                    <dxc:AxisY2D GridLinesMinorVisible="True">
+                        <dxc:AxisY2D.WholeRange>
+                            <dxc:Range dxc:AxisY2D.AlwaysShowZeroLevel="False" />
+                        </dxc:AxisY2D.WholeRange>
                         <dxc:AxisY2D.Strips>
                             <dxc:Strip>
                                 <dxc:Strip.MinLimit>
