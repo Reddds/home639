@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\Base\BaseUtils.cs" />
+    <Compile Include="Models\OpenWeatherMapResult.cs" />
     <Compile Include="MqttClientWorker.cs" />
     <Compile Include="ModbusCustomMessages\WriteSysUserCommand.cs" />
     <Compile Include="ModbusCustomMessages\ReadDeviceIdentification.cs" />
@@ -100,6 +101,8 @@
     <Compile Include="Objects\ControllerGroup.cs" />
     <Compile Include="Objects\ShController.cs" />
     <Compile Include="Options.cs" />
+    <Compile Include="Plugins\ForecatPlugin.cs" />
+    <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />

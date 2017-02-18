@@ -12,6 +12,18 @@
             "string",
             "null"
           ]
+        },
+        "Params": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       }
     },
@@ -163,6 +175,7 @@
         "Type": {
           "type": "string",
           "enum": [
+            "Bool",
             "RealDateTime",
             "UInt16",
             "MultipleUInt16",
@@ -231,12 +244,6 @@
         "null"
       ],
       "properties": {
-        "WriteToBaseIntervalTime": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "NextTimeToWriteToBase": {
           "type": "string"
         },
@@ -283,19 +290,6 @@
           "type": [
             "string",
             "null"
-          ]
-        },
-        "WriteToBaseInterval": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "WriteToBaseMethod": {
-          "type": "string",
-          "enum": [
-            "Last",
-            "Average"
           ]
         },
         "DataType": {
@@ -432,6 +426,18 @@
         "null"
       ],
       "properties": {
+        "WriteToBaseInterval": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "NextTimeToWriteToBase": {
+          "type": "string"
+        },
+        "Id": {
+          "type": "string"
+        },
         "Value": {},
         "ValueType": {
           "type": "string",
@@ -441,7 +447,8 @@
             "Double",
             "DateTime",
             "Time",
-            "Bool"
+            "Bool",
+            "String"
           ]
         },
         "Description": {
@@ -449,18 +456,34 @@
             "string",
             "null"
           ]
+        },
+        "MqttRetain": {
+          "type": "boolean"
+        },
+        "WriteToBaseMethod": {
+          "type": "string",
+          "enum": [
+            "Last",
+            "Average"
+          ]
+        },
+        "IsChanged": {
+          "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "Id"
+      ]
     }
   },
   "type": "object",
   "properties": {
     "ActiveValues": {
       "type": [
-        "object",
+        "array",
         "null"
       ],
-      "additionalProperties": {
+      "items": {
         "$ref": "#/definitions/ActiveValue"
       }
     },

@@ -11,6 +11,9 @@ namespace HomeServer
 {
     class MqttClienWorker
     {
+        public static MqttClienWorker CurrentInstance;
+
+
         private readonly MqttClient _mqttClient;
 
         const byte ModbusOn = 0xff;
@@ -30,7 +33,7 @@ namespace HomeServer
         /// </summary>
         public static List<ShController.ModbusSetter> Setters = new List<ShController.ModbusSetter>();
         //public static Dictionary<string, ShController.ModbusSetter> Setters = new Dictionary<string, ShController.ModbusSetter>();
-        public static Dictionary<string, HomeServerSettings.ActiveValue> ActiveValues;
+        public static List<HomeServerSettings.ActiveValue> ActiveValues;
         /// <summary>
         /// Делегат обновления настроек 
         /// Если всё нормально, возвращает null
@@ -70,6 +73,8 @@ namespace HomeServer
 
             //mqttClient.Publish("/homeserver/temperature", Encoding.UTF8.GetBytes("sdklfhifweuihfweihfi hwehfiwh ifhwie hfi"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
             Console.WriteLine(@"Connected to broker");
+
+            CurrentInstance = this;
         }
 
         public void SendMessage(string topic, string message, bool retain)
@@ -152,10 +157,10 @@ namespace HomeServer
 
             foreach (var activeValue in ActiveValues)
             {
-                if (activeValue.Key != setterId)
+                if (activeValue.Id != setterId)
                     continue;
 
-                activeValue.Value.SetNewValueFromString(strMessage);
+                activeValue.SetNewValueFromString(strMessage);
             }
 
 

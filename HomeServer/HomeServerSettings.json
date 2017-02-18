@@ -9,44 +9,96 @@
 
 
     */
-    "ActiveValues": {
-        "bed_3": {
+    "ActiveValues": [
+        {
+            "Id": "bed_3",
             "ValueType": "Double",
             "Description": "Температура в спальне"
         },
-        "bed_4": {
+        {
+            "Id": "bed_4",
             "ValueType": "Double",
             "Description": "Влажность в спальне"
         },
-        "meteo_temp_common": {
+        {
+            "Id": "meteo_temp_common",
             "ValueType": "Double",
             "Description": "Вычисленная температура"
         },
-        "meteo_hymidity": {
+        {
+            "Id": "meteo_hymidity",
             "ValueType": "Double",
             "Description": "Влажность"
         },
-        "meteo_pressure": {
+        {
+            "Id": "meteo_pressure",
             "ValueType": "Double",
             "Description": "Давление, мм рт.ст."
         },
-        "corr_1": {
+        {
+            "Id": "corr_1",
             "ValueType": "Bool",
             "Description": "Движение и свет"
         },
-        "bath_1": {
+        {
+            "Id": "bath_1",
             "ValueType": "Bool",
             "Description": "Дверь открыта"
         },
-        "bath_2": {
+        {
+            "Id": "bath_2",
             "ValueType": "Bool",
             "Description": "Свет включён"
         },
-        "bath_ignore_door": {
+        {
+            "Id": "bath_ignore_door",
             "ValueType": "Bool",
             "Description": "Игнорировать дверь. Свет всегда включён."
+        },
+
+
+        {
+            "Id": "forecast_temp",
+            "ValueType": "Double",
+            "Description": "Прогноз температура"
+        },
+        {
+            "Id": "forecast_hymidity",
+            "ValueType": "Double",
+            "Description": "Прогноз Влажность"
+        },
+        {
+            "Id": "forecast_pressure",
+            "ValueType": "Double",
+            "Description": "Прогноз Давление, мм рт.ст."
+        },
+        {
+            "Id": "forecast_date",
+            "ValueType": "DateTime",
+            "Description": "Прогноз время"
+        },
+        {
+            "Id": "forecast_wind_direction_and_speed",
+            "ValueType": "UInt",
+            "Description": "Прогноз Скорость и напр. ветра"
+        },
+        {
+            "Id": "forecast_weather",
+            "ValueType": "UInt",
+            "Description": "Прогноз осадки"
+        },
+
+        {
+            "Id": "bolid_bi_is_timeSet",
+            "ValueType": "Bool",
+            "Description": "БИ Время установлено"
+        },
+        {
+            "Id": "bolid_bi_slave_id",
+            "ValueType": "String",
+            "Description": "БИ Идентификатор устройства"
         }
-    },
+    ],
     "ControllerGroups": [
         {
             "Name": "Спальня",
@@ -263,7 +315,7 @@
                             "Id": "bath_ignore_door", /*pult_bath_door_ignore*/
                             "Name": "Ванна. Игнорировать дверь",
                             "ModbusType": "Discrete",
-                            "ModbusIndex": 2,
+                            "ModbusIndex": 2
                             /*"Echo": {
                                 "Id": "bath_ignore_door",
                                 "Type": "Setter"
@@ -274,61 +326,94 @@
                         {
                             "Id": "bed_3", /*pult_bed_temp*/
                             "Name": "Спальня. Температура",
-                            "ModbusType": "UInt16",
                             "Type": "UInt16",
                             "ModbusIndex": 0
                         },
                         {
                             "Id": "bed_4", /*pult_bed_hum*/
                             "Name": "Спальня. Влажность",
-                            "ModbusType": "UInt16",
                             "Type": "UInt16",
                             "ModbusIndex": 1
                         },
                         {
                             "Id": "bath_2", /*pult_bath_light*/
                             "Name": "Ванна. Свет",
-                            "ModbusType": "Coil",
+                            "Type": "Bool", /*Coil*/
                             "ModbusIndex": 0
                         },
                         {
                             "Id": "bath_1", /*pult_bath_door*/
                             "Name": "Ванна. Дверь",
-                            "ModbusType": "Coil",
+                            "Type": "Bool", /*Coil*/
                             "ModbusIndex": 1
                         },
                         {
                             "Id": "bath_ignore_door", /*pult_bath_door_ignore_s*/
                             "Name": "Ванна. Игнорировать дверь",
-                            "ModbusType": "Coil",
+                            "Type": "Bool", /*Coil*/
                             "ModbusIndex": 2
                         },
                         {
                             "Id": "corr_1", /*pult_corr_light*/
                             "Name": "Коридор. Свет",
-                            "ModbusType": "Coil",
+                            "Type": "Bool", /*Coil*/
                             "ModbusIndex": 3
                         },
                         {
                             "Id": "meteo_temp_common", /*pult_balk_temp*/
                             "Name": "Балкон. Температура",
-                            "ModbusType": "UInt16",
                             "Type": "UInt16",
                             "ModbusIndex": 2
                         },
                         {
                             "Id": "meteo_hymidity", /*pult_balk_hym*/
                             "Name": "Балкон. Влажность",
-                            "ModbusType": "UInt16",
                             "Type": "UInt16",
                             "ModbusIndex": 3
                         },
                         {
                             "Id": "meteo_pressure", /*pult_balk_press*/
                             "Name": "Балкон. Давление",
-                            "ModbusType": "UInt16",
                             "Type": "UInt16",
                             "ModbusIndex": 4
+                        },
+
+
+                        {
+                            "Id": "forecast_temp",
+                            "Type": "UInt16",
+                            "Name": "Прогноз температура",
+                            "ModbusIndex": 7
+                        },
+                        {
+                            "Id": "forecast_hymidity",
+                            "Type": "UInt16",
+                            "Name": "Прогноз Влажность",
+                            "ModbusIndex": 8
+                        },
+                        {
+                            "Id": "forecast_date",
+                            "Type": "UInt16",
+                            "Name": "Прогноз время",
+                            "ModbusIndex": 5
+                        },
+                        {
+                            "Id": "forecast_date",
+                            "Type": "UInt16",
+                            "Name": "Прогноз время",
+                            "ModbusIndex": 6
+                        },
+                        {
+                            "Id": "forecast_wind_direction_and_speed",
+                            "Type": "UInt16",
+                            "Name": "Прогноз Скорость и напр. ветра",
+                            "ModbusIndex": 10
+                        },
+                        {
+                            "Id": "forecast_weather",
+                            "Type": "UInt16",
+                            "Name": "Прогноз осадки",
+                            "ModbusIndex": 9
                         }
                     ]
 
@@ -345,7 +430,7 @@
                             "ModbusType": "Discrete",
                             "ModbusIndex": 3,
                             "Retain": true,
-                            "Echo": {
+                            /*"Echo": {
                                 "Type": "Setter",
                                 "Id": "bolid_bi_light_status",
                                 "Arguments": [
@@ -366,7 +451,7 @@
                                         "Value": 0
                                     }
                                 ]
-                            }
+                            }*/
                         }
                     ]
                 }
@@ -673,6 +758,18 @@
                     ]
                 }
             ]
+        }
+    ],
+    "Plugins": [
+        {
+            "Type": "Forecast",
+            "Params": {
+                "Temperature": "forecast_temp",
+                "Humidity": "forecast_hymidity",
+                "Pressure": null,
+                "Wind": "forecast_wind_direction_and_speed",
+                "Weather": "forecast_weather"
+            }
         }
     ],
     "HeartBeatMs": 333

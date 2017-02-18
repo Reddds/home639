@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Linq;
+using HomeServer.Models.Base;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Schema;
 
 namespace HomeServer.Models
 {
@@ -17,14 +23,38 @@ namespace HomeServer.Models
             DateTime,
             Time,
             Bool,
+            String
         }
 
         public class ActiveValue
         {
+            /// <summary>
+            /// Записывать в базу значение из интервала после предыдущей записи
+            /// Last - писать последнее значение
+            /// Average - вычислять среднее
+            /// </summary>
+            public enum WriteToBaseMethods
+            {
+                Last,
+                Average
+            }
 
-            public object Value { get; set; }
+
+            [Required]
+            public string Id { get; set; }
+            public object Value { get; private set; }
             public ActiveValueTypes ValueType { get; set; }
             public string Description { get; set; }
+
+            public bool MqttRetain { get; set; }
+            /// <summary>
+            /// Сконвертированное значение
+            /// </summary>
+            [JsonConverter(typeof(MyTimeSpanConverter))]
+            public TimeSpan? WriteToBaseInterval;
+            public WriteToBaseMethods WriteToBaseMethod { get; set; }
+
+            public DateTime NextTimeToWriteToBase = DateTime.MinValue;
 
             /// <summary>
             /// Устанавливает новое значение
@@ -33,12 +63,75 @@ namespace HomeServer.Models
             /// <returns>Если значение изменилось, true</returns>
             public bool SetNewValue(object newValue)
             {
-                if(Value!= null && Value.Equals(newValue))
+                if(Value != null && Value.Equals(newValue))
                     return false;
                 Value = newValue;
 
                 IsChanged = true;
-                Console.WriteLine($"{Description} = {Value}");
+
+                var resultTypeStr = "";
+                switch (ValueType)
+                {
+                    case ActiveValueTypes.UInt:
+                        resultTypeStr = HsEnvelope.UInt16Result;
+                        break;
+                    case ActiveValueTypes.Int:
+                        resultTypeStr = HsEnvelope.UInt16Result;
+                        break;
+                    case ActiveValueTypes.Double:
+                        resultTypeStr = HsEnvelope.DoubleResult;
+                        break;
+                    case ActiveValueTypes.DateTime:
+                        break;
+                    case ActiveValueTypes.Time:
+                        break;
+                    case ActiveValueTypes.Bool:
+                        resultTypeStr = HsEnvelope.BoolResult;
+                        break;
+                    case ActiveValueTypes.String:
+                        resultTypeStr = HsEnvelope.StringResult;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+
+                MqttClienWorker.CurrentInstance.SendMessage($"{HsEnvelope.ControllersResult}/{Id}/{resultTypeStr}", Value.ToString(), MqttRetain);
+
+                Console.WriteLine($"!!{Description} = {Value}");
+
+                if (WriteToBaseInterval != null && NextTimeToWriteToBase <= DateTime.Now)
+                {
+                    NextTimeToWriteToBase += WriteToBaseInterval.Value;
+
+                    switch (ValueType)
+                    {
+                        case ActiveValueTypes.UInt:
+                            BaseUtils.WriteParamToBase(Id, intValue: (long)Value);
+                            break;
+                        case ActiveValueTypes.Int:
+                            BaseUtils.WriteParamToBase(Id, intValue: (long)Value);
+                            break;
+                        case ActiveValueTypes.Double:
+                            BaseUtils.WriteParamToBase(Id, doubleValue: (double)Value);
+                            break;
+                        case ActiveValueTypes.DateTime:
+
+                            break;
+                        case ActiveValueTypes.Time:
+                            break;
+                        case ActiveValueTypes.Bool:
+                            BaseUtils.WriteParamToBase(Id, boolValue: (bool)Value);
+                            break;
+                        case ActiveValueTypes.String:
+                            BaseUtils.WriteParamToBase(Id, stringValue: (string)Value);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+
                 return true;
             }
 
@@ -101,7 +194,7 @@ namespace HomeServer.Models
 
         }
 
-
+        
 
 
         public class EchoValue
@@ -171,16 +264,6 @@ namespace HomeServer.Models
 
                 public partial class Parameter
                 {
-                    /// <summary>
-                    /// Записывать в базу значение из интервала после предыдущей записи
-                    /// Last - писать последнее значение
-                    /// Average - вычислять среднее
-                    /// </summary>
-                    public enum WriteToBaseMethods
-                    {
-                        Last,
-                        Average
-                    }
 
                     private ushort? _modbusIndex;
 
@@ -226,17 +309,17 @@ namespace HomeServer.Models
                             }
                         }
                     }
-
-                    public string RefreshRate { get; set; }
+                    [JsonConverter(typeof(MyTimeSpanConverter))]
+                    public TimeSpan? RefreshRate { get; set; }
                     /// <summary>
                     /// Период записи результатов в базу
                     /// </summary>
-                    public string WriteToBaseInterval { get; set; }
-                    public WriteToBaseMethods WriteToBaseMethod { get; set; }
+//                    public string WriteToBaseInterval { get; set; }
+//                    public WriteToBaseMethods WriteToBaseMethod { get; set; }
                     /// <summary>
                     /// Сконвертированное значение
                     /// </summary>
-                    public TimeSpan? WriteToBaseIntervalTime;
+//                    public TimeSpan? WriteToBaseIntervalTime;
 
                     public DateTime NextTimeToWriteToBase = DateTime.MinValue;
                     public List<double> AverageValuesToWriteToBase;
@@ -421,6 +504,7 @@ namespace HomeServer.Models
                     }
                     public enum SetterTypes
                     {
+                        Bool,
                         /// <remarks/>
                         RealDateTime,
                         /// <remarks/>
@@ -461,22 +545,24 @@ namespace HomeServer.Models
         {
             public string Type { get; set; }
 
-            public class Parameter
-            {
-                public string Name { get; set; }
-                public EchoValue Echo { get; set; }
-            }
+//            public class Parameter
+//            {
+//                public string Name { get; set; }
+//                public Dictionary<string, string> Params { get; set; }
+//            }
 
-            
+            public Dictionary<string, string> Params { get; set; }
 
         }
 
 
-        public Dictionary<string, ActiveValue> ActiveValues { get; set; }
+        public List<ActiveValue> ActiveValues { get; set; }
+//        public Dictionary<string, ActiveValue> ActiveValues { get; set; }
 
         public HomeServerSettings()
         {
-            ActiveValues = new Dictionary<string, ActiveValue>();
+//            ActiveValues = new Dictionary<string, ActiveValue>();
+            ActiveValues = new List<ActiveValue>();
             this.HeartBeatMs = 1000;
         }
 
@@ -486,5 +572,87 @@ namespace HomeServer.Models
         public int HeartBeatMs { get; set; }
     }
 
+    public class MyTimeSpanConverter : JsonConverter
+    {
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+    JsonSerializer serializer)
+        {
+            if (reader.TokenType != JsonToken.String)
+            {
+                throw new Exception($"Unexpected token parsing date. Expected Integer, got {reader.TokenType}.");
+            }
 
+            var strValue = (string)reader.Value;
+
+            TimeSpan tmpVal;
+            if (TimeSpan.TryParseExact(strValue, "g", null, TimeSpanStyles.None, out tmpVal))
+                return tmpVal;
+
+            return null;
+
+
+
+//            if (reader.TokenType != JsonToken.Integer)
+//            {
+//                throw new Exception($"Unexpected token parsing date. Expected Integer, got {reader.TokenType}.");
+//            }
+//
+//            var seconds = (long)reader.Value;
+//
+//            var date = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);//DateTime(1970, 1, 1)
+//
+//            date = date.AddSeconds(seconds).ToLocalTime();
+//            return date;
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return typeof(TimeSpan) == objectType;
+        }
+
+        public override void WriteJson(JsonWriter writer, object value,
+    JsonSerializer serializer)
+        {
+            var ts = (TimeSpan)value;
+
+
+            writer.WriteStartObject();
+//            writer.WritePropertyName("d");
+//            writer.WriteValue(ts.Days);
+            writer.WritePropertyName("h");
+            writer.WriteValue(ts.Hours);
+            writer.WritePropertyName("m");
+            writer.WriteValue(ts.Minutes);
+            writer.WritePropertyName("s");
+            writer.WriteValue(ts.Seconds);
+            writer.WriteEndObject();
+
+
+
+//            long ticks;
+//            if (value is DateTime)
+//            {
+//                var epoc = new DateTime(1970, 1, 1);
+//                var delta = ((DateTime)value) - epoc;
+//                if (delta.TotalSeconds < 0)
+//                {
+//                    throw new ArgumentOutOfRangeException("Unix epoc starts January 1st, 1970");
+//                }
+//                ticks = (long)delta.TotalSeconds;
+//            }
+//            else
+//            {
+//                throw new Exception("Expected date object value.");
+//            }
+//            writer.WriteValue(ticks);
+        }
+    }
+
+    public static class ActiveValueExtension  
+    {
+        public static HomeServerSettings.ActiveValue Find(this IEnumerable<HomeServerSettings.ActiveValue> list, string id)
+        {
+            return list.FirstOrDefault(av => av.Id == id);
+        }
+    }
 }

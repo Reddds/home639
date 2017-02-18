@@ -4,6 +4,7 @@ using System.IO.Ports;
 using System.Threading;
 using HomeServer.Models;
 using HomeServer.Objects;
+using HomeServer.Plugins;
 using Microsoft.Win32;
 using Modbus.Device;
 
@@ -33,11 +34,12 @@ namespace HomeServer
         public static event EventHandler<string> WriteToLog;
         public static event EventHandler<Tuple<string, bool>> SendControllerStatus;
 
+        public static List<PluginBase> Plugins; 
 
         private static bool _setCurrentTime;
 
         public static List<ControllerGroup> ControolerObjects = new List<ControllerGroup>();
-        public static Dictionary<string, HomeServerSettings.ActiveValue> ActiveValues;
+        public static List<HomeServerSettings.ActiveValue> ActiveValues;
         public static void Init(string portName, int baudRate, int heartBeatMs)
         {
             _portName = portName;
@@ -260,6 +262,16 @@ namespace HomeServer
                     //Thread.Sleep(200);
 
 //                    var startDt = DateTime.Now;
+
+                    if (Plugins != null)
+                    {
+                        foreach (var plugin in Plugins)
+                        {
+                            plugin.GetValues(ActiveValues);
+                        }
+                    }
+
+
                     if (ControolerObjects != null && ControolerObjects.Count > 0)
                     {
                         foreach (var room in ControolerObjects)
@@ -367,7 +379,7 @@ namespace HomeServer
                         // После цикла сбрасываем флаги изменений 
                         foreach (var activeValue in ActiveValues)
                         {
-                            activeValue.Value.ResetChange();
+                            activeValue.ResetChange();
                         }
                         
                     }

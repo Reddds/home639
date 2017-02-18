@@ -36,7 +36,7 @@ namespace HomeServer.Objects
         public string ControllerGroupName;
         public string Name;
 
-        public Dictionary<string, HomeServerSettings.ActiveValue> ActiveValues; 
+        public List<HomeServerSettings.ActiveValue> ActiveValues; 
         /// <summary>
         /// Количество ошибок обращения к контроллеру
         /// Если подряд 5 раз вылетят ошибки, то обращаемся к этому контроллеру только раз в минуту
@@ -64,18 +64,17 @@ namespace HomeServer.Objects
             public bool? InitialState { get; private set; }
 
             public CheckBoolStatus CheckBoolStatus { get; set; }
-            public ushort Index { get; set; }
+            public ushort Index => _parameter.ModbusIndex;
             private Action<bool> CallBack { get; set; }
             public TimeSpan? CheckInterval { get; set; }
 
             protected ActionOnDiscreteOrCoil(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
-                ushort index, CheckBoolStatus checkBoolStatus, 
+                CheckBoolStatus checkBoolStatus, 
                 Action<bool> callBack,
                 HomeServerSettings.ActiveValue activeValue,
                 bool? initialState)
             {
                 _parameter = parameter;
-                Index = index;
                 CheckBoolStatus = checkBoolStatus;
                 CallBack = callBack;
                 _activeValue = activeValue;
@@ -88,23 +87,32 @@ namespace HomeServer.Objects
                 if (newState == _currentState)
                     return false;
 
+                if (_activeValue == null)
+                    return false;
                 //BaseUtils.WriteParamToBase(_id, boolValue: newState);
 
                 switch (CheckBoolStatus)
                 {
                     case CheckBoolStatus.OnTrue:
                         if (newState)
-                            CallBack(true);
+                            _activeValue.SetNewValue(true);
+                            //CallBack(true);
                         break;
                     case CheckBoolStatus.OnFalse:
                         if (!newState)
-                            CallBack(false);
+                            _activeValue.SetNewValue(false);
+                            //CallBack(false);
                         break;
                     case CheckBoolStatus.OnBoth:
-                        CallBack(newState);
+                        _activeValue.SetNewValue(newState);
+                        //CallBack(newState);
                         break;
                 }
                 _currentState = newState;
+
+
+                
+
                 return true;
             }
 
@@ -114,10 +122,10 @@ namespace HomeServer.Objects
         private class ActionOnDiscrete : ActionOnDiscreteOrCoil
         {
             public ActionOnDiscrete(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
-                ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack,
-                 HomeServerSettings.ActiveValue activeValue,
+                CheckBoolStatus checkBoolStatus, Action<bool> callBack,
+                HomeServerSettings.ActiveValue activeValue,
                 bool? initialState)
-                : base(parameter, index, checkBoolStatus, callBack, activeValue, initialState)
+                : base(parameter, checkBoolStatus, callBack, activeValue, initialState)
             {
             }
         }
@@ -127,10 +135,10 @@ namespace HomeServer.Objects
             public bool ResetAfter { get; private set; }
 
             public ActionOnCoil(HomeServerSettings.ControllerGroup.Controller.Parameter parameter, 
-                ushort index, CheckBoolStatus checkBoolStatus, Action<bool> callBack, 
+                CheckBoolStatus checkBoolStatus, Action<bool> callBack, 
                 bool resetAfter, HomeServerSettings.ActiveValue activeValue,
                 bool? initialState)
-                : base(parameter, index, checkBoolStatus, callBack, activeValue, initialState)
+                : base(parameter, checkBoolStatus, callBack, activeValue, initialState)
             {
                 ResetAfter = resetAfter;
             }
@@ -191,10 +199,11 @@ namespace HomeServer.Objects
             /// Вызывать CallBack даже когда данные не изменились
             /// </summary>
             public bool RaiseOlwais { get; set; }
-            public HomeServerSettings.ControllerGroup.Controller.DataTypes RegisterType { get; set; }
+            //            public HomeServerSettings.ControllerGroup.Controller.DataTypes RegisterType { get; set; }
+
+            public HomeServerSettings.ControllerGroup.Controller.DataTypes RegisterType => _parameter.DataType;
 
             public ActionOnRegister(HomeServerSettings.ControllerGroup.Controller.Parameter parameter, 
-                HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, 
                 Action<ushort> callBack, 
                 HomeServerSettings.ActiveValue activeValue,
                 Action<uint> callBackULong = null)
@@ -203,7 +212,6 @@ namespace HomeServer.Objects
                 CallBack = callBack;
                 _activeValue = activeValue;
                 CallBackULong = callBackULong;
-                RegisterType = registerType;
             }
 
             /// <summary>
@@ -342,7 +350,7 @@ namespace HomeServer.Objects
 
             public ActionOnRegisterDateTime(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
                 Action<DateTime> callBack, HomeServerSettings.ActiveValue activeValue) 
-                : base(parameter, HomeServerSettings.ControllerGroup.Controller.DataTypes.RdDateTime, null, activeValue)
+                : base(parameter, null, activeValue)
             {
                 CallBack = callBack;
             }
@@ -556,6 +564,10 @@ namespace HomeServer.Objects
 
                 switch (SetterType)
                 {
+                    case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.Bool:
+                        var resultBoolStatus = SendUInt16(modbus, slaveAddress, value);
+                        _resultAction?.Invoke(resultBoolStatus);
+                        return resultBoolStatus;
                     case HomeServerSettings.ControllerGroup.Controller.Setter.SetterTypes.RealDateTime:
                         var resultStatus = SendCurrentTime(modbus, slaveAddress);
                         _resultAction?.Invoke(resultStatus);
@@ -733,7 +745,7 @@ namespace HomeServer.Objects
 
                 var resp = modbus.ExecuteCustomMessage<WriteSysUserCommand>(msg);
 */
-                Thread.Sleep(500);
+                Thread.Sleep(50);
 
                 var msgCheck = new ReadExceptionStatusRequest(slaveAddress);
                 var respCheck = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msgCheck);
@@ -755,8 +767,17 @@ namespace HomeServer.Objects
             {
                 //            _modbus.WriteMultipleRegisters(2, 8, timeData);
                 modbus.WriteMultipleRegisters(slaveAddress, CommandHoldingRegister, (ushort[])_pendingObject);
-                Thread.Sleep(50);
+                Thread.Sleep(5);
 
+                var msg = new ReadExceptionStatusRequest(slaveAddress);
+                var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
+                return resp.ExceptionStatusBits[0];
+            }
+
+            private bool SendCoil(IModbusMaster modbus, byte slaveAddress, bool value)
+            {
+                modbus.WriteSingleCoil(slaveAddress, Index, value);//_pendingObject
+                Thread.Sleep(5);
                 var msg = new ReadExceptionStatusRequest(slaveAddress);
                 var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
                 return resp.ExceptionStatusBits[0];
@@ -768,11 +789,19 @@ namespace HomeServer.Objects
 
                 if (value is double)
                 {
-                    converted = (ushort) ((double) value);
+                    converted = (ushort) (Math.Round((double) value));
                 }
+                else if (value is ushort)
+                    converted = (ushort) value;
+                else if (value is int)
+                    converted = (ushort) (int)value;
+                else if (value is long)
+                    converted = (ushort) (long)value;
+                else if (value is ulong)
+                    converted = (ushort) (ulong)value;
 
                 modbus.WriteSingleRegister(slaveAddress, Index, converted);//_pendingObject
-                Thread.Sleep(50);
+                Thread.Sleep(5);
                 var msg = new ReadExceptionStatusRequest(slaveAddress);
                 var resp = modbus.ExecuteCustomMessage<ReadExceptionStatus>(msg);
                 return resp.ExceptionStatusBits[0];
@@ -1216,13 +1245,14 @@ namespace HomeServer.Objects
             {
                 foreach (var activeValue in ActiveValues)
                 {
-                    if (!activeValue.Value.IsChanged)
+                    if (!activeValue.IsChanged)
                         continue;
                     foreach (var setter in _setters)
                     {
-                        if (setter.Id == activeValue.Key)
+                        if (setter.Id == activeValue.Id)
                         {
-                            var setResult = setter.Set(modbus, SlaveAddress, activeValue.Value.Value);
+                            Console.WriteLine($">>{setter.Id} = {activeValue.Value}");
+                            var setResult = setter.Set(modbus, SlaveAddress, activeValue.Value);
                         }
                     }
                     //activeValue.Value.ResetChange();
@@ -1237,6 +1267,7 @@ namespace HomeServer.Objects
         /// Прописывает метод, который будет вызван после изменения статуса дискретного регистра или катушки
         /// </summary>
         /// <param name="id">Id параметра, которое пишется в базу</param>
+        /// <param name="parameter"></param>
         /// <param name="isCoil"></param>
         /// <param name="checkBoolStatus">При каком событии вызывать метод</param>
         /// <param name="index">Индекс регистра или катушки</param>
@@ -1246,14 +1277,17 @@ namespace HomeServer.Objects
         /// <param name="resetAfter">Сброс значения только для катушек и CheckBoolStatus != OnBoth</param>
         /// <returns>Reset action</returns>
         public Action SetActionOnDiscreteOrCoil(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
-            bool isCoil, CheckBoolStatus checkBoolStatus, ushort index,
+            CheckBoolStatus checkBoolStatus,
             Action<bool> callback, HomeServerSettings.ActiveValue activeValue,
-            bool? initialState = null, bool resetAfter = false)
+             bool resetAfter = false)
         {
-            if (index > MaxDiscreteOrCoilIndex)
-                throw new ArgumentOutOfRangeException(nameof(index));
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
+            if (parameter.ModbusIndex > MaxDiscreteOrCoilIndex)
+                throw new ArgumentOutOfRangeException(nameof(parameter.ModbusIndex));
+//            if (callback == null)
+//                throw new ArgumentNullException(nameof(callback));
+
+            var isCoil = parameter.ModbusType == HomeServerSettings.ControllerGroup.Controller.ModbusTypes.Coil;
+            var initialState = parameter.BoolDefault;
             if (!isCoil && resetAfter)
             {
                 throw new ArgumentException("Сброс дискретного регистра невозможен!", nameof(resetAfter));
@@ -1265,13 +1299,13 @@ namespace HomeServer.Objects
 
             if (isCoil)
             {
-                if (_coilMinIndex > index)
-                    _coilMinIndex = index;
-                if (_coilMaxIndex < index)
-                    _coilMaxIndex = index;
+                if (_coilMinIndex > parameter.ModbusIndex)
+                    _coilMinIndex = parameter.ModbusIndex;
+                if (_coilMaxIndex < parameter.ModbusIndex)
+                    _coilMaxIndex = parameter.ModbusIndex;
                 if (_coilChecks == null)
                     _coilChecks = new List<ActionOnCoil>();
-                var actionOnCoil = new ActionOnCoil(parameter, index, checkBoolStatus, callback, resetAfter, activeValue, initialState);
+                var actionOnCoil = new ActionOnCoil(parameter, checkBoolStatus, callback, resetAfter, activeValue, initialState);
 
                 _coilChecks.Add(actionOnCoil);
                 return () =>
@@ -1281,13 +1315,13 @@ namespace HomeServer.Objects
             }
             else
             {
-                if (_discreteRegisterMinIndex > index)
-                    _discreteRegisterMinIndex = index;
-                if (_discreteRegisterMaxIndex < index)
-                    _discreteRegisterMaxIndex = index;
+                if (_discreteRegisterMinIndex > parameter.ModbusIndex)
+                    _discreteRegisterMinIndex = parameter.ModbusIndex;
+                if (_discreteRegisterMaxIndex < parameter.ModbusIndex)
+                    _discreteRegisterMaxIndex = parameter.ModbusIndex;
                 if (_discreteChecks == null)
                     _discreteChecks = new List<ActionOnDiscrete>();
-                var actionOnDiscrete = new ActionOnDiscrete(parameter, index, checkBoolStatus, callback, activeValue, initialState);
+                var actionOnDiscrete = new ActionOnDiscrete(parameter, checkBoolStatus, callback, activeValue, initialState);
                 _discreteChecks.Add(actionOnDiscrete);
                 return null;
             }
@@ -1337,17 +1371,19 @@ namespace HomeServer.Objects
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
         public Action SetActionOnRegister(HomeServerSettings.ControllerGroup.Controller.Parameter parameter, 
-            bool isHolding, 
-            HomeServerSettings.ControllerGroup.Controller.DataTypes registerType, Action<ushort> callback,
+            Action<ushort> callback,
             Action<uint> uLongCallback, 
             HomeServerSettings.ActiveValue activeValue,
             bool raiseOlwais = false, TimeSpan? checkInterval = null, 
             bool resetAfterRead = false, ushort uInt16Default = 0, uint uLongDefault = 0, double doubleDefault = 0)
         {
-            if (callback == null && uLongCallback == null)
-                throw new ArgumentNullException(nameof(callback) + " and " + nameof(uLongCallback));
+//            if (callback == null && uLongCallback == null)
+//                throw new ArgumentNullException(nameof(callback) + " and " + nameof(uLongCallback));
+
+            var isHolding = parameter.ModbusType ==
+                        HomeServerSettings.ControllerGroup.Controller.ModbusTypes.HoldingRegister;
             var endIndex = parameter.ModbusIndex;
-            switch (registerType)
+            switch (parameter.DataType)
             {
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.UInt16:
                     break;
@@ -1363,7 +1399,7 @@ namespace HomeServer.Objects
                 case HomeServerSettings.ControllerGroup.Controller.DataTypes.RdTime:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(registerType), registerType, null);
+                    throw new ArgumentOutOfRangeException(nameof(parameter.DataType), parameter.DataType, null);
             }
             if (!isHolding)
             {
@@ -1374,7 +1410,7 @@ namespace HomeServer.Objects
                 if (_inputChecks == null)
                     _inputChecks = new List<ActionOnRegister>();
 
-                var holdingCheck = new ActionOnRegister(parameter, registerType, callback, activeValue, uLongCallback)
+                var holdingCheck = new ActionOnRegister(parameter, callback, activeValue, uLongCallback)
                 {
                     RaiseOlwais = raiseOlwais,
                     CheckInterval = checkInterval
@@ -1394,7 +1430,7 @@ namespace HomeServer.Objects
                     _holdingRegisterMaxIndex = endIndex;
                 if (_holdingChecks == null)
                     _holdingChecks = new List<ActionOnRegister>();
-                _holdingChecks.Add(new ActionOnRegister(parameter, registerType, callback, activeValue, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
+                _holdingChecks.Add(new ActionOnRegister(parameter, callback, activeValue, uLongCallback) { RaiseOlwais = raiseOlwais, CheckInterval = checkInterval, ResetAfterRead = resetAfterRead, ULongDefault = uLongDefault });
                 return null;
             }
         }
@@ -1410,12 +1446,14 @@ namespace HomeServer.Objects
         /// <param name="checkInterval"></param>
         /// <returns>Reset action</returns>
         public Action SetActionOnRegisterDateTime(HomeServerSettings.ControllerGroup.Controller.Parameter parameter,
-            bool isHolding, Action<DateTime> callback,
+            Action<DateTime> callback,
             HomeServerSettings.ActiveValue activeValue,
             bool raiseOlwais = false, TimeSpan? checkInterval = null)
         {
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
+            //            if (callback == null)
+            //                throw new ArgumentNullException(nameof(callback));
+            var isHolding = parameter.ModbusType ==
+                                    HomeServerSettings.ControllerGroup.Controller.ModbusTypes.HoldingRegister;
             var endIndex = (ushort)(parameter.ModbusIndex + 2);
             if (!isHolding)
             {
